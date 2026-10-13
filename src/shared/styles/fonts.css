@@ -1,0 +1,16 @@
+/*
+ * Atkinson Hyperlegible Next, self-hosted as a single variable WOFF2 face.
+ * Provenance and licence: THIRD_PARTY_NOTICES.md and src/assets/fonts/OFL.txt.
+ *
+ * Vite fingerprints the file and rewrites this URL, so the asset can be served
+ * with a one-year immutable cache.
+ */
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('../../assets/fonts/AtkinsonHyperlegibleNext-Variable.woff2')
+    format('woff2');
+}

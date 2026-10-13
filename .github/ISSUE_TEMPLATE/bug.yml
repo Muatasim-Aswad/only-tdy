@@ -1,0 +1,25 @@
+name: Bug report
+description: Describe a reproducible problem using synthetic data.
+body:
+  - type: markdown
+    attributes:
+      value: Remove task data, cookies, tokens, private URLs and other personal information. Report vulnerabilities through Security instead.
+  - type: input
+    id: version
+    attributes:
+      label: Version and revision from About
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, OS and Tududi version
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction and expected behavior
+      description: Include synthetic steps, actual behavior and relevant redacted errors.
+    validations:
+      required: true

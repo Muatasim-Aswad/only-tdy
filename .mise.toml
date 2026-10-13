@@ -1,0 +1,33 @@
+[tools]
+node = "24.20.0"
+pnpm = "11.24.0"
+gitleaks = "8.30.1"
+
+[tasks.dev]
+run = "pnpm run dev"
+[tasks."dev:seeded"]
+run = "pnpm run dev:seeded"
+[tasks.build]
+run = "pnpm run build"
+[tasks.typecheck]
+run = "pnpm run typecheck"
+[tasks.lint]
+run = "pnpm run lint"
+[tasks.test]
+run = "pnpm run test"
+[tasks."test:e2e"]
+run = "pnpm run test:e2e"
+[tasks."browser:install"]
+run = "pnpm exec playwright install chromium"
+[tasks.check]
+description = "Reviewed source, format, lint, types, unit/tooling, build/budget, browser/visual, artifact/container gates"
+run = "pnpm run check"
+[tasks."hooks:install"]
+run = "bash scripts/install-hooks.sh"
+[tasks."container:build"]
+run = "node scripts/container-build.mjs"
+[tasks."container:check"]
+run = "bash scripts/verify-container.sh"
+[tasks."release:rehearse"]
+description = "Clean committed source; deterministic verified assets; no publication"
+run = "node scripts/release.mjs"

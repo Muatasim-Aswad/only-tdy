@@ -1,0 +1,28 @@
+
+# Dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+
+# Test and tooling output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+*.tsbuildinfo
+
+# Editor and OS state
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Private operator state and deterministic build outputs
+docs/plans/
+local/
+*.local.md
+*.local.toml
+.env
+.env.*
+!.env.example
+release/out/

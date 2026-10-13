@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+docs/plans/
+local/
+*.local.md
+*.local.toml
+.env*
+!.env.example
+src/assets/fonts/OFL.txt
+pnpm-lock.yaml
+release/out/
+release/*-files.txt

@@ -1,0 +1,61 @@
+/*
+ * Global element styles, kept deliberately small. Anything a component might
+ * need to override lives in the components layer or in a utility instead, so a
+ * global rule can never win against a state utility by accident.
+ */
+
+@layer base {
+  html {
+    /* Keep the canvas behind overscroll so the browser never flashes white in
+       dark mode, and honour the safe area in standalone mode. */
+    background-color: var(--canvas);
+    /*
+     * The foot of the page is pinned to the foot of the screen, so anything
+     * the browser scrolls into view — a focused row title near the end of a
+     * long list — has to stop above it rather than under it.
+     */
+    scroll-padding-bottom: calc(76px + max(32px, env(safe-area-inset-bottom)));
+  }
+
+  body {
+    /*
+     * The small viewport, never the dynamic one. `dvh` is explicitly allowed
+     * to resolve larger than what is actually on screen while a phone's
+     * toolbars animate, and `svh` is the one viewport unit that cannot — it is
+     * the viewport measured with those toolbars shown.
+     */
+    min-height: 100svh;
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--selection);
+    color: var(--ink);
+  }
+
+  /*
+   * No drawn focus box anywhere. Every focusable thing here already has a shape
+   * of its own to change — the capture rule thickens and takes the accent, the
+   * completion circle's border does the same, the home mark comes up to full
+   * strength, and a text action underlines — so a rectangle around it would
+   * only repeat, in a heavier mark, what the control itself is already saying.
+   *
+   * This is a trade the components have to honour: anything focusable added
+   * later owes the interface a visible focus state of its own.
+   */
+  :focus-visible {
+    outline: none;
+  }
+
+  /* Native controls inherit the token palette so a platform dark theme cannot
+     paint its own background inside a transparent field. */
+  input,
+  button {
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+  }
+}

@@ -1,0 +1,19 @@
+/*
+ * only-tdy stylesheet entry point.
+ *
+ * Import order is deliberate: Tailwind declares the cascade layers, the font
+ * face is registered before anything paints, and the token layer then supplies
+ * every colour, type role, and easing value the utilities resolve through.
+ */
+
+@import 'tailwindcss' source(none);
+@source '.';
+@source '../features';
+@source '../shared';
+@source not '../**/*.test.ts';
+@source not '../**/*.test.tsx';
+@source not '../**/testing';
+@import '../shared/styles/fonts.css';
+@import '../shared/styles/tokens.css';
+@import '../shared/styles/base.css';
+@import '../features/tasks/styles.css';
