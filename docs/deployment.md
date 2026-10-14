@@ -21,11 +21,12 @@ Requires Git and Docker with Compose. Docker installs the build tools internally
 ```sh
 git clone https://github.com/Muatasim-Aswad/only-tdy.git
 cd only-tdy
-docker build --platform linux/amd64 -t only-tdy:local .
-ONLY_TDY_IMAGE=only-tdy:local docker compose up -d --no-build --pull never
+export ONLY_TDY_IMAGE=only-tdy:local
+docker compose build
+docker compose up -d --no-build --pull never
 ```
 
-The same Compose file can build it with `ONLY_TDY_IMAGE=only-tdy:local docker compose build` instead of the plain Docker build command. No host mise, Node, pnpm, identity generation, or release rehearsal is required. Ordinary source builds report revision `dev`; nothing is published.
+[`compose.yaml`](../compose.yaml) owns the build context, platform, and arguments; `ONLY_TDY_IMAGE` names the local image. No host mise, Node, pnpm, identity generation, or release rehearsal is required. Ordinary source builds report revision `dev`; nothing is published.
 
 ## Configuration and health
 

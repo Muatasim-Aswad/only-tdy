@@ -4,10 +4,10 @@ Keep the daily flow small: quick capture, deliberate Today/Backlog planning, and
 
 ## Setup and checks
 
-Fork and clone the repository, then use the pinned toolchain:
+Fork and clone the repository, then run these commands from its root. [`.mise.toml`](.mise.toml) selects the tool versions; `pnpm-lock.yaml` selects dependencies.
 
 ```sh
-mise install node@24.20.0 pnpm@11.24.0 gitleaks@8.30.1
+mise install
 mise exec -- pnpm install --frozen-lockfile
 mise run browser:install
 mise run hooks:install
@@ -32,9 +32,9 @@ Follow [architecture](docs/architecture.md), keep domain logic with its feature,
 
 ## Tooling choices
 
-Node, pnpm and Gitleaks versions are pinned in `.mise.toml`; dependencies, Prettier and the Chromium revision selected by Playwright are pinned by `package.json` and `pnpm-lock.yaml`. CI pins action commits and the mise binary checksum; versions/digests are recorded in `release/toolchain.json`. Install only the named project tools to avoid unrelated global tools. No global trust or tool defaults are required.
+The [mise tasks](.mise.toml) and [package scripts](package.json) own command arguments and check composition. Playwright selects Chromium through the dependency lockfile. CI pins action commits and the mise binary checksum; [release/toolchain.json](release/toolchain.json) records release tool versions and image digests. No global trust or tool defaults are required.
 
-ESLint/Vite/Vitest remain because they support the established React, PWA and source-graph gates. TypeScript 7 performs type checking; TypeScript 6 remains solely for typescript-eslint compatibility, documented in `pnpm-workspace.yaml`. Existing CSS optimizer and PWA bundling warnings are upstream compatibility limits, not a lowered gate. The initial JavaScript budget remains 100 KiB gzip.
+ESLint/Vite/Vitest remain because they support the established React, PWA and source-graph gates. TypeScript 7 performs type checking; TypeScript 6 remains solely for typescript-eslint compatibility, documented in `pnpm-workspace.yaml`. Existing CSS optimizer and PWA bundling warnings are upstream compatibility limits, not a lowered gate.
 
 Full checks require Git, Docker with Buildx/Compose, GNU tar, gzip, curl and jq on the host. CI uses Ubuntu 24.04. Container builds use the digest-pinned BuildKit image in `release/toolchain.json`, a fresh isolated builder, and a normalized source context; host Docker/system package patch versions follow the maintained runner. The full browser gate requires a Linux amd64 host and runs all browser tests in the same digest-pinned Ubuntu/Chromium image as CI. Direct Playwright runs on other hosts are diagnostic and may differ. Regenerate baselines with `mise run test:e2e -- --update-snapshots` and review changes; update the image digest with the Playwright dependency. Formatting covers public code/config/docs and leaves ignored operational state alone. Hooks run the full gate on commit/push and use no commit-message convention.
 
