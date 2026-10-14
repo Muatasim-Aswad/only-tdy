@@ -32,7 +32,7 @@ Install [mise](https://mise.jdx.dev), then:
 ```sh
 git clone https://github.com/Muatasim-Aswad/only-tdy.git
 cd only-tdy
-mise install node@24.20.0 pnpm@11.24.0 gitleaks@8.30.1
+mise install
 mise exec -- pnpm install --frozen-lockfile
 mise run dev:seeded
 ```
@@ -52,7 +52,7 @@ This is an unofficial integration, unaffiliated with Tududi. Upstream API change
 
 Verification covers Chromium on Linux, including narrow layouts, keyboard interaction, themes, reduced motion and forced colors. Firefox, WebKit/Safari, real mobile devices and their installation flows are unverified; viewport tests do not establish device support.
 
-`mise run check` is the full local and CI gate: format, lint, types, unit tests, production build, bundle budget, browser/visual tests, container verification and export scans. `mise run release:rehearse` prepares verified deterministic assets without publishing. See [contributing](CONTRIBUTING.md) for browser setup and local hooks.
+See [contributing](CONTRIBUTING.md#setup-and-checks) for setup and the shared local/CI gate, and [releases](docs/releases.md) for deterministic release rehearsals.
 
 Read [architecture](docs/architecture.md) for ownership and planning rules, [limitations](docs/limitations.md) for data handling and recovery, [security](SECURITY.md) for vulnerability reporting, and [the changelog](CHANGELOG.md) for release changes. Ask questions in [Discussions](https://github.com/Muatasim-Aswad/only-tdy/discussions).
 
