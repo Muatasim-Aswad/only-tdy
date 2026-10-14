@@ -24,8 +24,6 @@ description = "Reviewed source, format, lint, types, unit/tooling, build/budget,
 run = "pnpm run check"
 [tasks."hooks:install"]
 run = "bash scripts/install-hooks.sh"
-[tasks."container:build"]
-run = "node scripts/container-build.mjs"
 [tasks."container:check"]
 run = "bash scripts/verify-container.sh"
 [tasks."release:rehearse"]

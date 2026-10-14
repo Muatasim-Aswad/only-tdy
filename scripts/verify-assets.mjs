@@ -73,7 +73,6 @@ if (
 run('gitleaks', ['dir', assets, '--redact=100', '--no-banner']);
 const temp = mkdtempSync(join(tmpdir(), 'only-tdy-install-'));
 const name = `only-tdy-install-${process.pid}`;
-const verificationImage = `only-tdy-verify:${basename(temp)}`;
 const previousImage = `only-tdy-verify:previous-${basename(temp)}`;
 let rebound = false;
 let previousSaved = false;
@@ -141,20 +140,18 @@ try {
   );
   if (JSON.stringify(sourceBuild) !== JSON.stringify(provenance.static))
     throw new Error('Downloaded source rebuild differs from static assets');
-  run('node', [join(root, 'scripts/container-build.mjs')], {
-    cwd: installedSource,
-    env: { ...sourceEnv, ONLY_TDY_IMAGE: verificationImage },
-  });
-  if (existed) {
-    run('docker', ['tag', previousId, previousImage]);
-    previousSaved = true;
-  }
-  run('docker', ['tag', verificationImage, provenance.image]);
-  rebound = true;
   const trustedTar = join(temp, 'trusted-image.tar');
   const trustedContents = join(temp, 'trusted-image');
+  run('node', [join(root, 'scripts/container-build.mjs')], {
+    cwd: installedSource,
+    env: {
+      ...sourceEnv,
+      ONLY_TDY_IMAGE: provenance.image,
+      ONLY_TDY_CONTAINER_ARCHIVE: trustedTar,
+      ONLY_TDY_LOAD_IMAGE: '0',
+    },
+  });
   mkdirSync(trustedContents);
-  run('docker', ['save', '-o', trustedTar, provenance.image]);
   run('tar', ['-xf', trustedTar, '-C', trustedContents]);
   const trustedArchive = join(temp, 'trusted-container.tar.gz');
   writeArchive(trustedContents, trustedArchive, sourceEnv.SOURCE_DATE_EPOCH);
@@ -166,6 +163,11 @@ try {
     throw new Error(
       'Container archive differs from trusted source rebuild; investigate toolchain drift or tampering',
     );
+  if (existed) {
+    run('docker', ['tag', previousId, previousImage]);
+    previousSaved = true;
+  }
+  rebound = true;
   run('docker', ['load', '-i', downloadedContainer]);
   run('docker', [
     'run',
@@ -279,7 +281,7 @@ try {
     } catch {
       /* A concurrent operator may still reference the verified image. */
     }
-  for (const image of [verificationImage, previousImage])
+  for (const image of [previousImage])
     try {
       run('docker', ['image', 'rm', image], { stdio: 'ignore' });
     } catch {

@@ -68,7 +68,11 @@ try {
   );
   run('node', ['scripts/container-build.mjs'], {
     cwd: source,
-    env: { ...env, ONLY_TDY_IMAGE: image },
+    env: {
+      ...env,
+      ONLY_TDY_IMAGE: image,
+      ONLY_TDY_CONTAINER_ARCHIVE: join(temp, 'image.tar'),
+    },
   });
   created = true;
   const assets = join(temp, 'assets');
@@ -81,7 +85,6 @@ try {
     lines('release/source-files.txt'),
   );
   archive(join(source, 'dist'), `only-tdy-${tag}-static.tar.gz`);
-  run('docker', ['save', '-o', join(temp, 'image.tar'), image]);
   const imageContents = join(temp, 'image');
   mkdirSync(imageContents);
   run('tar', ['-xf', join(temp, 'image.tar'), '-C', imageContents]);

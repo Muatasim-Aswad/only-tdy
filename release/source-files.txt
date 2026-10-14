@@ -36,6 +36,7 @@ docs/images/capture-in-use.png
 docs/images/task-editor.png
 docs/images/today-at-rest.png
 docs/limitations.md
+docs/releases.md
 eslint.config.js
 index.html
 package.json
@@ -72,6 +73,8 @@ scripts/prepare-release.mjs
 scripts/provenance.mjs
 scripts/provenance.test.mjs
 scripts/publication.test.mjs
+scripts/publish-container.mjs
+scripts/publish-container.test.mjs
 scripts/publish-release.mjs
 scripts/release.mjs
 scripts/runtime-inventory.mjs

@@ -15,6 +15,7 @@ ARG SOURCE_DATE_EPOCH=0
 RUN node scripts/build.mjs
 
 FROM nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:b54ac358b83fc6c965793fd271839b4ea4cdb6e99895bb19618cbc2ca152d972 AS runtime
+LABEL org.opencontainers.image.source="https://github.com/Muatasim-Aswad/only-tdy"
 ARG SOURCE_DATE_EPOCH=0
 USER root
 RUN rm -f /etc/nginx/conf.d/default.conf && rm -rf /usr/share/nginx/html/*

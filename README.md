@@ -41,7 +41,7 @@ Open the `/only-tdy/` URL printed by the server. The seeded demo needs no Tududi
 
 ## Use with your tasks
 
-A current Tududi installation providing the expected `/api/` session, CSRF, profile, task, project, tag and search endpoints is required for real data. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in through Tududi. Tududi owns your tasks and remains available as an optional fuller UI for complex planning. See [deployment](docs/deployment.md) and [API compatibility limits](docs/limitations.md#compatibility).
+A current Tududi installation providing the expected `/api/` session, CSRF, profile, task, project, tag and search endpoints is required for real data. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in through Tududi. Tududi owns your tasks and remains available as an optional fuller UI for complex planning. Use the [published Docker image](docs/deployment.md#published-image) or [build from source](docs/deployment.md#build-from-source) with the same Compose file. See [deployment](docs/deployment.md) and [API compatibility limits](docs/limitations.md#compatibility).
 
 This is an unofficial integration, unaffiliated with Tududi. Upstream API changes may break it; use it in accordance with Tududi's license and applicable service terms. No real-backend version is currently verified.
 

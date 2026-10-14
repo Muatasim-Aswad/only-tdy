@@ -14,7 +14,8 @@ services:
         APP_COMMIT_TIME: ${APP_COMMIT_TIME:-}
         APP_BUILD_TIME: ${APP_BUILD_TIME:-}
         SOURCE_DATE_EPOCH: ${SOURCE_DATE_EPOCH:-0}
-    image: ${ONLY_TDY_IMAGE:-only-tdy:local}
+    image: ${ONLY_TDY_IMAGE:-ghcr.io/muatasim-aswad/only-tdy:v0.1.2}
+    pull_policy: missing
     platform: linux/amd64
     restart: unless-stopped
 
