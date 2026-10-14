@@ -1,0 +1,44 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+    groups:
+      npm-versions:
+        patterns: ['*']
+        applies-to: version-updates
+      npm-security:
+        patterns: ['*']
+        applies-to: security-updates
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      container-versions:
+        patterns: ['*']
+        applies-to: version-updates
+      container-security:
+        patterns: ['*']
+        applies-to: security-updates
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      action-versions:
+        patterns: ['*']
+        applies-to: version-updates
+      action-security:
+        patterns: ['*']
+        applies-to: security-updates

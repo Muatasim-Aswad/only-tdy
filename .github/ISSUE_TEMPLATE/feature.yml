@@ -1,0 +1,13 @@
+name: Feature request
+description: Propose a focused improvement to the daily flow.
+body:
+  - type: markdown
+    attributes:
+      value: Remove personal task data and private host details. Discuss broad planning changes in Discussions first.
+  - type: textarea
+    id: need
+    attributes:
+      label: User need and proposed behavior
+      description: Explain a synthetic example and how it fits quick capture, Today or Backlog.
+    validations:
+      required: true

@@ -1,0 +1,58 @@
+# only-tdy runs beside Tududi and is reached only through a reverse proxy on the
+# Tududi origin, so it binds to loopback and never to a public interface. It is a
+# static server: no volume, no secret, no writable path that survives a restart.
+
+name: only-tdy
+
+services:
+  only-tdy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_REVISION: ${APP_REVISION:-dev}
+        APP_COMMIT_TIME: ${APP_COMMIT_TIME:-}
+        APP_BUILD_TIME: ${APP_BUILD_TIME:-}
+        SOURCE_DATE_EPOCH: ${SOURCE_DATE_EPOCH:-0}
+    image: ${ONLY_TDY_IMAGE:-only-tdy:local}
+    platform: linux/amd64
+    restart: unless-stopped
+
+    # Loopback only. The reverse proxy forwards /only-tdy here.
+    ports:
+      - '127.0.0.1:${ONLY_TDY_PORT:-3003}:8080'
+
+    read_only: true
+    tmpfs:
+      # nginx writes only its pid file and request temp files, both under /tmp.
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--quiet',
+          '--spider',
+          '--tries=1',
+          'http://127.0.0.1:8080/healthz',
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

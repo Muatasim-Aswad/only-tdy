@@ -1,0 +1,60 @@
+function Icon({ children }: { readonly children: React.ReactNode }) {
+  return (
+    <svg
+      className="focus-more__icon"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {children}
+    </svg>
+  );
+}
+
+export function TasksIcon() {
+  return (
+    <Icon>
+      <path d="m3.5 6 1.5 1.5 2.5-3" />
+      <path d="m3.5 13 1.5 1.5 2.5-3" />
+      <path d="M11 6h9M11 13h9M11 20h9" />
+      <path d="M4 20h3" />
+    </Icon>
+  );
+}
+
+export function HistoryIcon() {
+  return (
+    <Icon>
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.9-6.4" />
+      <path d="M3.5 4v4h4" />
+      <path d="M12 7.5V12l3.2 1.9" />
+    </Icon>
+  );
+}
+
+/** An open book: what the fields read. */
+export function GuideIcon() {
+  return (
+    <Icon>
+      <path d="M12 6.5C10.2 5.2 7.6 4.5 3.5 4.5v13c4.1 0 6.7.7 8.5 2 1.8-1.3 4.4-2 8.5-2v-13c-4.1 0-6.7.7-8.5 2Z" />
+      <path d="M12 6.5v13" />
+    </Icon>
+  );
+}
+
+/** Information about the app. */
+export function AboutIcon() {
+  return (
+    <Icon>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5M12 7.5v.5" />
+    </Icon>
+  );
+}

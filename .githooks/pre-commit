@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+export MISE_TRUSTED_CONFIG_PATHS="$PWD/.mise.toml"
+mise run check

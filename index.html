@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>only-tdy</title>
+    <meta
+      name="description"
+      content="Capture tasks quickly, choose what matters today, and leave the rest in Backlog."
+    />
+    <!--
+      Browser and PWA chrome follow the system scheme until the mark at the
+      foot of the page says otherwise. Both answers are declared here, and the
+      script below narrows them to the one in force.
+    -->
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#F4F6F5"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#151A17"
+    />
+    <script>
+      /*
+       * The stored palette, put on the document before the first paint. The
+       * app reads the same value back when it mounts and writes it the same
+       * way from then on; doing it here as well is what keeps a page asked for
+       * dark from flashing light while the bundle loads. `system` writes
+       * nothing, because the absence of the attribute is what lets the media
+       * query answer.
+       */
+      try {
+        var choice = localStorage.getItem('only-tdy:theme');
+        if (choice === 'light' || choice === 'dark') {
+          document.documentElement.setAttribute('data-theme', choice);
+          document.querySelector('meta[name="color-scheme"]').content = choice;
+          document
+            .querySelectorAll('meta[name="theme-color"]')
+            .forEach(function (meta) {
+              /* The scheme each colour was declared for is kept on the element,
+               because narrowing the media query is what erases it. */
+              var media = meta.getAttribute('media') || '';
+              var declared = media.indexOf('dark') === -1 ? 'light' : 'dark';
+              meta.dataset.scheme = declared;
+              meta.setAttribute(
+                'media',
+                declared === choice ? 'all' : 'not all',
+              );
+            });
+        }
+      } catch (error) {
+        /* A browser that refuses storage simply follows the system. */
+      }
+    </script>
+    <link rel="icon" href="/only-tdy/icons/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="apple-touch-icon"
+      href="/only-tdy/icons/apple-touch-icon-180.png"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <aside
+      id="toast-root"
+      class="focus-toast-region"
+      aria-label="Notifications"
+    ></aside>
+    <script>
+      if (window.location.pathname === '/only-tdy') {
+        window.location.replace(
+          `/only-tdy/${window.location.search}${window.location.hash}`,
+        );
+      }
+    </script>
+    <script type="module" src="/src/app/main.tsx"></script>
+  </body>
+</html>

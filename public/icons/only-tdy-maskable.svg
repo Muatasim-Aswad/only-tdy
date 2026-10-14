@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="only-tdy">
+  <title>only-tdy</title>
+  <!--
+    The maskable variant: the same mark, bled to the edges so a launcher can
+    crop it to any silhouette, with every mark inside the 80% safe circle.
+  -->
+  <rect width="512" height="512" fill="#315E65"/>
+  <g transform="translate(-4 0)">
+    <g fill="#F4F6F5" opacity="0.4">
+      <rect x="171" y="136" width="10" height="54" rx="5"/>
+      <rect x="171" y="322" width="10" height="54" rx="5"/>
+    </g>
+    <circle cx="176" cy="256" r="44" fill="none" stroke="#F4F6F5" stroke-width="16"/>
+    <rect x="256" y="248" width="126" height="16" rx="8" fill="#F4F6F5"/>
+  </g>
+</svg>

@@ -1,0 +1,147 @@
+/*
+ * The single semantic token layer.
+ *
+ * Light values live on :root. The dark ones are written twice, on purpose,
+ * because there are two ways to ask for them and CSS has no way to share one
+ * declaration block between a media query and a plain selector: the system
+ * preference, which is what the page follows until it is told otherwise, and
+ * `data-theme` on the document, which is what the mark at the foot of the page
+ * writes. The attribute outranks the system in both directions — it is the
+ * later rule, and `:not([data-theme='light'])` is what stops a system that
+ * says dark overriding a page that was asked for light.
+ *
+ * Without JavaScript the attribute is never written and the media query is the
+ * whole story, which is exactly the behaviour this file had before there was
+ * anything to choose.
+ *
+ * `@theme inline` maps the tokens into Tailwind's namespaces. `inline` matters:
+ * without it Tailwind would copy the light value into --color-*, freezing the
+ * palette at build time and breaking both overrides.
+ */
+
+:root {
+  color-scheme: light dark;
+  /* Lets the completed row collapse from its own height. */
+  interpolate-size: allow-keywords;
+
+  /* Core palette — light */
+  --canvas: #f4f6f5;
+  --surface: #fcfdfc;
+  --ink: #1c2520;
+  --muted: #667169;
+  --line: #d8deda;
+  --accent: #315e65;
+
+  /* Semantic colors — light */
+  --priority-medium: #d0ad25;
+  --priority-high: #b42336;
+  --selection: #d9e7e8;
+}
+
+/* What the system asked for, unless the page was asked for light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    /* Core palette — dark */
+    --canvas: #151a17;
+    --surface: #1b211d;
+    --ink: #e7ece8;
+    --muted: #9aa59e;
+    --line: #343d37;
+    --accent: #7cb3ba;
+
+    /* Semantic colors — dark */
+    --priority-medium: #d4a457;
+    --priority-high: #d8756e;
+    --selection: #294348;
+  }
+}
+
+/* What the page was asked for, whatever the system says. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Core palette — dark */
+  --canvas: #151a17;
+  --surface: #1b211d;
+  --ink: #e7ece8;
+  --muted: #9aa59e;
+  --line: #343d37;
+  --accent: #7cb3ba;
+
+  /* Semantic colors — dark */
+  --priority-medium: #d4a457;
+  --priority-high: #d8756e;
+  --selection: #294348;
+}
+
+/* The light half of the same promise: the palette is already on :root, so
+   only the scheme the browser paints its own furniture in has to be said. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-priority-medium: var(--priority-medium);
+  --color-priority-high: var(--priority-high);
+  --color-selection: var(--selection);
+}
+
+@theme {
+  /* The fallback stack is deliberately short: the self-hosted variable face,
+     one widely installed humanist sans, then the platform default. */
+  --font-sans: 'Atkinson Hyperlegible Next', 'Segoe UI', sans-serif;
+
+  /* Type scale. Every role carries its own line height, weight, and tracking so
+     components never restate them. */
+  --text-product: 22px;
+  --text-product--line-height: 26px;
+  --text-product--font-weight: 600;
+  --text-product--letter-spacing: -0.015em;
+
+  --text-capture: 19px;
+  --text-capture--line-height: 28px;
+  --text-capture--font-weight: 400;
+  --text-capture--letter-spacing: -0.01em;
+
+  --text-section: 15px;
+  --text-section--line-height: 20px;
+  --text-section--font-weight: 600;
+  --text-section--letter-spacing: 0;
+
+  --text-task: 16px;
+  --text-task--line-height: 24px;
+  --text-task--font-weight: 400;
+  --text-task--letter-spacing: 0;
+
+  --text-meta: 13px;
+  --text-meta--line-height: 18px;
+  --text-meta--font-weight: 400;
+  --text-meta--letter-spacing: 0;
+
+  --text-action: 14px;
+  --text-action--line-height: 20px;
+  --text-action--font-weight: 500;
+  --text-action--letter-spacing: 0;
+
+  /* One easing curve for the whole interface. */
+  --ease-focus: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Radii are functional, not thematic. */
+  --radius-message: 6px;
+  --radius-fill: 4px;
+
+  /* The content column. */
+  --container-column: 42rem;
+
+  /* The focus rail: one width shared by the capture marker, every
+     completion target, and the left edge of all content. */
+  --spacing-rail: 44px;
+}

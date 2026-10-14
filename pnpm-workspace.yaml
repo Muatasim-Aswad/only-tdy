@@ -1,0 +1,16 @@
+# pnpm 11 reads settings from this file; the package.json "pnpm" field is no longer read.
+
+# msw's postinstall only prints a banner, so its build stays denied to keep installs hermetic.
+allowBuilds:
+  msw: false
+
+# The app compiles and builds with TypeScript 7 (the "typescript-7" alias, used by
+# the typecheck and build scripts). typescript-eslint 8.x refuses to load against
+# the TS 7 API (typescript-eslint#10940), and Microsoft's side-by-side guidance is
+# to let unmigrated tools keep the TS 6 API, so the plain "typescript" dependency
+# stays on 6 for the linter. Collapse the two back into one once typescript-eslint
+# supports TS >= 7.1.
+
+# GHSA-gfhx-hw2g-v5hg: the Workbox build toolchain still resolves 7.1.1.
+overrides:
+  serialize-javascript: 7.1.2

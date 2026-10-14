@@ -1,0 +1,18 @@
+{
+  "node": "24.20.0",
+  "pnpm": "11.24.0",
+  "gitleaks": "8.30.1",
+  "gitleaksLinuxX64Sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
+  "miseCi": "2026.10.7",
+  "miseLinuxX64Sha256": "6eb1b890e90818417ca34c90dbbd47881917d5cd199f31b63b062ea9c6b18d85",
+  "ciRunner": "ubuntu-24.04",
+  "containerPlatform": "linux/amd64",
+  "builder": "node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf",
+  "runtime": "nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:b54ac358b83fc6c965793fd271839b4ea4cdb6e99895bb19618cbc2ca152d972",
+  "actions": {
+    "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+    "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+    "actions/download-artifact": "9000827ccba6bdab643e8b6fd33ac0654aef8333",
+    "jdx/mise-action": "08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8"
+  }
+}
