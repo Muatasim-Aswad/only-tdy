@@ -2,6 +2,12 @@
 
 Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. The version in `package.json` is authoritative.
 
+## Unreleased
+
+### Changed
+
+- Future image releases use GHCR only; the verified CI container export is excluded from GitHub release downloads and their checksum manifest.
+
 ## [0.1.2] - 2026-10-14
 
 ### Added

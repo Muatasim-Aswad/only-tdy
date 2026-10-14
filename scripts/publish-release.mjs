@@ -9,6 +9,7 @@ import {
   tag,
 } from './github-release.mjs';
 import { digest, files, json, lines, same } from './lib.mjs';
+import { CONTAINER_EXPORT, verifiedContainerExport } from './provenance.mjs';
 
 await exactRemoteTag();
 const assets = 'release/out/assets';
@@ -22,7 +23,8 @@ if (
 const names = lines('release/release-files.txt').map((p) =>
   p.replace('{tag}', tag),
 );
-same(files(assets), names, 'Publication');
+same(files(assets), [...names, CONTAINER_EXPORT], 'Publication');
+verifiedContainerExport(assets, provenance);
 const checksumLines = lines(join(assets, 'SHA256SUMS'));
 same(
   checksumLines.map((line) => line.split('  ')[1]),

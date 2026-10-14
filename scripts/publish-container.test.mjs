@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { digest } from './lib.mjs';
 import { publishContainer } from './publish-container.mjs';
+import { CONTAINER_EXPORT } from './provenance.mjs';
 
 function fixture(run) {
   const assets = mkdtempSync(join(tmpdir(), 'only-tdy-registry-test-'));
@@ -19,8 +20,9 @@ function fixture(run) {
   const remote = new Map();
   const calls = [];
   try {
-    for (const kind of ['container-linux-amd64', 'source', 'static'])
+    for (const kind of ['source', 'static'])
       writeFileSync(join(assets, `only-tdy-v0.1.2-${kind}.tar.gz`), 'fixture');
+    writeFileSync(join(assets, CONTAINER_EXPORT), 'synthetic CI export');
     writeFileSync(
       join(assets, 'provenance.json'),
       JSON.stringify({
@@ -28,10 +30,10 @@ function fixture(run) {
         tag: context.tag,
         revision: context.revision,
         image: `only-tdy:${context.tag}-${context.revision}`,
+        containerExportSha256: digest(join(assets, CONTAINER_EXPORT)),
       }),
     );
     const names = [
-      'only-tdy-v0.1.2-container-linux-amd64.tar.gz',
       'only-tdy-v0.1.2-source.tar.gz',
       'only-tdy-v0.1.2-static.tar.gz',
       'provenance.json',
@@ -107,6 +109,17 @@ test('Corrupt assets and wrong provenance refuse all Docker commands', () => {
     assert.throws(
       () => publishContainer({ ...context, revision: 'd'.repeat(40) }, execute),
       /identity mismatch/,
+    );
+    assert.equal(calls.length, 0);
+  });
+});
+
+test('A changed internal image export refuses all Docker commands despite valid public checksums', () => {
+  fixture(({ context, calls, execute }) => {
+    writeFileSync(join(context.assets, CONTAINER_EXPORT), 'changed image');
+    assert.throws(
+      () => publishContainer(context, execute),
+      /CI container export checksum mismatch/,
     );
     assert.equal(calls.length, 0);
   });

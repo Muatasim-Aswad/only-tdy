@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { digest } from './lib.mjs';
+import { CONTAINER_EXPORT } from './provenance.mjs';
 
 const publisher = resolve('scripts/publish-release.mjs');
 function fixture(mode) {
@@ -19,7 +20,6 @@ function fixture(mode) {
     mkdirSync(join(root, 'release/out/assets'), { recursive: true });
     const names = [
       'SHA256SUMS',
-      'only-tdy-v0.1.0-container-linux-amd64.tar.gz',
       'only-tdy-v0.1.0-source.tar.gz',
       'only-tdy-v0.1.0-static.tar.gz',
       'provenance.json',
@@ -33,12 +33,14 @@ function fixture(mode) {
     );
     for (const name of names.filter((n) => n.endsWith('.gz')))
       writeFileSync(join(assets, name), 'Synthetic archive fixture');
+    writeFileSync(join(assets, CONTAINER_EXPORT), 'Synthetic internal image');
     writeFileSync(
       join(assets, 'provenance.json'),
       JSON.stringify({
         tag: 'v0.1.0',
         version: '0.1.0',
         revision: 'a'.repeat(40),
+        containerExportSha256: digest(join(assets, CONTAINER_EXPORT)),
       }),
     );
     writeFileSync(
@@ -68,8 +70,8 @@ function fixture(mode) {
         if (u.pathname.includes('/releases/tags/')) return json({id:1, draft:mode === 'draft', immutable:mode !== 'draft', upload_url:'https://uploads.github.com/repos/example/only-tdy/releases/1/assets{?name,label}'});
         if (u.pathname.endsWith('/releases/1/assets') && method === 'GET') return json([...remote.keys()].map((name) => ({name,url:'https://api.github.com/repos/example/only-tdy/asset/' + name})));
         if (u.pathname.includes('/asset/')) return new globalThis.Response(remote.get(u.pathname.split('/').at(-1)));
-        if (u.hostname === 'uploads.github.com') { const name=u.searchParams.get('name'); remote.set(name, Buffer.from(opts.body)); return json({name}); }
-        if (method === 'PATCH') { assert.equal(remote.size,5); publishes++; return json({immutable:true}); }
+        if (u.hostname === 'uploads.github.com') { const name=u.searchParams.get('name'); assert.ok(Object.hasOwn(bytes,name),'Internal image export must never be published'); remote.set(name, Buffer.from(opts.body)); return json({name}); }
+        if (method === 'PATCH') { assert.equal(remote.size,4); publishes++; return json({immutable:true}); }
         throw new Error('Unexpected synthetic API call');
       };
       if (mode === 'mismatch' || mode === 'tag-mismatch') {
@@ -113,7 +115,6 @@ function preparationFixture(changed, partial = false, invalidRevision = false) {
   try {
     const names = [
       'SHA256SUMS',
-      'only-tdy-v0.1.0-container-linux-amd64.tar.gz',
       'only-tdy-v0.1.0-source.tar.gz',
       'only-tdy-v0.1.0-static.tar.gz',
       'provenance.json',
@@ -143,7 +144,7 @@ function preparationFixture(changed, partial = false, invalidRevision = false) {
       const invalidRevision = ${JSON.stringify(invalidRevision)};
       if (partial) for (const name of Object.keys(remote)) if (name !== 'provenance.json') delete remote[name];
       if (changed) {
-        remote['only-tdy-v0.1.0-container-linux-amd64.tar.gz'] = Buffer.from('Tampered synthetic executable bytes').toString('base64');
+        remote['only-tdy-v0.1.0-static.tar.gz'] = Buffer.from('Tampered synthetic executable bytes').toString('base64');
         remote['SHA256SUMS'] = Buffer.from('Matching attacker-controlled checksums').toString('base64');
         remote['provenance.json'] = Buffer.from('Matching attacker-controlled provenance').toString('base64');
       }

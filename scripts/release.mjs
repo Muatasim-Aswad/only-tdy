@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { writeArchive } from './archive.mjs';
 import { identityEnv, readBuildIdentity } from './build-identity.ts';
-import { sourceManifest } from './provenance.mjs';
+import { CONTAINER_EXPORT, sourceManifest } from './provenance.mjs';
 import {
   digest,
   files,
@@ -88,18 +88,21 @@ try {
   const imageContents = join(temp, 'image');
   mkdirSync(imageContents);
   run('tar', ['-xf', join(temp, 'image.tar'), '-C', imageContents]);
-  archive(imageContents, `only-tdy-${tag}-container-linux-amd64.tar.gz`);
+  archive(imageContents, CONTAINER_EXPORT);
   const provenance = {
-    schema: 2,
+    schema: 3,
     ...identity,
     tag,
     sourceDateEpoch: Number(env.SOURCE_DATE_EPOCH),
     platform: 'linux/amd64',
     image,
+    containerExportSha256: digest(join(assets, CONTAINER_EXPORT)),
     source: sourceManifest(source, lines('release/source-files.txt')),
     static: staticInventory,
     artifacts: Object.fromEntries(
-      files(assets).map((path) => [path, digest(join(assets, path))]),
+      files(assets)
+        .filter((path) => path !== CONTAINER_EXPORT)
+        .map((path) => [path, digest(join(assets, path))]),
     ),
     toolchain: json(join(source, 'release/toolchain.json')),
     validation:
@@ -112,12 +115,16 @@ try {
   writeFileSync(
     join(assets, 'SHA256SUMS'),
     files(assets)
+      .filter((path) => path !== CONTAINER_EXPORT)
       .map((path) => `${digest(join(assets, path))}  ${path}\n`)
       .join(''),
   );
   same(
     files(assets),
-    lines('release/release-files.txt').map((p) => p.replace('{tag}', tag)),
+    [
+      ...lines('release/release-files.txt').map((p) => p.replace('{tag}', tag)),
+      CONTAINER_EXPORT,
+    ],
     'Release',
   );
   run('gitleaks', ['dir', assets, '--redact=100', '--no-banner']);

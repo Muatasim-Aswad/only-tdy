@@ -1,6 +1,18 @@
 import { join } from 'node:path';
 import { digest } from './lib.mjs';
 
+export const CONTAINER_EXPORT = 'container.tar.gz';
+
+export function verifiedContainerExport(root, provenance) {
+  const hash = provenance.containerExportSha256;
+  if (typeof hash !== 'string' || !/^[a-f0-9]{64}$/.test(hash))
+    throw new Error('Invalid CI container export provenance');
+  const archive = join(root, CONTAINER_EXPORT);
+  if (digest(archive) !== hash)
+    throw new Error('CI container export checksum mismatch');
+  return archive;
+}
+
 export function sourceManifest(root, paths) {
   return paths.map((path) => ({ sha256: digest(join(root, path)), path }));
 }

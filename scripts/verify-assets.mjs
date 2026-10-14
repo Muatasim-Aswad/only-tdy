@@ -1,7 +1,18 @@
 import { identityEnv } from './build-identity.ts';
 import { writeArchive } from './archive.mjs';
-import { readArtifactManifest, readSourceManifest } from './provenance.mjs';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  CONTAINER_EXPORT,
+  readArtifactManifest,
+  readSourceManifest,
+  verifiedContainerExport,
+} from './provenance.mjs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +31,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const assets = resolve(process.argv[2] || '');
 const provenance = json(join(assets, 'provenance.json'));
 const expectedTag = `v${json(join(root, 'package.json')).version}`;
-if (provenance.schema !== 2) throw new Error('Unsupported provenance schema');
+if (provenance.schema !== 3) throw new Error('Unsupported provenance schema');
 const sourceProvenance = readSourceManifest(provenance.source);
 if (
   provenance.revision === 'dev' ||
@@ -36,13 +47,16 @@ if (
   process.env.GITHUB_REF_NAME !== provenance.tag
 )
   throw new Error('Unexpected release tag');
+const publicNames = lines(join(root, 'release/release-files.txt')).map((p) =>
+  p.replace('{tag}', provenance.tag),
+);
+const hasContainerExport = existsSync(join(assets, CONTAINER_EXPORT));
 same(
   files(assets),
-  lines(join(root, 'release/release-files.txt')).map((p) =>
-    p.replace('{tag}', provenance.tag),
-  ),
+  hasContainerExport ? [...publicNames, CONTAINER_EXPORT] : publicNames,
   'Downloaded release',
 );
+if (hasContainerExport) verifiedContainerExport(assets, provenance);
 const checksums = lines(join(assets, 'SHA256SUMS')).map((line) => {
   const match = /^([a-f0-9]{64}) {2}([A-Za-z0-9._-]+)$/.exec(line);
   if (!match) throw new Error('Malformed checksum');
@@ -50,7 +64,7 @@ const checksums = lines(join(assets, 'SHA256SUMS')).map((line) => {
 });
 same(
   checksums.map(([p]) => p),
-  files(assets).filter((p) => p !== 'SHA256SUMS'),
+  publicNames.filter((p) => p !== 'SHA256SUMS'),
   'Checksums',
 );
 for (const [path, hash] of checksums)
@@ -153,22 +167,18 @@ try {
   });
   mkdirSync(trustedContents);
   run('tar', ['-xf', trustedTar, '-C', trustedContents]);
-  const trustedArchive = join(temp, 'trusted-container.tar.gz');
+  const trustedArchive = join(temp, CONTAINER_EXPORT);
   writeArchive(trustedContents, trustedArchive, sourceEnv.SOURCE_DATE_EPOCH);
-  const downloadedContainer = join(
-    assets,
-    `only-tdy-${provenance.tag}-container-linux-amd64.tar.gz`,
-  );
-  if (digest(trustedArchive) !== digest(downloadedContainer))
-    throw new Error(
-      'Container archive differs from trusted source rebuild; investigate toolchain drift or tampering',
-    );
+  verifiedContainerExport(temp, provenance);
+  const checkedContainer = hasContainerExport
+    ? verifiedContainerExport(assets, provenance)
+    : trustedArchive;
   if (existed) {
     run('docker', ['tag', previousId, previousImage]);
     previousSaved = true;
   }
   rebound = true;
-  run('docker', ['load', '-i', downloadedContainer]);
+  run('docker', ['load', '-i', checkedContainer]);
   run('docker', [
     'run',
     '-d',
@@ -265,7 +275,7 @@ try {
   )
     throw new Error('Static deep-link shell fallback failed');
   console.log(
-    'Downloaded source/static/container assets: checksums, exact inventories, installation, health and identity passed',
+    'Downloaded source/static assets and trusted image rebuild: checksums, exact inventories, installation, health and identity passed',
   );
 } finally {
   try {

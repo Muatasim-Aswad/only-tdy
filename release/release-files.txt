@@ -1,5 +1,4 @@
 SHA256SUMS
-only-tdy-{tag}-container-linux-amd64.tar.gz
 only-tdy-{tag}-source.tar.gz
 only-tdy-{tag}-static.tar.gz
 provenance.json

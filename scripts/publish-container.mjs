@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { digest, files, json, lines, same } from './lib.mjs';
+import { CONTAINER_EXPORT, verifiedContainerExport } from './provenance.mjs';
 
 export function publishContainer(context, execute = docker) {
   const { assets, repository, tag, revision, version } = context;
@@ -24,12 +25,11 @@ export function publishContainer(context, execute = docker) {
     throw new Error('Container publication identity mismatch');
   const names = [
     'SHA256SUMS',
-    `only-tdy-${tag}-container-linux-amd64.tar.gz`,
     `only-tdy-${tag}-source.tar.gz`,
     `only-tdy-${tag}-static.tar.gz`,
     'provenance.json',
   ];
-  same(files(assets), names, 'Container publication');
+  same(files(assets), [...names, CONTAINER_EXPORT], 'Container publication');
   const checksums = lines(join(assets, 'SHA256SUMS')).map((line) =>
     line.split('  '),
   );
@@ -59,11 +59,7 @@ export function publishContainer(context, execute = docker) {
       throw new Error('Registry image has an unexpected manifest');
     return config;
   };
-  checked([
-    'load',
-    '--input',
-    join(assets, `only-tdy-${tag}-container-linux-amd64.tar.gz`),
-  ]);
+  checked(['load', '--input', verifiedContainerExport(assets, provenance)]);
   const config = checked(['image', 'inspect', local, '--format', '{{.Id}}']);
   if (!/^sha256:[a-f0-9]{64}$/.test(config))
     throw new Error('Loaded image has an invalid identity');
