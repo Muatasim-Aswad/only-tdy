@@ -26,7 +26,7 @@ docker compose build
 docker compose up -d --no-build --pull never
 ```
 
-[`compose.yaml`](../compose.yaml) owns the build context, platform, and arguments; `ONLY_TDY_IMAGE` names the local image. No host mise, Node, pnpm, identity generation, or release rehearsal is required. Ordinary source builds report revision `dev`; nothing is published.
+[`compose.yaml`](../compose.yaml) owns the build context, platform, and arguments; `ONLY_TDY_IMAGE` names the local image. No host mise, Node, pnpm, identity generation, or release rehearsal is required. Ordinary source builds report revision `dev`; deployment tools can supply `APP_REVISION`, `APP_COMMIT_TIME`, and `APP_BUILD_TIME` to identify the deployed source. The default `SOURCE_DATE_EPOCH=0` permits separate commit and build times; release builds select a nonzero commit epoch and require matching timestamps. Nothing is published.
 
 ## Configuration and health
 
