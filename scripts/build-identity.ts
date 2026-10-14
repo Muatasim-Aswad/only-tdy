@@ -15,6 +15,9 @@ function git(root: string, ...args: string[]): string | null {
       cwd: root,
       encoding: 'utf8',
       stdio: 'pipe',
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+      ),
     }).trim();
   } catch {
     return null;
@@ -44,9 +47,7 @@ export function readBuildIdentity(
   if (
     head === null &&
     requested !== 'dev' &&
-    (!optional(env.APP_COMMIT_TIME) ||
-      !optional(env.APP_BUILD_TIME) ||
-      !optional(env.SOURCE_DATE_EPOCH))
+    (!optional(env.APP_COMMIT_TIME) || !optional(env.APP_BUILD_TIME))
   )
     throw new Error('Complete identity inputs are required without Git');
   const epoch =
@@ -55,6 +56,7 @@ export function readBuildIdentity(
     '0';
   if (!/^\d+$/.test(epoch) || !Number.isSafeInteger(Number(epoch)))
     throw new Error('Invalid SOURCE_DATE_EPOCH');
+  const sourceStamp = head === null && requested !== 'dev' && epoch === '0';
   if (
     head !== null &&
     !dirty &&
@@ -78,7 +80,9 @@ export function readBuildIdentity(
       throw new Error('Invalid calendar timestamp');
     return new Date(value).toISOString().replace('.000Z', 'Z');
   };
-  if (env.APP_BUILD_TIME && normalize(env.APP_BUILD_TIME) !== stamp)
+  const buildTime = optional(env.APP_BUILD_TIME);
+  const builtAt = buildTime ? normalize(buildTime) : stamp;
+  if (!sourceStamp && builtAt !== stamp)
     throw new Error('APP_BUILD_TIME must equal SOURCE_DATE_EPOCH');
   const revision = dirty ? 'dev' : requested;
   const committedAt =
@@ -89,9 +93,9 @@ export function readBuildIdentity(
             git(root, 'show', '-s', '--format=%cI', 'HEAD') ??
             stamp,
         );
-  if (committedAt !== null && committedAt !== stamp)
+  if (!sourceStamp && committedAt !== null && committedAt !== stamp)
     throw new Error('Commit time must equal SOURCE_DATE_EPOCH');
-  return { version, revision, committedAt, builtAt: stamp };
+  return { version, revision, committedAt, builtAt };
 }
 
 export function identityEnv(identity: BuildIdentity): NodeJS.ProcessEnv {
@@ -99,6 +103,9 @@ export function identityEnv(identity: BuildIdentity): NodeJS.ProcessEnv {
     APP_REVISION: identity.revision,
     APP_COMMIT_TIME: identity.committedAt ?? '',
     APP_BUILD_TIME: identity.builtAt,
-    SOURCE_DATE_EPOCH: String(Date.parse(identity.builtAt) / 1000),
+    SOURCE_DATE_EPOCH:
+      identity.committedAt !== null && identity.committedAt !== identity.builtAt
+        ? '0'
+        : String(Date.parse(identity.builtAt) / 1000),
   };
 }
