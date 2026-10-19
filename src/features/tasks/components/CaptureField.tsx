@@ -76,6 +76,12 @@ export function CaptureField({
     offersNewProject: projects !== undefined,
   });
 
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    suggestions.ref.current?.blur();
+    onSubmit();
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     suggestions.fieldProps.onKeyDown(event);
     /* The list had it: an arrow walked the rows, or return took one. */
@@ -84,9 +90,7 @@ export function CaptureField({
     if (event.key !== 'Enter') return;
     // A new line is never what this field is for, whatever else happens.
     event.preventDefault();
-    if (canSubmit) {
-      onSubmit();
-    }
+    handleSubmit();
   };
 
   return (
@@ -96,9 +100,7 @@ export function CaptureField({
       onSubmit={(event) => {
         // The form exists so Enter submits natively; the page must not reload.
         event.preventDefault();
-        if (canSubmit) {
-          onSubmit();
-        }
+        handleSubmit();
       }}
     >
       <InputAction

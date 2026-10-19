@@ -69,7 +69,7 @@ describe('CaptureField', () => {
     expect(field()).toHaveValue('');
   });
 
-  it('submits on Enter', async () => {
+  it('submits on Enter and unfocuses the field', async () => {
     const user = userEvent.setup();
     const { onSubmit } = renderCapture({ value: 'Book the MOT' });
 
@@ -77,15 +77,18 @@ describe('CaptureField', () => {
     await user.keyboard('{Enter}');
 
     expect(onSubmit).toHaveBeenCalledOnce();
+    expect(field()).not.toHaveFocus();
   });
 
-  it('submits on Add', async () => {
+  it('submits on Add and unfocuses the field', async () => {
     const user = userEvent.setup();
     const { onSubmit } = renderCapture({ value: 'Book the MOT' });
 
+    await user.click(field());
     await user.click(addButton());
 
     expect(onSubmit).toHaveBeenCalledOnce();
+    expect(field()).not.toHaveFocus();
   });
 
   it('refuses to submit whitespace', async () => {
@@ -96,6 +99,7 @@ describe('CaptureField', () => {
     await user.keyboard('{Enter}');
 
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field()).toHaveFocus();
   });
 
   it('blocks Add but keeps the field editable when nothing can be saved', async () => {
@@ -116,6 +120,7 @@ describe('CaptureField', () => {
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith('Book the MOT!');
     await user.keyboard('{Enter}');
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field()).toHaveFocus();
   });
 
   it('paints a chip behind each token without taking it out of the text', () => {
@@ -230,6 +235,7 @@ describe('CaptureField', () => {
     await user.keyboard('{Enter}');
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith('Call +Home ');
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field()).toHaveFocus();
   });
 
   it('finishes a half-typed name with tab', async () => {

@@ -93,6 +93,18 @@ describe('SearchField', () => {
     await user.keyboard('{Enter}');
 
     expect(onSubmit).toHaveBeenCalledOnce();
+    expect(field()).not.toHaveFocus();
+  });
+
+  it('searches with the button and unfocuses the field', async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderSearch({ value: 'bulb' });
+
+    await user.click(field());
+    await user.click(screen.getByRole('button', { name: 'Search Backlog' }));
+
+    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(field()).not.toHaveFocus();
   });
 
   it('refuses to search for whitespace', async () => {
@@ -104,6 +116,7 @@ describe('SearchField', () => {
     await user.keyboard('{Enter}');
 
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field()).toHaveFocus();
   });
 
   it('blocks the search but keeps the field editable when offline', async () => {
@@ -120,6 +133,7 @@ describe('SearchField', () => {
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith('bulbs');
     await user.keyboard('{Enter}');
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field()).toHaveFocus();
   });
   it('offers the names a marked term could mean, whole line and all', async () => {
     const user = userEvent.setup();
@@ -164,6 +178,7 @@ describe('SearchField', () => {
     await user.keyboard('{Enter}');
     expect(onValueChange).toHaveBeenCalledExactlyOnceWith('#home');
     expect(onSubmit).not.toHaveBeenCalled();
+    expect(field()).toHaveFocus();
   });
 
   it('searches on return once the name is typed in full', async () => {

@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
 import { FEEDBACK } from './testing/fixtures.ts';
@@ -9,6 +9,10 @@ function liveRegion() {
 }
 
 describe('CaptureFeedbackMessage', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('keeps the live region in the document while saying nothing', () => {
     render(<CaptureFeedbackMessage feedback={FEEDBACK.none} />);
 
@@ -28,6 +32,26 @@ describe('CaptureFeedbackMessage', () => {
     render(<CaptureFeedbackMessage feedback={FEEDBACK.addedToBacklog} />);
 
     expect(screen.getByText('Added to Backlog')).toBeInTheDocument();
+  });
+
+  it('keeps the addition and Edit action visible for eight seconds', async () => {
+    vi.useFakeTimers();
+    const onDismiss = vi.fn();
+    render(
+      <CaptureFeedbackMessage
+        feedback={FEEDBACK.addedToBacklog}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    await act(() => vi.advanceTimersByTimeAsync(7999));
+    expect(screen.getByText('Added to Backlog')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Edit task' })).toBeInTheDocument();
+    expect(onDismiss).not.toHaveBeenCalled();
+
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(screen.queryByText('Added to Backlog')).toBeNull();
+    expect(onDismiss).toHaveBeenCalledOnce();
   });
 
   it('links Edit to the newly added task and reports the click to the page', () => {

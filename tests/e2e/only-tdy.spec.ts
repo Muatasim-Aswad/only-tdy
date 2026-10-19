@@ -202,7 +202,7 @@ test('preserves parser and server failures in the capture field', async ({
   await expect(capture).toHaveValue('Duplicate task');
 });
 
-test('shows hidden-Backlog confirmation for three seconds', async ({
+test('shows hidden-Backlog confirmation for eight seconds', async ({
   page,
 }) => {
   await installApi(page);
@@ -227,7 +227,7 @@ test('shows hidden-Backlog confirmation for three seconds', async ({
   // The new task is hidden: Today is still what is on screen, unchanged.
   await expect(page.getByText('Replace filter')).toHaveCount(0);
   await expect(page.getByText('Added to Backlog')).toBeHidden({
-    timeout: 4_000,
+    timeout: 9_000,
   });
 });
 
@@ -635,9 +635,19 @@ test('reopening from history drops the task out of the record', async ({
   await expect(page.getByText('File the tax return')).toBeVisible();
 });
 
-test('capitalises the first letter of what was typed', async ({ page }) => {
+test('capitalises the first letter before and after a delayed create request', async ({
+  page,
+}) => {
   let postedName: unknown;
+  let releaseToken: (() => void) | undefined;
+  const tokenReady = new Promise<void>((resolve) => {
+    releaseToken = resolve;
+  });
   await installApi(page);
+  await page.route('**/api/csrf-token', async (route) => {
+    await tokenReady;
+    await route.fulfill({ json: { csrfToken: 'csrf-e2e' } });
+  });
   await page.route('**/api/tasks?*', (route) => {
     if (new URL(route.request().url()).searchParams.get('type') !== 'today')
       return route.fallback();
@@ -674,14 +684,22 @@ test('capitalises the first letter of what was typed', async ({ page }) => {
     });
   });
   await page.goto('/only-tdy/');
-  await page
-    .getByRole('combobox', { name: 'What needs doing?' })
-    .fill('do groceries /today');
+  const capture = page.getByRole('combobox', { name: 'What needs doing?' });
+  const groceries = page.getByRole('link', { name: 'Do groceries' });
+  await expect(groceries).toHaveCount(0);
+  await capture.fill('do groceries /today');
   await page.getByRole('button', { name: 'Add' }).click();
 
-  // The row, not the line still sitting in the field behind the chips.
-  await expect(page.getByRole('link', { name: 'Do groceries' })).toBeVisible();
-  expect(postedName).toBe('Do groceries');
+  await expect(groceries).toBeVisible();
+  expect(postedName).toBeUndefined();
+  releaseToken?.();
+
+  await expect.poll(() => postedName).toBe('Do groceries');
+  await expect(capture).toHaveValue('');
+  await expect(groceries).toHaveAttribute(
+    'href',
+    '/only-tdy/task/task-groceries',
+  );
 });
 
 test('opens a task on a page of its own, never over the list', async ({
@@ -1117,6 +1135,7 @@ test('sends each kind of search to the endpoint that can answer it', async ({
 
   await field.fill('#home');
   await field.press('Enter');
+  await expect(field).not.toBeFocused();
   await expect.poll(() => asked).toContain('tag=home');
 
   await field.fill('+Home');
@@ -1839,6 +1858,7 @@ test('creates a project nobody has yet and files the task under it', async ({
   await capture.press('Enter');
 
   await expect(capture).toHaveValue('');
+  await expect(capture).not.toBeFocused();
   expect(projectBody).toEqual({ name: 'Garden' });
   expect(taskBody).toMatchObject({
     name: 'Weed the beds',

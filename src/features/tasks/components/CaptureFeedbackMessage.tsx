@@ -34,7 +34,7 @@ export function CaptureFeedbackMessage({
         <FeedbackToast
           key={feedback.uid}
           message={COPY.addedToBacklog}
-          duration={3000}
+          duration={8000}
           onDismiss={onDismiss}
           action={
             <a
