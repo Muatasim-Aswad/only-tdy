@@ -202,7 +202,7 @@ test('preserves parser and server failures in the capture field', async ({
   await expect(capture).toHaveValue('Duplicate task');
 });
 
-test('shows hidden-Backlog confirmation for three seconds', async ({
+test('shows hidden-Backlog confirmation for eight seconds', async ({
   page,
 }) => {
   await installApi(page);
@@ -227,7 +227,7 @@ test('shows hidden-Backlog confirmation for three seconds', async ({
   // The new task is hidden: Today is still what is on screen, unchanged.
   await expect(page.getByText('Replace filter')).toHaveCount(0);
   await expect(page.getByText('Added to Backlog')).toBeHidden({
-    timeout: 4_000,
+    timeout: 9_000,
   });
 });
 
@@ -1117,6 +1117,7 @@ test('sends each kind of search to the endpoint that can answer it', async ({
 
   await field.fill('#home');
   await field.press('Enter');
+  await expect(field).not.toBeFocused();
   await expect.poll(() => asked).toContain('tag=home');
 
   await field.fill('+Home');
@@ -1839,6 +1840,7 @@ test('creates a project nobody has yet and files the task under it', async ({
   await capture.press('Enter');
 
   await expect(capture).toHaveValue('');
+  await expect(capture).not.toBeFocused();
   expect(projectBody).toEqual({ name: 'Garden' });
   expect(taskBody).toMatchObject({
     name: 'Weed the beds',

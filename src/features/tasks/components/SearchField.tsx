@@ -72,6 +72,7 @@ export function SearchField({
       onSubmit={(event) => {
         event.preventDefault();
         if (canSubmit) {
+          suggestions.ref.current?.blur();
           onSubmit();
         }
       }}
