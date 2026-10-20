@@ -5,9 +5,7 @@ test.use({ timezoneId: 'Europe/Amsterdam' });
 
 test.beforeEach(async ({ page }) => {
   await page.clock.setFixedTime(new Date(FIXTURE_NOW));
-  await page.route('**/api/profile', (route) =>
-    route.fulfill({ json: { timezone: 'Europe/Amsterdam' } }),
-  );
+  await installProfileApi(page);
 });
 
 import {
@@ -16,6 +14,7 @@ import {
   FIXTURE_NOW,
   HISTORY_TASKS,
   installApi,
+  installProfileApi,
   installTaskApi,
   INVOICE_DETAIL,
   TODAY_TASKS,
@@ -1682,35 +1681,34 @@ for (const compact of [false, true]) {
   });
 }
 
-test('rotates the palette through system, light, and dark', async ({
+test('changes the palette in Settings and keeps it across reloads', async ({
   page,
 }) => {
   await installApi(page);
   await page.goto('/only-tdy/');
   await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
 
-  const mark = page.getByRole('button', { name: /^Theme: / });
-  await expect(mark).toHaveAccessibleName('Theme: system');
+  const theme = page.getByRole('combobox', { name: 'Theme', exact: true });
+  await expect(theme).toHaveValue('system');
   const attribute = () =>
     page.evaluate(() => document.documentElement.getAttribute('data-theme'));
   expect(await attribute()).toBeNull();
 
-  await mark.click();
-  await expect(mark).toHaveAccessibleName('Theme: light');
+  await theme.selectOption('light');
   expect(await attribute()).toBe('light');
 
-  await mark.click();
-  await expect(mark).toHaveAccessibleName('Theme: dark');
+  await theme.selectOption('dark');
   expect(await attribute()).toBe('dark');
+  await expect(page.getByRole('status')).toHaveText('Saved');
 
   // It survives a reload, and the document is already right on first paint.
   await page.reload();
   expect(await attribute()).toBe('dark');
-  await page.getByRole('button', { name: 'More' }).click();
-  await expect(page.getByRole('button', { name: 'Theme: dark' })).toBeVisible();
+  await expect(theme).toHaveValue('dark');
 
   // And three presses come back to where it started.
-  await page.getByRole('button', { name: 'Theme: dark' }).click();
+  await theme.selectOption('system');
   expect(await attribute()).toBeNull();
 });
 

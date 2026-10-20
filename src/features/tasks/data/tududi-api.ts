@@ -20,9 +20,7 @@ import {
 
 import {
   applyDateRules,
-  currentDate,
   dateAtMidnight,
-  hideDate,
   isTodayStatus,
   validateHideDate,
 } from '../domain/task-dates.ts';
@@ -32,6 +30,8 @@ import {
   type TududiClient,
 } from '../../../infra/tududi-client.ts';
 import type { TududiApi } from '../api-contract.ts';
+import { visibleBacklogTasks } from '../domain/backlog-visibility.ts';
+import { preferencesStore } from '../preferences/store.ts';
 
 /**
  * Every backlog request starts here: open tasks, capped at the page limit. The
@@ -119,13 +119,10 @@ export function createTududiApi(
     tasks: readonly Task[],
   ): Promise<readonly Task[]> => {
     const timezone = await fetchAccountTimezone();
-    const today = currentDate({ timezone, now: now() });
-    return tasks.filter(
-      (task) =>
-        task.status !== 'not_started' ||
-        !task.deferUntil ||
-        hideDate(task.deferUntil, timezone) <= today,
-    );
+    return visibleBacklogTasks(tasks, preferencesStore.getSnapshot().settings, {
+      timezone,
+      now: now(),
+    });
   };
 
   const readAllPages = async (

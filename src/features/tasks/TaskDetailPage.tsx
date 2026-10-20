@@ -10,7 +10,7 @@ import type {
 import {
   handleLinkNavigation,
   navigate,
-  taskReturnPath,
+  pageReturnPath,
 } from '../../infra/navigation.ts';
 import { deriveTaskDetailState } from './task-detail-state.ts';
 import { useOnlineStatus } from '../../infra/useOnlineStatus.ts';
@@ -69,7 +69,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     : { kind: 'offline' };
 
   const done = state.kind === 'ready' && state.task.status === 'done';
-  const backHref = taskReturnPath(
+  const backHref = pageReturnPath(
     routePath({ kind: done ? 'history' : 'tasks' }),
   );
 

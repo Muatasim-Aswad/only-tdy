@@ -3,6 +3,9 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import type { SearchRequest, Task, TaskListState } from './contracts.ts';
 import { TududiApiError } from '../../infra/tududi-client.ts';
 import { orderTasks, sortOpenTasks } from './domain/task-order.ts';
+import { visibleBacklogTasks } from './domain/backlog-visibility.ts';
+import { DEFAULT_PREFERENCES, type Preferences } from './preferences/model.ts';
+import type { DateContext } from './domain/task-dates.ts';
 
 function isUnauthorized(error: unknown): boolean {
   return error instanceof TududiApiError && error.kind === 'unauthorized';
@@ -27,6 +30,8 @@ export function deriveBacklogListState(
   request: SearchRequest,
   backlog: UseQueryResult<readonly Task[]>,
   search: UseQueryResult<readonly Task[]>,
+  settings: Preferences = DEFAULT_PREFERENCES,
+  context: DateContext = {},
 ): TaskListState {
   if (request.kind === 'pending') return { kind: 'loading' };
   if (request.kind === 'refused') return { kind: 'empty' };
@@ -38,9 +43,10 @@ export function deriveBacklogListState(
   }
   if (query.isError) return { kind: 'error' };
   if (!query.isSuccess) return { kind: 'loading' };
-  if (query.data.length === 0) return { kind: 'empty' };
+  const tasks = visibleBacklogTasks(query.data, settings, context);
+  if (tasks.length === 0) return { kind: 'empty' };
 
-  return { kind: 'ready', list: 'backlog', tasks: orderTasks(query.data) };
+  return { kind: 'ready', list: 'backlog', tasks: orderTasks(tasks) };
 }
 
 /**

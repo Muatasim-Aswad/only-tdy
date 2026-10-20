@@ -4,6 +4,7 @@ import {
   BACKLOG_TASKS,
   HISTORY_TASKS,
   installApi,
+  installProfileApi,
   TODAY_TASKS,
 } from '../e2e/fixtures.ts';
 
@@ -40,9 +41,7 @@ test('matches the reviewed visual acceptance matrix', async ({
 }) => {
   test.setTimeout(360_000);
   let scenario: Scenario = 'today';
-  await page.route('**/api/profile', (route) =>
-    route.fulfill({ json: { timezone: 'Europe/Amsterdam' } }),
-  );
+  await installProfileApi(page);
 
   await page.route('**/api/tasks?*', async (route) => {
     if (scenario === 'loading') return new Promise<void>(() => undefined);
@@ -160,6 +159,7 @@ test('matches the reviewed visual acceptance matrix', async ({
           continue;
         }
 
+        await expect(capture).toBeVisible();
         if (
           nextScenario !== 'loading' &&
           nextScenario !== 'expired' &&
@@ -349,9 +349,7 @@ test('keeps the token guide readable on phones and desktop', async ({
 test('keeps All priority indicators and neutral badges readable at every width', async ({
   page,
 }) => {
-  await page.route('**/api/profile', (route) =>
-    route.fulfill({ json: { timezone: 'Europe/Amsterdam' } }),
-  );
+  await installProfileApi(page);
   await installApi(page);
   for (const scheme of SCHEMES) {
     for (const width of WIDTHS) {
@@ -372,6 +370,56 @@ test('keeps All priority indicators and neutral badges readable at every width',
         `all-${String(width)}-${scheme}.png`,
         { fullPage: true },
       );
+    }
+  }
+});
+
+test('keeps Settings and its shared picker readable at every width', async ({
+  page,
+}) => {
+  await installApi(page);
+  for (const scheme of SCHEMES) {
+    for (const width of WIDTHS) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto('/only-tdy/settings');
+      await page
+        .getByRole('combobox', {
+          name: 'Show dated tasks in Backlog',
+          exact: true,
+        })
+        .selectOption('before');
+      await expect(page.getByRole('status')).toHaveText('Saved');
+      await page.getByRole('spinbutton', { name: 'Days before due' }).fill('1');
+      await page
+        .getByRole('spinbutton', { name: 'Days before due' })
+        .evaluate((node) => {
+          node.blur();
+        });
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => document.documentElement.scrollWidth <= window.innerWidth,
+          ),
+        )
+        .toBe(true);
+      await expect(page).toHaveScreenshot(
+        `settings-${String(width)}-${scheme}.png`,
+        { fullPage: true },
+      );
+      if (width === 390) {
+        await page
+          .getByRole('combobox', { name: 'Theme', exact: true })
+          .click();
+        await expect(
+          page.getByRole('option', { name: 'Dark', exact: true }),
+        ).toBeVisible();
+        await expect(page).toHaveScreenshot(
+          `settings-theme-${String(width)}-${scheme}.png`,
+          { fullPage: true },
+        );
+        await page.keyboard.press('Escape');
+      }
     }
   }
 });

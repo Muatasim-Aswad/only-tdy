@@ -21,6 +21,7 @@ export type Route =
   | { readonly kind: 'all' }
   | { readonly kind: 'version' }
   | { readonly kind: 'guide' }
+  | { readonly kind: 'settings' }
   | { readonly kind: 'task'; readonly uid: string }
   | { readonly kind: 'unknown' };
 
@@ -29,6 +30,7 @@ const HISTORY_SEGMENT = 'history';
 const ALL_SEGMENT = 'all';
 const ABOUT_SEGMENT = 'about';
 const GUIDE_SEGMENT = 'guide';
+const SETTINGS_SEGMENT = 'settings';
 const TASK_SEGMENT = 'task/';
 
 /** The path of a single task, which every list row links to. */
@@ -51,6 +53,8 @@ export function routePath(route: Route): string {
       return `${APP_BASE_PATH}${ABOUT_SEGMENT}`;
     case 'guide':
       return `${APP_BASE_PATH}${GUIDE_SEGMENT}`;
+    case 'settings':
+      return `${APP_BASE_PATH}${SETTINGS_SEGMENT}`;
     case 'tasks':
     case 'unknown':
       return APP_BASE_PATH;
@@ -77,6 +81,7 @@ export function parseRoute(pathname: string): Route {
   if (rest === ALL_SEGMENT) return { kind: 'all' };
   if (rest === ABOUT_SEGMENT || rest === 'version') return { kind: 'version' };
   if (rest === GUIDE_SEGMENT) return { kind: 'guide' };
+  if (rest === SETTINGS_SEGMENT) return { kind: 'settings' };
 
   if (rest.startsWith(TASK_SEGMENT)) {
     const encoded = rest.slice(TASK_SEGMENT.length);

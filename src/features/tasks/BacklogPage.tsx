@@ -30,6 +30,8 @@ import {
 import { isUnauthorized } from '../../infra/tududi-client.ts';
 import { BacklogScreen } from './components/BacklogScreen.tsx';
 import { COPY } from './components/copy.ts';
+import { usePreferences } from './preferences/usePreferences.ts';
+import { useDateTimezone } from './date-timezone.ts';
 
 const NO_PROJECTS: readonly Project[] = [];
 const NO_TASKS: readonly Task[] = [];
@@ -58,6 +60,8 @@ interface MoveFeedback {
  * is what keeps it from becoming a wait after the return key.
  */
 export function BacklogPage() {
+  const { settings } = usePreferences();
+  const timezone = useDateTimezone();
   const { captureValue, onCaptureChange } = useTaskSession();
   const [inputMode, setInputMode] = useState<'add' | 'search'>('search');
   const [searchValue, setSearchValue] = useState('');
@@ -113,6 +117,8 @@ export function BacklogPage() {
     request,
     backlogQuery,
     searchQuery,
+    settings,
+    { timezone },
   );
   const listState = narrowListState(state, keep);
   const disabled = !isOnline || listState.kind === 'session-expired';

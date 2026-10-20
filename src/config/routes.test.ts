@@ -16,6 +16,7 @@ describe('parseRoute', () => {
     expect(parseRoute('/only-tdy/all')).toEqual({ kind: 'all' });
     expect(parseRoute('/only-tdy/about')).toEqual({ kind: 'version' });
     expect(parseRoute('/only-tdy/guide')).toEqual({ kind: 'guide' });
+    expect(parseRoute('/only-tdy/settings')).toEqual({ kind: 'settings' });
     expect(parseRoute('/only-tdy/task/abc')).toEqual({
       kind: 'task',
       uid: 'abc',
@@ -28,6 +29,7 @@ describe('parseRoute', () => {
     expect(parseRoute('/only-tdy/all/')).toEqual({ kind: 'all' });
     expect(parseRoute('/only-tdy/about/')).toEqual({ kind: 'version' });
     expect(parseRoute('/only-tdy/guide/')).toEqual({ kind: 'guide' });
+    expect(parseRoute('/only-tdy/settings/')).toEqual({ kind: 'settings' });
     expect(parseRoute('/only-tdy/task/abc/')).toEqual({
       kind: 'task',
       uid: 'abc',
@@ -68,6 +70,7 @@ describe('routePath', () => {
       { kind: 'all' },
       { kind: 'version' },
       { kind: 'guide' },
+      { kind: 'settings' },
       { kind: 'task', uid: 'abc' },
       { kind: 'task', uid: 'a/b c' },
     ];

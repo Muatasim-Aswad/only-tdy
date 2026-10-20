@@ -6,27 +6,64 @@ import { DateTimezoneContext } from './date-timezone.ts';
 import { DEFAULT_TIMEZONE } from './domain/task-dates.ts';
 import { subscribeDuePromotion } from './due-promotion.ts';
 import { TaskSessionContext } from './task-session.ts';
+import { preferencesStore } from './preferences/store.ts';
+import { usePreferences } from './preferences/usePreferences.ts';
 
 export function TaskProvider({ children }: { readonly children: ReactNode }) {
   const timezone = useQuery(accountTimezoneQueryOptions());
   const client = useQueryClient();
+  const preferences = usePreferences();
   const [captureValue, onCaptureChange] = useState('');
+  useEffect(() => {
+    void preferencesStore.start();
+    const synchronize = () => {
+      void preferencesStore.sync();
+    };
+    window.addEventListener('online', synchronize);
+    window.addEventListener('focus', synchronize);
+    return () => {
+      window.removeEventListener('online', synchronize);
+      window.removeEventListener('focus', synchronize);
+      preferencesStore.stop();
+    };
+  }, []);
   const session = useMemo(
     () => ({ captureValue, onCaptureChange }),
     [captureValue],
   );
-  useEffect(
-    () =>
-      subscribeDuePromotion(() => {
-        void client.invalidateQueries({ queryKey: ['task-date-sync'] });
+  useEffect(() => {
+    let previous = preferencesStore.getSnapshot().settings;
+    const stopSettings = preferencesStore.subscribe(() => {
+      const next = preferencesStore.getSnapshot().settings;
+      if (
+        previous.datedBacklog !== next.datedBacklog ||
+        previous.daysBeforeDue !== next.daysBeforeDue
+      ) {
         void client.invalidateQueries({ queryKey: ['tasks'] });
-      }),
-    [client],
-  );
+      }
+      previous = next;
+    });
+    const stopPromotion = subscribeDuePromotion(() => {
+      void client.invalidateQueries({ queryKey: ['task-date-sync'] });
+      void client.invalidateQueries({ queryKey: ['tasks'] });
+    });
+    return () => {
+      stopSettings();
+      stopPromotion();
+    };
+  }, [client]);
   return (
     <TaskSessionContext value={session}>
       <DateTimezoneContext value={timezone.data ?? DEFAULT_TIMEZONE}>
-        {children}
+        {preferences.status !== 'loading' ? (
+          children
+        ) : (
+          <main className="focus-shell">
+            <div className="focus-listing" aria-live="polite">
+              Loading…
+            </div>
+          </main>
+        )}
       </DateTimezoneContext>
     </TaskSessionContext>
   );

@@ -216,21 +216,24 @@ test('enables due promotion by default and remembers when it is turned off', asy
   await page.goto('/only-tdy/');
   await expect(page.getByText('Today is clear.')).toBeVisible();
   await page.getByRole('button', { name: 'More', exact: true }).click();
-  const setting = page.getByRole('button', {
-    name: 'Automatically move due tasks to Today',
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  const setting = page.getByRole('combobox', {
+    name: 'Move due tasks to Today',
+    exact: true,
   });
-  await expect(setting).toHaveAttribute('aria-pressed', 'true');
+  await expect(setting).toHaveValue('auto');
   await expect.poll(() => promotions).toBeGreaterThan(0);
   expect(writes).toBe(0);
-  await setting.click();
-  await expect(setting).toHaveAttribute('aria-pressed', 'false');
+  await setting.selectOption('manual');
+  await expect(setting).toHaveValue('manual');
+  await expect(page.getByRole('status')).toHaveText('Saved');
   const beforeReload = promotions;
   await page.reload();
-  await page.getByRole('button', { name: 'More', exact: true }).click();
-  await expect(setting).toHaveAttribute('aria-pressed', 'false');
+  await expect(setting).toHaveValue('manual');
   expect(promotions).toBe(beforeReload);
-  await setting.click();
-  await expect(setting).toHaveAttribute('aria-pressed', 'true');
+  await setting.selectOption('auto');
+  await expect(setting).toHaveValue('auto');
+  await page.getByRole('link', { name: 'Back', exact: true }).click();
   await expect.poll(() => promotions).toBeGreaterThan(beforeReload);
   expect(writes).toBe(0);
 });

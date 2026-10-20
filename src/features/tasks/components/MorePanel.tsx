@@ -1,12 +1,16 @@
 import { handleLinkNavigation } from '../../../infra/navigation.ts';
 import { routePath } from '../../../config/routes.ts';
 import { COPY } from './copy.ts';
-import { AboutIcon, GuideIcon, HistoryIcon } from './NavigationIcons.tsx';
-import { ThemeAction } from './ThemeAction.tsx';
-import { DuePromotionAction } from './DuePromotionAction.tsx';
+import {
+  AboutIcon,
+  GuideIcon,
+  HistoryIcon,
+  SettingsIcon,
+} from './NavigationIcons.tsx';
 
 const ABOUT_PATH = routePath({ kind: 'version' });
 const GUIDE_PATH = routePath({ kind: 'guide' });
+const SETTINGS_PATH = routePath({ kind: 'settings' });
 
 interface MorePanelProps {
   readonly id: string;
@@ -35,8 +39,17 @@ export function MorePanel({
         <HistoryIcon />
         {COPY.history}
       </button>
-      <ThemeAction />
-      <DuePromotionAction />
+      <a
+        className="focus-more__item text-action"
+        href={SETTINGS_PATH}
+        onClick={(event) => {
+          onClose(false);
+          handleLinkNavigation(event, SETTINGS_PATH);
+        }}
+      >
+        <SettingsIcon />
+        Settings
+      </a>
       <a
         className="focus-more__item text-action"
         href={GUIDE_PATH}

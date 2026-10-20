@@ -42,12 +42,14 @@ export function navigate(path: string, options: NavigateOptions = {}): void {
   if (path === window.location.pathname + window.location.search) return;
 
   const currentPath = window.location.pathname + window.location.search;
+  const destination = parseRoute(path.split('?')[0] ?? path).kind;
+  const current = parseRoute(window.location.pathname).kind;
   const state =
-    parseRoute(path.split('?')[0] ?? path).kind === 'task'
+    destination === 'task' || destination === 'settings'
       ? {
           returnTo:
-            parseRoute(window.location.pathname).kind === 'task'
-              ? taskReturnPath(APP_BASE_PATH)
+            current === 'task' || current === 'settings'
+              ? pageReturnPath(APP_BASE_PATH)
               : currentPath,
         }
       : null;
@@ -88,7 +90,7 @@ export function handleLinkNavigation(
   navigate(path);
 }
 
-export function taskReturnPath(fallback: string): string {
+export function pageReturnPath(fallback: string): string {
   const state: unknown = window.history.state;
   const path: unknown =
     typeof state === 'object' && state !== null && 'returnTo' in state
@@ -97,5 +99,9 @@ export function taskReturnPath(fallback: string): string {
   if (typeof path !== 'string' || !path.startsWith(APP_BASE_PATH))
     return fallback;
   const route = parseRoute(path.split('?')[0] ?? path);
-  return route.kind === 'task' || route.kind === 'unknown' ? fallback : path;
+  return route.kind === 'task' ||
+    route.kind === 'settings' ||
+    route.kind === 'unknown'
+    ? fallback
+    : path;
 }

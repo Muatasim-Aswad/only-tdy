@@ -227,6 +227,7 @@ function asNullableString(value: unknown): string | null {
 export function seededTududiApi(): Plugin {
   let tasks = seed();
   let projects = PROJECTS;
+  let profileSettings: Record<string, unknown> = {};
   let created = 0;
 
   return {
@@ -263,7 +264,15 @@ export function seededTududiApi(): Plugin {
         }
 
         if (url.pathname === '/api/profile') {
-          send(200, { timezone: 'Europe/Amsterdam' });
+          if (method === 'PATCH') {
+            const body = asRecord(await readBody(request));
+            profileSettings = asRecord(body.ui_settings);
+          }
+          send(200, {
+            uid: 'seeded-user',
+            timezone: 'Europe/Amsterdam',
+            ui_settings: profileSettings,
+          });
           return;
         }
 

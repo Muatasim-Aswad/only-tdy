@@ -2,7 +2,7 @@
 
 [README](../README.md) · [Development](development.md)
 
-only-tdy is a static React frontend. Tududi owns tasks, projects, tags, account timezone, authorization and persistence. only-tdy has no backend, database, migrations or telemetry. Server data is cached in memory; UI state holds drafts, selections and presentation choices.
+only-tdy is a static React frontend. Tududi owns tasks, projects, tags, account timezone, authorization and persistence. only-tdy has no backend, database, migrations or telemetry. Task data is cached in memory; UI state holds drafts and selections. Preferences live in Tududi's `ui_settings.onlyTdy` with an account-scoped browser copy.
 
 ## Ownership and dependency direction
 
@@ -29,7 +29,8 @@ HTTP calls use same-origin `/api/`, session cookies and CSRF tokens for writes. 
 
 - Today includes planned, in-progress and waiting tasks; Backlog contains not-started tasks. Completed tasks require explicit reopening. Archived/cancelled tasks are excluded.
 - Capture without `/today` normally enters Backlog; an already due date can move it to Today. Explicit saves apply date rules independently of list-sync promotion.
-- Due/overdue Backlog promotion is on by default and can be disabled in More. List sync scans due-ordered pages through the account's current day, then writes promotions. There is no polling or background worker.
+- Due/overdue Backlog promotion is on by default and can be disabled in Settings. List sync scans due-ordered pages through the account's current day, then writes promotions. Preferences load before task lists can initiate promotion. There is no polling or background worker.
+- Dated Backlog tasks are visible by default. Settings can reveal them N calendar days before due (initially 1) or on the due date. Explicit Hide until dates take precedence. All stays unfiltered; Backlog search, selection and counts use the same visibility rule.
 - Moving or saving a task to Today clears Hide until. Changing an existing Today task's due date to a future date returns it to Backlog; clearing the date or leaving an unchanged future date retains its status. Hide until cannot exceed the due date.
 - Dates use the account timezone from `/api/profile`. Relative tokens use calendar days; Hide until uses account midnight. Labels use day-month-year.
 - The date-only editor omits unchanged due dates from PATCH. Changed nonempty dates carry the server's current due time; clearing a date clears its time. Reminders stay unchanged.
@@ -37,6 +38,8 @@ HTTP calls use same-origin `/api/`, session cookies and CSRF tokens for writes. 
 - Search submits one phrase, exact tag, resolved project or priority; unknown/ambiguous projects are refused. Typing narrows loaded rows; Today search stays local.
 
 ## Runtime and recovery
+
+Preferences load from the server, merge only pending local fields, and refresh the browser copy. A successfully read profile without `onlyTdy` is seeded from its scoped cache or defaults. Failed reads never trigger initialization writes. Saves serialize fresh-profile read/merge/PATCH operations, preserving unrelated JSON and unknown preference fields; Tududi offers no concurrency precondition. Retry on reconnect, window focus or explicit action. Reset saves explicit defaults. Browser copies and pending changes are scoped to origin and user UID; legacy browser preferences migrate to the first verified account only. Theme and editor-layout mirrors support first paint and existing controls.
 
 The PWA precaches the shell and bundled assets, including lazy screens and fonts; `/api/` stays network-only. The static server and worker resolve `/only-tdy/` navigation to the shell. No external font service is used.
 

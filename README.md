@@ -27,7 +27,7 @@ Try `Call plumber +Renovation #repairs !3 /today`; omit `/today` to leave an und
 
 - **Quick capture.** Add tasks with projects, tags, priorities, notes and dates, using inline shortcuts and auto-completion.
 - **Today and Backlog.** Choose tasks individually or together for Today. Due and overdue tasks move there automatically during sync unless you disable that setting.
-- **Hide until.** Keep tasks out of Backlog until a chosen day while retaining access through All tasks.
+- **Backlog visibility.** Hide tasks until a chosen day or show dated tasks only near their due date. Always visible in All page.
 - **Search and history.** Search titles and notes, filter by tag, project or priority, and review or reopen completed tasks.
 - **Flexible editing.** Update task details in normal or compact forms, with system, light and dark themes and keyboard-accessible controls.
 

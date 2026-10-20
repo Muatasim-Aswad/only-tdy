@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 
 import { afterEach } from 'vitest';
+import { preferencesStore } from '../features/tasks/preferences/store.ts';
 
 /**
  * jsdom has no matchMedia. only-tdy reads media state for the system theme and for
@@ -53,4 +54,5 @@ window.scrollTo = () => undefined;
 
 afterEach(() => {
   mediaQueryMatches.clear();
+  preferencesStore.stop();
 });

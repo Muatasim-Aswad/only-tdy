@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   handleLinkNavigation,
   navigate,
-  taskReturnPath,
+  pageReturnPath,
   useRoute,
 } from './navigation.ts';
 
@@ -132,13 +132,32 @@ describe('handleLinkNavigation', () => {
 it('remembers the latest page and its query when opening an edit', () => {
   window.history.replaceState(null, '', '/only-tdy/all?q=invoice');
   navigate('/only-tdy/task/abc');
-  expect(taskReturnPath('/only-tdy/')).toBe('/only-tdy/all?q=invoice');
+  expect(pageReturnPath('/only-tdy/')).toBe('/only-tdy/all?q=invoice');
   navigate('/only-tdy/backlog');
   navigate('/only-tdy/task/abc');
-  expect(taskReturnPath('/only-tdy/')).toBe('/only-tdy/backlog');
+  expect(pageReturnPath('/only-tdy/')).toBe('/only-tdy/backlog');
 });
 
 it('uses a fallback for a directly opened task', () => {
   window.history.replaceState(null, '', '/only-tdy/task/abc');
-  expect(taskReturnPath('/only-tdy/history')).toBe('/only-tdy/history');
+  expect(pageReturnPath('/only-tdy/history')).toBe('/only-tdy/history');
+});
+
+it('remembers the Settings source and query through form navigation', () => {
+  window.history.replaceState(null, '', '/only-tdy/all?q=invoice');
+  navigate('/only-tdy/settings');
+  expect(pageReturnPath('/only-tdy/')).toBe('/only-tdy/all?q=invoice');
+  navigate('/only-tdy/task/abc');
+  expect(pageReturnPath('/only-tdy/')).toBe('/only-tdy/all?q=invoice');
+});
+
+it('uses Today for directly opened Settings and rejects form return loops', () => {
+  window.history.replaceState(null, '', '/only-tdy/settings');
+  expect(pageReturnPath('/only-tdy/')).toBe('/only-tdy/');
+  window.history.replaceState(
+    { returnTo: '/only-tdy/settings' },
+    '',
+    '/only-tdy/settings',
+  );
+  expect(pageReturnPath('/only-tdy/')).toBe('/only-tdy/');
 });
