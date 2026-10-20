@@ -60,8 +60,8 @@ export interface TaskDetail extends Task {
   readonly projectUid: string;
 }
 
-/** Everything one save changes. Sent whole, because Tududi's PATCH is a merge
-    and a field left out keeps whatever the task already had. */
+/** Editable fields for one save. Empty values clear server values; unchanged
+    due dates are omitted from the PATCH to preserve their time. */
 export interface TaskEdit {
   readonly title: string;
   readonly note: string;

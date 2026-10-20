@@ -28,6 +28,7 @@ HTTP calls remain under same-origin `/api/`, include the session cookie, and obt
 - Automatic promotion of existing due/overdue Backlog tasks is an opt-in preference, off by default. When enabled, existing list synchronization scans due-ordered pages through the account's current day and then writes promotions. There is no polling timer or background worker.
 - Moving or saving a task to Today clears Hide until. Changing an existing Today task's due date to a future date returns it to Backlog; clearing the date or leaving an unchanged future date retains its status. Hide until cannot exceed the due date.
 - Dates use the Tududi account timezone from `/api/profile`. Relative tokens use calendar days; Hide until is represented at account midnight. Date labels use day-month-year.
+- The editor is date-only. Unchanged due dates are omitted from PATCH; changed nonempty dates carry the server's current due time, while clearing the date clears its time. Reminder instants are left untouched.
 - Unfinished tasks sort by priority, then `#urgent`, then oldest creation; completed rows sink. Completed history uses newest completion first.
 - Search submits one phrase, exact tag, resolved project, or priority. Unknown/ambiguous projects are refused rather than accidentally requesting an unfiltered list. Local typing narrows loaded rows; Today search stays local.
 

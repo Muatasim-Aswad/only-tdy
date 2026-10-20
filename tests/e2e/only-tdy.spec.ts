@@ -1626,6 +1626,59 @@ test('opens the task page with the way back, above everything else', async ({
   await expect(del).toHaveCount(0);
 });
 
+for (const compact of [false, true]) {
+  test(`preserves a Tududi due time through the ${compact ? 'compact' : 'normal'} editor`, async ({
+    page,
+  }) => {
+    await installApi(page);
+    let stored = {
+      ...INVOICE_DETAIL,
+      due_date: '2026-11-03',
+      due_time: '14:30' as string | null,
+    };
+    await page.route('**/api/task/*', async (route) => {
+      if (route.request().method() === 'PATCH') {
+        const patch = route.request().postDataJSON() as Record<string, unknown>;
+        stored = {
+          ...stored,
+          ...(typeof patch.name === 'string'
+            ? { name: patch.name, original_name: patch.name }
+            : {}),
+          ...(patch.due_date === undefined
+            ? {}
+            : {
+                due_date:
+                  typeof patch.due_date === 'string' ? patch.due_date : '',
+                due_time:
+                  typeof patch.due_time === 'string' ? patch.due_time : null,
+              }),
+        };
+      }
+      await route.fulfill({ json: stored });
+    });
+    await page.goto('/only-tdy/task/task-invoice');
+    if (compact) {
+      await page.getByRole('button', { name: 'Compact form' }).click();
+    }
+    await page
+      .getByRole('combobox', { name: 'Title' })
+      .fill('Send the updated invoice');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page).toHaveURL(/\/only-tdy\/$/);
+    const saved = await page.evaluate(async () => {
+      const response = await fetch('/api/task/task-invoice');
+      return (await response.json()) as {
+        readonly name: string;
+        readonly due_date: string;
+        readonly due_time: string | null;
+      };
+    });
+    expect(saved.name).toBe('Send the updated invoice');
+    expect(saved.due_date).toBe('2026-11-03');
+    expect(saved.due_time).toBe('14:30');
+  });
+}
+
 test('rotates the palette through system, light, and dark', async ({
   page,
 }) => {

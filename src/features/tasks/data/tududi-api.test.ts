@@ -22,6 +22,9 @@ import {
 
 const server = setupServer(
   http.get('/api/profile', () => HttpResponse.json({ timezone: 'UTC' })),
+  http.get('/api/task/:uid', ({ params }) =>
+    HttpResponse.json({ ...rawTaskDetail, uid: params.uid }),
+  ),
 );
 
 function absoluteInput(input: RequestInfo | URL): RequestInfo | URL {
@@ -472,7 +475,7 @@ describe('Tududi API', () => {
     });
   });
 
-  it('sends every editable field, so an emptied one is actually cleared', async () => {
+  it('clears emptied editable fields', async () => {
     let body: unknown;
     server.use(
       http.get('/api/csrf-token', () =>
@@ -505,6 +508,97 @@ describe('Tududi API', () => {
       defer_until: null,
       tags: [],
     });
+  });
+
+  it.each([
+    ['saving unrelated details', '14:30', '2026-10-01', '14:30'],
+    ['changing the due date', '14:30', '2026-11-03', '14:30'],
+    ['clearing the due date', '14:30', '', null],
+    ['changing an all-day date', null, '2026-11-03', null],
+  ] as const)(
+    'keeps due-time semantics when %s',
+    async (_action, initialTime, dueDate, dueTime) => {
+      let stored = { ...rawTaskDetail, due_time: initialTime as string | null };
+      server.use(
+        http.get('/api/csrf-token', () =>
+          HttpResponse.json({ csrfToken: 'token' }),
+        ),
+        http.get('/api/task/:uid', () => HttpResponse.json(stored)),
+        http.patch('/api/task/:uid', async ({ request }) => {
+          const body = (await request.json()) as Record<string, unknown>;
+          stored = {
+            ...stored,
+            ...(typeof body.name === 'string' ? { name: body.name } : {}),
+            ...(body.due_date === undefined
+              ? {}
+              : {
+                  due_date:
+                    typeof body.due_date === 'string' ? body.due_date : '',
+                  due_time:
+                    typeof body.due_time === 'string' ? body.due_time : null,
+                }),
+          };
+          return HttpResponse.json(stored);
+        }),
+      );
+      const api = createTududiApi(resolvedFetch, {
+        now: () => new Date('2026-10-01T12:00:00Z'),
+      });
+      const before = await api.fetchTask('task-today');
+      await api.updateTask(
+        before.uid,
+        {
+          title: 'Updated title',
+          note: 'Updated notes',
+          status: before.status,
+          priority: 'high',
+          projectUid: before.projectUid,
+          dueDate,
+          deferUntil: before.deferUntil,
+          tags: ['edited'],
+        },
+        before.dueDate,
+        before.status,
+      );
+      const saved = (await (
+        await resolvedFetch('/api/task/task-today')
+      ).json()) as {
+        readonly due_date: string;
+        readonly due_time: string | null;
+      };
+      expect(saved.due_date).toBe(dueDate);
+      expect(saved.due_time).toBe(dueTime);
+    },
+  );
+
+  it('does not save a task when reading its existing due time fails', async () => {
+    let writes = 0;
+    server.use(
+      http.get('/api/task/:uid', () =>
+        HttpResponse.json({ error: 'Unavailable' }, { status: 503 }),
+      ),
+      http.patch('/api/task/:uid', () => {
+        writes += 1;
+        return HttpResponse.json(rawTaskDetail);
+      }),
+    );
+    await expect(
+      createTududiApi(resolvedFetch).updateTask(
+        'task-today',
+        {
+          title: 'Updated task',
+          note: '',
+          status: 'not_started',
+          priority: 'low',
+          projectUid: '',
+          dueDate: '2030-01-20',
+          deferUntil: '',
+          tags: [],
+        },
+        '2030-01-19',
+      ),
+    ).rejects.toMatchObject({ status: 503, kind: 'http' });
+    expect(writes).toBe(0);
   });
 
   it('sends Hide until as midnight in the account timezone', async () => {

@@ -260,7 +260,9 @@ export async function installTaskApi(
           : detail.status,
       defer_until: (patch.defer_until ?? null) as string | null,
       note: (patch.note ?? detail.note) as string | null,
-      due_date: (patch.due_date ?? null) as string | null,
+      due_date: (patch.due_date === undefined
+        ? detail.due_date
+        : patch.due_date) as string | null,
       project_uid: (patch.project_uid ?? null) as string | null,
       tags: Array.isArray(patch.tags)
         ? patch.tags.map((name) => ({ name: String(name) }))

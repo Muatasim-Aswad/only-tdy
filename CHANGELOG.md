@@ -4,6 +4,10 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## Unreleased
 
+### Fixed
+
+- Task saves preserve Tududi due times, including when moving a deadline to another day; removing a deadline clears its time.
+
 ### Changed
 
 - Future image releases use GHCR only; the verified CI container export is excluded from GitHub release downloads and their checksum manifest.
