@@ -1,12 +1,16 @@
 # Release preparation and publication
 
-[Deployment](deployment.md) contains ordinary Docker commands. These maintainer workflows prepare and verify release artifacts separately.
+[README](../README.md) · [Deployment](deployment.md) · [Development](development.md)
+
+[Deployment](deployment.md) covers ordinary Docker use. This guide covers maintainer release workflows.
 
 ## Distribution and release rehearsal
 
-`mise run release:rehearse` accepts only clean committed source. It checks exact tracked filenames, exports `HEAD` with `git archive`, installs locked dependencies, and runs the full gate on that export. Release workflow retries rehearse the trusted committed source again and compare every existing remote asset before using it; a mutable draft and its own checksums are not trusted build evidence. It produces `release/out/v<version>-<revision>/` with four public assets: source and static archives, `SHA256SUMS` and `provenance.json`. A separate `container.tar.gz` in that CI bundle is an internal image export, never a GitHub release asset or entry in the public checksum file. GHCR is the sole published image source; existing immutable releases retain their original image archives and verification format.
+`mise run release:rehearse` requires clean committed source. It checks tracked filenames, exports `HEAD` with `git archive`, installs locked dependencies and runs the full gate. Output in `release/out/v<version>-<revision>/` contains four public assets: source/static archives, `SHA256SUMS` and `provenance.json`. The CI bundle also contains internal `container.tar.gz`, excluded from GitHub assets and public checksums. GHCR is the sole published image source; existing immutable releases keep their original image archives and verification format.
 
-The verifier independently rebuilds the container from the matching reviewed source and compares the normalized export with the hash in provenance before loading or running it. Docker/BuildKit drift can fail this comparison; investigate the mismatch rather than bypassing it. GNU tar fixes order, owner/group and timestamps; gzip omits wall-clock metadata. Each container build uses a fresh digest-pinned BuildKit instance, normalizes context timestamps to the commit epoch, and exports a Docker archive with timestamp rewriting before loading it. Verification compares these direct exports, avoiding host-specific `docker save` formats and warm-cache false confidence. Temporary builders and their caches are removed after every build. Repeating a rehearsal compares all bundle bytes and fails on a difference. Registry publication loads the tested internal export and pushes version and full-commit tags without rebuilding. Existing versioned image tags must match or publication fails.
+GNU tar fixes order, owner/group and timestamps; gzip omits wall-clock metadata. Each container build uses fresh digest-pinned BuildKit, normalizes context timestamps to the commit epoch, and rewrites archive timestamps before loading. Verification compares direct exports, avoiding host-specific `docker save` formats and warm-cache effects. Builders and caches are removed after each build. Repeated rehearsals must produce identical bundle bytes.
+
+## Verify downloaded assets
 
 Download the complete asset set from the same release, then verify and install in a disposable environment:
 
@@ -16,12 +20,25 @@ sha256sum -c SHA256SUMS
 mise exec -- node scripts/verify-assets.mjs /path/to/downloaded-assets
 ```
 
-The verifier accepts the public asset set or complete CI bundle, rejects extra/missing assets and archive links, checks checksums/provenance, scans extracted source/static files, rebuilds the trusted image and compares its static bytes and uncached identity. It uses loopback port `33003` and removes its disposable containers/images. Use the published image through the [Docker deployment commands](deployment.md#published-image). To use static assets, extract the static archive into your existing static web root, preserve license files, and reproduce the routing/cache rules in `deploy/nginx.conf`.
+The verifier accepts the public set or complete CI bundle; rejects extra/missing assets and archive links; checks checksums/provenance; and scans extracted source/static files. Before loading or running the container, it independently rebuilds matching reviewed source and compares the normalized export hash with provenance. It also compares static bytes and uncached identity. Docker/BuildKit drift can cause mismatches; investigate rather than bypassing them. It uses loopback port `33003` and removes disposable containers/images.
 
-`release/source-files.txt` enumerates every reviewed source file. Static/runtime inventories enumerate every logical file, replacing only the eight-character Vite content digest with `{hash}`; provenance records each actual filename and SHA-256. Runtime inventory includes the pinned base filesystem, excluding only Docker-injected host records and tmpfs scratch files. `release/release-files.txt` enumerates only public GitHub release assets; the internal image export is validated separately. Additions fail checks until explicitly reviewed and refreshed; generated inventories never authorize files by themselves.
+Deploy the [published image](deployment.md#published-image), or extract static assets into an existing web root, preserving licenses and `deploy/nginx.conf` routing/cache rules.
 
-A version tag alone triggers the release workflow. It validates tag/version/event/remote commit, rehearses the export, uploads the complete verified bundle, downloads and installs it in a separate read-only job, then uploads all assets to a draft and compares downloaded bytes before publishing. A dependent registry job publishes the tested container with Packages write permission after installation verification. The final GitHub release job waits for that publication and alone has Contents write permission. The maintainer must enable and verify immutable releases and set repository variable `IMMUTABLE_RELEASES_ENABLED=true` before tagging; the workflow checks the published immutable flag. GitHub's settings API needs Administration read permission, which the least-privilege Actions token lacks, so configuration is a maintainer prerequisite. See [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases).
+## Inventories and provenance
 
-A failed local rehearsal retains synthetic browser screenshots/traces and a failure summary under `release/out/failures/<tag>-<revision>/`. These files are local diagnostics, excluded from release assets; remove that failure directory after diagnosis. Provenance schema 3 records the internal container export hash separately from public artifact checksums and keeps source filenames separate from SHA-256 values. Source and artifact scans remain mandatory.
+`release/source-files.txt` lists reviewed source files. Static/runtime inventories list logical files, replacing only eight-character Vite digests with `{hash}`; provenance records actual filenames and SHA-256 values. Runtime inventory includes the pinned base filesystem except Docker-injected host records and tmpfs scratch files. `release/release-files.txt` lists public GitHub assets; internal image validation is separate. Review additions before refreshing inventories; generated lists never authorize files.
 
-On failure, rerun the failed publication job using its retained verified Actions artifact. Never move the tag or rebuild from `main`. Existing assets must match exactly and are never overwritten; a completed immutable release is downloaded and verified on retry. An incomplete draft blocks a new preparation job: recover from the original verified Actions artifact. Artifacts are retained for 30 days; keep the complete checked bundle independently until publication succeeds.
+Provenance schema 3 separates the internal container hash from public checksums, and source filenames from their hashes. Source/artifact scans are mandatory. Failed local rehearsals retain synthetic screenshots/traces and a summary in `release/out/failures/<tag>-<revision>/`, excluded from releases; remove after diagnosis.
+
+## Publication and recovery
+
+Before tagging, enable and verify [GitHub immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases) and set repository variable `IMMUTABLE_RELEASES_ENABLED=true`. This is manual: GitHub's settings API requires Administration read permission, absent from the least-privilege Actions token. The workflow checks the published immutable flag.
+
+A version tag alone triggers the workflow:
+
+1. Validate tag/version/event/remote commit, rehearse the export and upload the complete verified bundle.
+2. Download and install it in a separate read-only job.
+3. Publish the tested internal container export to GHCR with version/full-commit tags, without rebuilding. This dependent job alone needs Packages write permission; existing versioned tags must match.
+4. Upload public assets to a draft, download/compare their bytes, then publish. This final job waits for GHCR and alone has Contents write permission.
+
+On failure, rerun the failed publication job with its retained verified Actions artifact; never move tags or rebuild from `main`. Preparation retries rehearse trusted committed source and compare every existing remote asset; mutable drafts and their checksums are not build evidence. Assets must match exactly and are never overwritten; completed immutable releases are downloaded and verified on retry. An incomplete draft blocks new preparation: recover from the original artifact. Actions retains artifacts for 30 days; keep the complete checked bundle independently until publication succeeds.

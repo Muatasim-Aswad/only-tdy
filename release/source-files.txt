@@ -28,6 +28,7 @@ dev/seeded-api.ts
 dev/vite.seeded.config.ts
 docs/architecture.md
 docs/deployment.md
+docs/development.md
 docs/images/backlog-move.gif
 docs/images/backlog-search.png
 docs/images/capture-add.gif

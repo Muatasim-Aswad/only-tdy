@@ -1,14 +1,14 @@
 # only-tdy icons
 
-Original artwork for this repository. No icon library, template, or third-party asset is involved, so nothing here needs a licence notice.
+Original repository artwork; no third-party icon library, template or asset needs attribution.
 
-The mark is one task row from the interface, magnified: a completion circle sitting on the focus rail, the task beside it, and the rail breaking around the circle exactly as it does on screen. Ground `#315E65` is the light-theme accent; the marks are `#F4F6F5`, the light canvas.
+The mark enlarges a task row: a completion circle interrupts the focus rail beside a task. The ground uses the light-theme accent `#315E65`; marks use the light canvas `#F4F6F5`.
 
 | File | Purpose |
 | --- | --- |
-| `focus.svg` | Source mark, rounded ground. Renders the `any` PNGs. |
+| `only-tdy.svg` | Source mark with rounded ground; renders the `any` PNGs. |
 | `only-tdy-maskable.svg` | Full-bleed variant; all marks inside the 80% safe circle. |
-| `favicon.svg` | Tab-sized mark. The rail segments are dropped and the remaining marks drawn heavier, because at 16px the full mark closes up. |
+| `favicon.svg` | Tab mark: no rail and heavier strokes to stay legible at 16px. |
 | `icon-192.png`, `icon-512.png` | Manifest icons, `purpose: any`. |
 | `maskable-512.png` | Manifest icon, `purpose: maskable`. |
 | `apple-touch-icon-180.png` | iOS home screen. |

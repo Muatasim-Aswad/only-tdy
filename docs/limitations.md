@@ -1,42 +1,44 @@
 # Limitations and data handling
 
+[README](../README.md) · [Deployment](deployment.md) · [Security](../SECURITY.md)
+
 ## Compatibility
 
-only-tdy is an unofficial Tududi integration. It expects same-origin session authentication, `/api/csrf-token`, `/api/profile`, task lists and task CRUD, projects, tags and search. It does not provide a backend or duplicate Tududi's full planning model. API shape, status, search or pagination changes can break it. Use the exact [Tududi 1.9.4 image pin](deployment.md#tududi-backend-pin); other versions are unverified.
+only-tdy unofficially integrates Tududi's same-origin session, `/api/csrf-token`, `/api/profile`, task lists/CRUD, projects, tags and search. It has no backend and covers only part of Tududi's planning model. API shape, status, search or pagination changes can break it. Use the exact [Tududi 1.9.4 pin](deployment.md#tududi-backend-pin); other versions are unverified.
 
-On 2026-10-20, the current API adapter was checked against that image on Linux/amd64 with a disposable SQLite database and synthetic data. Checks covered session/CSRF, account timezone, task CRUD, Today/Backlog, dates and Hide until, projects, tags, search and All pagination over 51 matches, completion/history/reopening, opt-in due promotion and due-time preservation across an Amsterdam daylight-saving transition. This verifies current working source, not previously published images. This is API-level evidence; an existing-database upgrade, the browser/proxy combination against a live backend, and advanced Tududi features remain unverified. Seeded and mocked tests alone are not real-backend compatibility evidence.
+On 2026-10-20, the API adapter was checked against that image on Linux/amd64 with disposable SQLite and synthetic data. Coverage: session/CSRF, account timezone, task CRUD, Today/Backlog, dates/Hide until, projects, tags, search and All pagination over 51 matches, completion/history/reopening, opt-in promotion and due-time preservation across Amsterdam's daylight-saving transition. This verifies API behavior in that source revision, not previously published images. Existing-database upgrades, live browser/proxy integration and advanced Tududi features remain unverified. Seeded/mocked tests alone do not establish backend compatibility.
 
-The editor remains date-only. Set specific due times and reminders in Tududi. Saving an unchanged date leaves its server value untouched. Changing a nonempty date first reads the current due time and carries it to the new day; clearing the date also clears its time. Reminders are preserved separately and are not rescheduled when the date changes. Concurrent edits can still race between the read and PATCH.
+Set times and reminders in Tududi; only-tdy's editor is date-only. Unchanged dates keep their server value. A changed nonempty date carries the freshly read due time to the new day; clearing it also clears its time. Reminders stay unchanged, including after date changes. Concurrent edits can race between the read and PATCH.
 
-Browser and visual checks cover Chromium on Linux. Firefox, WebKit/Safari, real mobile devices and browser-specific PWA installation remain unverified. A narrow viewport test is not a device test.
+Browser/visual checks cover Chromium on Linux: narrow layouts, keyboard use, themes, reduced motion and forced colors. Firefox, WebKit/Safari, real mobile devices and browser-specific PWA installation remain unverified; viewport tests do not establish device support.
 
 ## Lists and search
 
-Today, Backlog and Completed are capped at 50 tasks. Filtering after a capped API response may display fewer matches than exist on the server. Counts can exceed visible rows. All tasks and its searches read successive pages, subject to upstream pagination; they are not a transactionally consistent snapshot. Archived and cancelled tasks remain outside this UI. Hidden Backlog tasks are excluded from Backlog and its searches, but can appear in All tasks.
+Today, Backlog and Completed are capped at 50 tasks. Filtering capped responses can hide matches; counts may exceed visible rows. All tasks and its searches read successive upstream pages without a transactionally consistent snapshot. Archived/cancelled tasks are excluded. Hidden tasks stay out of Backlog and its searches but can appear in All tasks.
 
-Search accepts one phrase, exact tag, project or priority at a time. It does not combine filters or silently intersect capped results. Typing narrows already loaded rows; submitting queries Tududi on Backlog, All and Completed. Today searches only its displayed rows. Project lookup requires an unambiguous name. A new project created during capture is a separate write and can remain if the following task creation fails.
+Search accepts one phrase, exact tag, project or priority, without combining filters or intersecting capped results. Typing narrows loaded rows; submitting queries Tududi on Backlog, All and Completed. Today searches displayed rows only. Projects require unambiguous names. Capture creates new projects separately; they can remain if task creation fails.
 
-Automatic due promotion is off by default. Enabling it allows API writes during normal list synchronization, with no polling or background scheduling; it does not guarantee promotion at midnight while the app is closed. Due dates on explicit capture/save still apply planning rules. Relative dates and hiding use account timezone, which can differ from your device timezone.
+Automatic due promotion is off by default. Enabling it permits writes during list sync, without polling or background scheduling; it cannot guarantee midnight promotion while closed. Explicit capture/save still applies due-date rules. Relative dates and hiding use the account timezone, which may differ from your device's.
 
 ## Recovery
 
-Tududi's API integration supplies no revision preconditions or idempotency keys. Concurrent edits can overwrite one another, and multi-task actions are not atomic. Optimistic rollback restores the browser view; it cannot undo a write the server already accepted.
+The integration has no revision preconditions or idempotency keys. Concurrent edits can overwrite one another; multi-task actions are not atomic. Optimistic rollback restores the view, not accepted server writes.
 
-A timeout or lost response can leave a write's outcome unknown. Reconnect and inspect the task in only-tdy or Tududi before retrying a create, edit, move or delete. Blind retries can create duplicates or overwrite newer changes. A CSRF rejection can refresh the token and retry once; this is not a general guarantee of safe retry. Partially successful batch actions need inspection of individual tasks.
+After a timeout or lost response, reconnect and inspect the task in either app before retrying a create, edit, move or delete. Blind retries can duplicate tasks or overwrite newer changes. A CSRF rejection can refresh the token and retry once; other retries are not guaranteed safe. Inspect individual tasks after partial batch success.
 
-Failed edits retain the current draft while the page remains open. Capture text stays in the task provider across navigation; editor drafts belong to their screen. Both are in memory and are lost on reload or closing the tab; editor drafts are also lost when leaving the editor. Copy unsaved text before using reload recovery or About's Reload action. Signing in again may be needed after session expiration. Requests and error recovery do not provide a durable write queue.
+Failed saves retain drafts. Capture text survives in-app navigation; editor drafts last only on their screen. Both are in memory and lost on reload or tab closure. Copy unsaved text before reload recovery or About's Reload action. Expired sessions may require signing in again. There is no durable write queue.
 
 ## Offline behavior and retention
 
-An installed PWA can reopen its cached shell after a successful online visit. API responses are never service-worker cached; fresh task data and every write require a connection. Already loaded data may remain visible in the current tab, but is not a persisted offline task database.
+After an online visit, the installed PWA can reopen its cached shell. The worker never caches API responses; fresh data and all writes require a connection. Loaded data can remain visible in the tab but does not persist as an offline task database.
 
 | Browser state | Contents | Retention and clearing |
 | --- | --- | --- |
-| In-memory state | Loaded tasks, projects, tags, account timezone, CSRF token, searches, selections and unsaved drafts. | Discarded on reload or tab closure; editor draft lifetime also depends on its screen. |
-| `localStorage` | Theme (`only-tdy:theme`), editor layout (`only-tdy:editor-layout:v1`), automatic due promotion (`only-tdy:auto-due-promotion:v1`, `on` enables it), and last seen revision (`only-tdy:seen-revision`). | No expiry; retained until changed or cleared. If storage is unavailable, the app remains usable but preferences may not survive reload. |
-| Service-worker Cache Storage | Static shell, scripts, styles, icons and bundled fonts under the only-tdy cache namespace. | Updated/retired by the worker; remove only-tdy caches and its worker to clear the offline shell. |
-| Tududi session cookie | Login session managed by Tududi. | Lifetime and sign-out belong to Tududi; only-tdy does not own it. |
+| In-memory state | Tasks, projects, tags, account timezone, CSRF token, searches, selections and drafts. | Lost on reload/tab closure; editor drafts also end with their screen. |
+| `localStorage` | Theme (`only-tdy:theme`), editor layout (`only-tdy:editor-layout:v1`), due promotion (`only-tdy:auto-due-promotion:v1`, `on` enables it), last seen revision (`only-tdy:seen-revision`). | No expiry; retained until changed/cleared. Without storage, the app works but preferences may not survive reload. |
+| Service-worker Cache Storage | Static shell, scripts, styles, icons and bundled fonts in the only-tdy namespace. | The worker updates/retires caches; remove its caches and registration to clear the offline shell. |
+| Tududi session cookie | Tududi login session. | Tududi controls lifetime and sign-out. |
 
-To reset only-tdy, remove its `only-tdy:` preference keys and unregister its `/only-tdy/` service worker and caches in browser site settings/developer tools. Removing an installed app may leave site storage behind. Clearing all storage for the shared origin can also sign you out of Tududi and remove other applications' data. Local clearing does not delete server tasks or Tududi backups; manage those through Tududi.
+Reset only-tdy by removing its `only-tdy:` preference keys, `/only-tdy/` worker registration and caches in browser site settings/developer tools. Uninstalling may leave site storage behind. Clearing the whole origin can sign you out of Tududi and erase other apps' data. Local clearing does not delete server tasks or backups; manage those through Tududi.
 
-There is no analytics or telemetry and no external runtime font request. Task names, notes and related data travel to the same-origin Tududi API. only-tdy serves static assets and an uncached build identity record; normal proxy/server access logs remain the operator's responsibility. Backups, retention and deletion of authoritative task data belong to Tududi and its operator.
+There is no analytics, telemetry or external runtime font request. Tasks, notes and related data use the same-origin Tududi API. only-tdy serves static assets and uncached build identity; operators manage proxy/server access logs. Tududi and its operator control task backups, retention and deletion.
