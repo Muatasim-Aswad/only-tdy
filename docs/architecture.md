@@ -27,8 +27,9 @@ HTTP calls use same-origin `/api/`, session cookies and CSRF tokens for writes. 
 
 ## Planning invariants
 
+- Recurring schedules live in Repeating and are excluded from Backlog, its search, selection and counts. Due occurrences use normal Today promotion and ordering; completion advances the same server task. Completed occurrences have a separate row identity and cannot reopen the schedule.
 - Today includes planned, in-progress and waiting tasks; Backlog contains not-started tasks. Completed tasks require explicit reopening. Archived/cancelled tasks are excluded.
-- Capture without `/today` normally enters Backlog; an already due date can move it to Today. Explicit saves apply date rules independently of list-sync promotion.
+- Ordinary capture without `/today` normally enters Backlog; an already due date can move it to Today. `/repeating` opens a draft schedule from any Add field without writing a task. Explicit saves apply date rules independently of list-sync promotion.
 - Due/overdue Backlog promotion is on by default and can be disabled in Settings. List sync scans due-ordered pages through the account's current day, then writes promotions. Preferences load before task lists can initiate promotion. There is no polling or background worker.
 - Dated Backlog tasks are visible by default. Settings can reveal them N calendar days before due (initially 1) or on the due date. Explicit Hide until dates take precedence. All stays unfiltered; Backlog search, selection and counts use the same visibility rule.
 - Moving or saving a task to Today clears Hide until. Changing an existing Today task's due date to a future date returns it to Backlog; clearing the date or leaving an unchanged future date retains its status. Hide until cannot exceed the due date.

@@ -6,6 +6,7 @@ import {
   GuideIcon,
   HistoryIcon,
   SettingsIcon,
+  RepeatIcon,
 } from './NavigationIcons.tsx';
 
 const ABOUT_PATH = routePath({ kind: 'version' });
@@ -39,6 +40,17 @@ export function MorePanel({
         <HistoryIcon />
         {COPY.history}
       </button>
+      <a
+        className="focus-more__item text-action"
+        href={routePath({ kind: 'repeating' })}
+        onClick={(event) => {
+          onClose(false);
+          handleLinkNavigation(event, routePath({ kind: 'repeating' }));
+        }}
+      >
+        <RepeatIcon />
+        Repeating
+      </a>
       <a
         className="focus-more__item text-action"
         href={SETTINGS_PATH}

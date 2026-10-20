@@ -31,7 +31,9 @@ export const queryKeys = {
   today: ['tasks', 'today'] as const,
   backlog: ['tasks', 'backlog'] as const,
   history: ['tasks', 'history'] as const,
+  fullHistory: ['tasks', 'history', 'full'] as const,
   all: ['tasks', 'all'] as const,
+  repeating: ['tasks', 'repeating'] as const,
   allSearch: ['tasks', 'search', 'all'] as const,
   /** A filtered list, keyed by which list it is and the term that filtered it. */
   search: (list: SearchList, key: string) =>
@@ -47,7 +49,9 @@ export const TASK_LIST_KEYS: readonly QueryKey[] = [
   queryKeys.today,
   queryKeys.backlog,
   queryKeys.history,
+  queryKeys.fullHistory,
   queryKeys.all,
+  queryKeys.repeating,
 ];
 
 /**
@@ -259,10 +263,13 @@ export function useDoneCount(
 export function historyQueryOptions(
   enabled: boolean,
   api: TududiApi = tududiApi,
+  includeRecurring = false,
 ) {
   return queryOptions({
-    queryKey: queryKeys.history,
-    queryFn: api.fetchDoneTasks,
+    queryKey: includeRecurring ? queryKeys.fullHistory : queryKeys.history,
+    queryFn: includeRecurring
+      ? () => api.fetchDoneTasks(true)
+      : () => api.fetchDoneTasks(),
     enabled,
     retry: retryTududiQuery,
   });
@@ -367,8 +374,17 @@ export function useSearchQuery(
 export function useHistoryQuery(
   enabled: boolean,
   api: TududiApi = tududiApi,
+  includeRecurring = false,
 ): UseQueryResult<readonly Task[]> {
-  return useQuery(historyQueryOptions(enabled, api));
+  return useQuery(historyQueryOptions(enabled, api, includeRecurring));
+}
+
+export function useRepeatingQuery() {
+  return useQuery({
+    queryKey: queryKeys.repeating,
+    queryFn: tududiApi.fetchRepeatingTasks,
+    retry: retryTududiQuery,
+  });
 }
 
 /** Fetched only while quick entry contains a project token. */

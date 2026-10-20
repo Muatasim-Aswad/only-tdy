@@ -33,6 +33,15 @@ describe('Tududi adapters', () => {
   it('exposes only task fields rendered by only-tdy', () => {
     expect(adaptTask(rawTask)).toEqual({
       uid: 'task-41',
+      recurrence: {
+        type: 'daily',
+        interval: 1,
+        weekdays: [0],
+        monthDay: 1,
+        weekOfMonth: 1,
+        completionBased: false,
+        endDate: '',
+      },
       title: 'Take vitamins',
       note: 'server-only detail',
       priority: 'high',

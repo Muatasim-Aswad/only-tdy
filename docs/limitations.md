@@ -20,6 +20,8 @@ Search accepts one phrase, exact tag, project or priority, without combining fil
 
 Automatic due promotion is on by default and can be disabled in Settings. It writes during list sync, without polling or background scheduling; it cannot guarantee midnight promotion while closed. Explicit capture/save still applies due-date rules. Relative dates and hiding use the account timezone, which may differ from your device's. Dated Backlog tasks remain visible by default; Settings can show them N days before due or on the due date. Explicit Hide until overrides that window. All always includes hidden tasks.
 
+Recurring schedules stay out of Backlog. Repeating uses Add/Search; Add opens a draft before creating anything, omits Status and shows notes, tags and project only when captured. The full editor keeps those fields; active schedules complete through Today rather than the status picker. Tududi owns advancement, calendar/completion-based schedules and skipping. Due occurrences follow the automatic-promotion preference; with it disabled, set Today in the editor. Completed occurrences are read-only. Today reads its recurring completion records from Tududi’s dashboard; Completed reads events for existing repeating schedules. History searches and stopped/deleted-series history remain limited to ordinary completed-task results. Recurrence controls and skip are covered by synthetic tests; their live-backend workflow still needs verification.
+
 ## Recovery
 
 The integration has no revision preconditions or idempotency keys. Concurrent edits can overwrite one another; multi-task actions are not atomic. Optimistic rollback restores the view, not accepted server writes.

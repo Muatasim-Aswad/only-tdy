@@ -14,7 +14,11 @@ import {
   scanEntryTokens,
   tokenMark,
 } from '../domain/entry-tokens.ts';
-import { COMMANDS, PRIORITY_VALUES } from '../domain/quick-entry.ts';
+import {
+  CAPTURE_COMMANDS,
+  COMMANDS,
+  PRIORITY_VALUES,
+} from '../domain/quick-entry.ts';
 import { isTagListWritable, scanTagSegments } from '../domain/tag-list.ts';
 import {
   applyEntrySuggestion,
@@ -66,6 +70,7 @@ export interface UseSuggestionsOptions {
    * the list has been fetched — before that, every name would look new.
    */
   readonly offersNewProject?: boolean;
+  readonly allowRepeating?: boolean;
 }
 
 export interface Suggestions<T extends Field = Field> {
@@ -207,6 +212,7 @@ export function useSuggestions<T extends Field = Field>({
   projects = NO_NAMES,
   tags = NO_NAMES,
   offersNewProject = false,
+  allowRepeating = false,
 }: UseSuggestionsOptions): Suggestions<T> {
   const timezone = useDateTimezone();
   const ref = useRef<T | null>(null);
@@ -271,7 +277,11 @@ export function useSuggestions<T extends Field = Field>({
         return PRIORITY_NAMES;
       case 'command':
         /* Search has no commands: `/` is only quick entry's. */
-        return grammar === 'entry' ? COMMANDS : NO_NAMES;
+        return grammar === 'entry'
+          ? allowRepeating
+            ? CAPTURE_COMMANDS
+            : COMMANDS
+          : NO_NAMES;
     }
   }
 

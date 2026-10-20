@@ -69,6 +69,7 @@ export function CaptureField({
   const focusWithin = useFocusWithin();
   const suggestions = useSuggestions<HTMLTextAreaElement>({
     grammar: 'entry',
+    allowRepeating: true,
     value,
     onValueChange,
     ...(projects === undefined ? {} : { projects }),

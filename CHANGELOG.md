@@ -6,6 +6,8 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Added
 
+- Repeating page with Add/Search, recurrence editing, due occurrences in Today, read-only occurrence records and Skip in the editor footer.
+
 - Settings page with synced preferences and configurable Backlog visibility for dated tasks.
 
 ### Fixed

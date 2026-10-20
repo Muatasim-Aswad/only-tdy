@@ -4,6 +4,8 @@ import type { Task } from '../contracts.ts';
 import { useDateTimezone } from '../date-timezone.ts';
 import { displayDate, hideDate } from '../domain/task-dates.ts';
 import { taskPath } from '../../../config/routes.ts';
+import { isRepeating, recurrenceLabel } from '../domain/recurrence.ts';
+import { RepeatIcon } from './NavigationIcons.tsx';
 
 import { classNames } from '../../../shared/classNames.ts';
 import { CompletionButton } from './CompletionButton.tsx';
@@ -88,9 +90,9 @@ export const TaskRow = memo(function TaskRow({
 
   const handleOpen = useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
-      onOpen?.(event, task.uid);
+      onOpen?.(event, task.sourceTaskUid ?? task.uid);
     },
-    [onOpen, task.uid],
+    [onOpen, task.uid, task.sourceTaskUid],
   );
 
   const timezone = useDateTimezone();
@@ -112,7 +114,14 @@ export const TaskRow = memo(function TaskRow({
         MOTION_CLASS[motion],
       )}
     >
-      {mode === 'view' ? (
+      {task.sourceTaskUid ? (
+        <span
+          className="focus-complete focus-complete--record"
+          aria-label={`Completed “${task.title}”`}
+        >
+          <span className="focus-complete__box" aria-hidden="true" />
+        </span>
+      ) : mode === 'view' ? (
         details ? (
           <PriorityIndicator priority={task.priority} />
         ) : (
@@ -138,18 +147,32 @@ export const TaskRow = memo(function TaskRow({
       <div className="focus-row__body">
         <a
           className="focus-row__title text-task"
-          href={taskPath(task.uid)}
+          href={taskPath(task.sourceTaskUid ?? task.uid)}
           onClick={handleOpen}
         >
           {task.title}
+          {isRepeating(task) ? (
+            <span className="focus-row__repeat" aria-label="Repeating">
+              <RepeatIcon />
+            </span>
+          ) : null}
         </a>
         <TaskMetadata projectName={task.projectName} tags={task.tags} />
+        {details && task.recurrence ? (
+          <p className="focus-row__meta text-meta">
+            {recurrenceLabel(task.recurrence)}
+          </p>
+        ) : null}
         {details ? (
           <>
             <p className="focus-row__badges text-meta">
               {!done ? (
                 <span className="focus-row__badge focus-row__badge--list">
-                  {task.status === 'not_started' ? 'Backlog' : 'Today'}
+                  {task.status === 'not_started'
+                    ? isRepeating(task)
+                      ? 'Scheduled'
+                      : 'Backlog'
+                    : 'Today'}
                 </span>
               ) : null}
               {hiddenUntil !== '' ? (

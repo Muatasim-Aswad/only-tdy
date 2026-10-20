@@ -10,6 +10,45 @@ const projects: readonly Project[] = [
 ];
 
 describe('parseQuickEntry', () => {
+  it('recognizes /repeating as a capture destination while preserving metadata', () => {
+    expect(
+      parseQuickEntry('Clean filters /repeating #home *brush +Home', projects, {
+        allowRepeating: true,
+      }),
+    ).toEqual({
+      ok: true,
+      repeating: true,
+      draft: {
+        title: 'Clean filters',
+        priority: 'low',
+        status: 'not_started',
+        tags: ['home'],
+        note: 'brush',
+        projectUid: 'project-home',
+      },
+    });
+    expect(parseQuickEntry('Clean filters /repeating').ok).toBe(false);
+    expect(
+      parseQuickEntry('Clean filters *(/repeating)', [], {
+        allowRepeating: true,
+      }),
+    ).toMatchObject({
+      ok: true,
+      draft: { title: 'Clean filters', note: '/repeating' },
+    });
+  });
+
+  it('allows /repeating alone to open an untitled draft without allowing empty ordinary capture', () => {
+    expect(
+      parseQuickEntry('/repeating', [], { allowRepeating: true }),
+    ).toMatchObject({
+      ok: true,
+      repeating: true,
+      draft: { title: '' },
+    });
+    expect(parseQuickEntry('', [], { allowRepeating: true }).ok).toBe(false);
+  });
+
   it.each([
     {
       name: 'metadata in any order',

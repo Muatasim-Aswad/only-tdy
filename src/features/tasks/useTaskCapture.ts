@@ -12,6 +12,8 @@ import { parseQuickEntry } from './domain/quick-entry.ts';
 import { useCreateTaskMutation } from './data/mutations.ts';
 import { tududiApi } from './data/tududi-api.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
+import { navigate } from '../../infra/navigation.ts';
+import { routePath } from '../../config/routes.ts';
 
 interface CaptureOptions {
   readonly captureValue: string;
@@ -87,9 +89,14 @@ export function useTaskCapture({
     }
     const parsed = parseQuickEntry(submittedInput, projects, {
       timezone: accountTimezone,
+      allowRepeating: true,
     });
     if (!parsed.ok) {
       setFeedback({ kind: 'error', message: parsed.error.message });
+      return;
+    }
+    if (parsed.repeating) {
+      navigate(routePath({ kind: 'new-repeating' }));
       return;
     }
 

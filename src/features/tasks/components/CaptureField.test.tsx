@@ -163,6 +163,14 @@ describe('CaptureField', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('Call /today ');
   });
 
+  it('offers /repeating to open the schedule form from capture', async () => {
+    const user = userEvent.setup();
+    const { onValueChange } = renderCapture({ value: 'Clean filters /rep' });
+    await user.click(field());
+    await user.click(screen.getByRole('option', { name: '/repeating' }));
+    expect(onValueChange).toHaveBeenLastCalledWith('Clean filters /repeating ');
+  });
+
   it('offers the names that would finish the token being typed', async () => {
     const user = userEvent.setup();
     renderCapture({

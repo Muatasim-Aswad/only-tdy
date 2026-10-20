@@ -43,6 +43,16 @@ const SettingsPage = lazy(() =>
 );
 
 const VERSION_PATH = routePath({ kind: 'version' });
+const RepeatingPage = lazy(() =>
+  import('../features/tasks/RepeatingPage.tsx').then((module) => ({
+    default: module.RepeatingPage,
+  })),
+);
+const RepeatingCreatePage = lazy(() =>
+  import('../features/tasks/RepeatingCreatePage.tsx').then((module) => ({
+    default: module.RepeatingCreatePage,
+  })),
+);
 
 export interface AppProps {
   /** A build this device has not run before, announced once over any page. */
@@ -74,6 +84,18 @@ export function App({ updateNotice = null }: AppProps) {
 
 function Page() {
   const route = useRoute();
+  if (route.kind === 'new-repeating')
+    return (
+      <Suspense fallback={null}>
+        <RepeatingCreatePage />
+      </Suspense>
+    );
+  if (route.kind === 'repeating')
+    return (
+      <Suspense fallback={null}>
+        <RepeatingPage />
+      </Suspense>
+    );
 
   if (route.kind === 'settings') {
     return (

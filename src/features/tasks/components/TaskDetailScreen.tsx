@@ -25,6 +25,9 @@ export interface TaskDetailScreenProps {
     ((event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
   readonly onSave: (edit: TaskEdit) => Promise<TaskDetail | undefined>;
   readonly onDelete: () => void;
+  readonly onSkip?: () => void;
+  readonly creating?: boolean;
+  readonly skipping?: boolean;
   readonly onRetry: () => void;
   readonly feedback: SaveFeedback;
   readonly onDismissFeedback?: (() => void) | undefined;
@@ -55,6 +58,9 @@ export function TaskDetailScreen({
   onBack,
   onSave,
   onDelete,
+  onSkip,
+  creating = false,
+  skipping = false,
   onRetry,
   feedback,
   onDismissFeedback,
@@ -71,12 +77,12 @@ export function TaskDetailScreen({
         <BackLink href={backHref} onNavigate={onBack} />
         {state.kind === 'ready' ? (
           <div className="focus-head__action">
-            {dirty ? (
+            {dirty || creating ? (
               <button
                 type="submit"
                 form={formId}
                 className="focus-detail__save text-action"
-                disabled={disabled || saving || deleting}
+                disabled={disabled || saving || deleting || skipping}
               >
                 {COPY.save}
               </button>
@@ -84,7 +90,7 @@ export function TaskDetailScreen({
               <DeleteTaskAction
                 onDelete={onDelete}
                 pending={deleting}
-                disabled={disabled || saving}
+                disabled={disabled || saving || skipping}
               />
             )}
           </div>
@@ -100,6 +106,13 @@ export function TaskDetailScreen({
           feedback={feedback}
           onDismissFeedback={onDismissFeedback}
           saving={saving}
+          creating={creating}
+          skipping={skipping}
+          onSkip={
+            state.task.recurrence && state.task.status !== 'done' && !dirty
+              ? onSkip
+              : undefined
+          }
           deleting={deleting}
           disabled={disabled}
           formId={formId}

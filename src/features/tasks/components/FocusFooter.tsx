@@ -10,6 +10,7 @@ import {
   HistoryIcon,
   GuideIcon,
   AboutIcon,
+  RepeatIcon,
 } from './NavigationIcons.tsx';
 
 export interface FocusFooterProps {
@@ -61,7 +62,9 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
             onNavigate(current);
           }}
         >
-          {current === 'history' ? (
+          {current === 'repeating' ? (
+            <RepeatIcon />
+          ) : current === 'history' ? (
             <HistoryIcon />
           ) : current === 'guide' ? (
             <GuideIcon />
@@ -81,6 +84,7 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
 }
 
 const PAGE_LABEL = {
+  repeating: 'Repeating',
   history: 'Completed tasks',
   guide: 'Guide',
   version: COPY.about,

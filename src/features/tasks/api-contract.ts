@@ -14,6 +14,8 @@ export interface TududiApi {
   readonly syncDueTasks: () => Promise<readonly Task[]>;
   readonly fetchTodayTasks: () => Promise<readonly Task[]>;
   readonly fetchBacklogTasks: () => Promise<readonly Task[]>;
+  readonly fetchRepeatingTasks: () => Promise<readonly Task[]>;
+  readonly skipOccurrence: (uid: string) => Promise<Task>;
   /**
    * Every open task matching a term — the backlog's and Today's alike, told
    * apart by status when they are drawn.
@@ -22,7 +24,9 @@ export interface TududiApi {
     request: SentSearchRequest,
   ) => Promise<readonly Task[]>;
   /** Completed tasks, newest first, for the history view. */
-  readonly fetchDoneTasks: () => Promise<readonly Task[]>;
+  readonly fetchDoneTasks: (
+    includeRecurring?: boolean,
+  ) => Promise<readonly Task[]>;
   readonly fetchAllTasks: () => Promise<readonly Task[]>;
   readonly searchAllTasks: (
     request: SentSearchRequest,

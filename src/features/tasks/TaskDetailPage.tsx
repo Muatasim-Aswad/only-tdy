@@ -18,6 +18,7 @@ import { routePath } from '../../config/routes.ts';
 import {
   useDeleteTaskMutation,
   useUpdateTaskMutation,
+  useSkipOccurrenceMutation,
 } from './data/mutations.ts';
 import {
   useProjectListQuery,
@@ -61,6 +62,8 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     useUpdateTaskMutation();
   const { mutateAsync: deleteTask, isPending: deleting } =
     useDeleteTaskMutation();
+  const { mutateAsync: skipOccurrence, isPending: skipping } =
+    useSkipOccurrenceMutation();
 
   const state = deriveTaskDetailState(sessionExpired, taskQuery);
   const disabled = !isOnline || state.kind === 'session-expired';
@@ -70,7 +73,13 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
 
   const done = state.kind === 'ready' && state.task.status === 'done';
   const backHref = pageReturnPath(
-    routePath({ kind: done ? 'history' : 'tasks' }),
+    routePath({
+      kind: done
+        ? 'history'
+        : state.kind === 'ready' && state.task.recurrence
+          ? 'repeating'
+          : 'tasks',
+    }),
   );
 
   const handleBack = useCallback(
@@ -148,10 +157,28 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
       onBack={handleBack}
       onSave={handleSave}
       onDelete={handleDelete}
+      onSkip={() => {
+        void skipOccurrence(uid)
+          .then(() => {
+            navigate(backHref, { replace: true });
+          })
+          .catch((error: unknown) => {
+            if (isUnauthorized(error)) setSessionExpired(true);
+            else
+              setFeedback({
+                kind: 'error',
+                message: taskErrorMessage(
+                  error,
+                  'Couldn’t skip this occurrence. Try again.',
+                ),
+              });
+          });
+      }}
       onRetry={handleRetry}
       feedback={visibleFeedback}
       onDismissFeedback={isOnline ? dismissFeedback : undefined}
       saving={saving}
+      skipping={skipping}
       deleting={deleting}
       disabled={disabled}
     />

@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  useMemo,
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
@@ -18,11 +19,17 @@ import type {
   TaskEdit,
   TaskPriority,
   TaskStatus,
+  Recurrence,
 } from '../contracts.ts';
 import { useDateTimezone } from '../date-timezone.ts';
 import { parseQuickEntry } from '../domain/quick-entry.ts';
 import { scanEntryTokens, isNamedToken } from '../domain/entry-tokens.ts';
-import { applyDateRules, validateHideDate } from '../domain/task-dates.ts';
+import {
+  applyDateRules,
+  validateHideDate,
+  currentDate,
+} from '../domain/task-dates.ts';
+import { RecurrenceFields } from './RecurrenceFields.tsx';
 import { formatTagList, parseTagList } from '../domain/tag-list.ts';
 
 import { COPY, PRIORITY_NAME } from './copy.ts';
@@ -65,6 +72,7 @@ const PRIORITY_ORDER: readonly TaskPriority[] = ['low', 'medium', 'high'];
 
 /** The form as it is typed: every value a string the control can hold. */
 interface Fields {
+  readonly recurrence: Recurrence | null;
   readonly title: string;
   readonly note: string;
   readonly status: TaskStatus;
@@ -78,6 +86,7 @@ interface Fields {
 
 function toFields(task: TaskDetail): Fields {
   return {
+    recurrence: task.recurrence ?? null,
     title: task.title,
     note: task.note,
     status: task.status,
@@ -91,6 +100,7 @@ function toFields(task: TaskDetail): Fields {
 
 function toEdit(fields: Fields): TaskEdit {
   return {
+    ...(fields.recurrence === null ? {} : { recurrence: fields.recurrence }),
     title: fields.title.trim(),
     note: fields.note,
     status: fields.status,
@@ -109,6 +119,8 @@ function toEdit(fields: Fields): TaskEdit {
  */
 function sameEdit(a: TaskEdit, b: TaskEdit): boolean {
   return (
+    JSON.stringify(a.recurrence ?? null) ===
+      JSON.stringify(b.recurrence ?? null) &&
     a.title === b.title &&
     a.note === b.note &&
     a.status === b.status &&
@@ -134,6 +146,9 @@ export interface TaskEditorProps {
   readonly saving?: boolean;
   /** Deleting is asked for at the head of the page; it only holds Save here. */
   readonly deleting?: boolean;
+  readonly onSkip?: (() => void) | undefined;
+  readonly skipping?: boolean;
+  readonly creating?: boolean;
   /** Offline or expired: the fields stay editable, the writes do not. */
   readonly disabled?: boolean;
   /** The form's id, so a Save drawn outside it can still submit it. */
@@ -168,6 +183,9 @@ export function TaskEditor({
   onDismissFeedback,
   saving = false,
   deleting = false,
+  onSkip,
+  skipping = false,
+  creating = false,
   disabled = false,
   formId,
   onDirtyChange,
@@ -197,9 +215,17 @@ export function TaskEditor({
       : formatTagList(task.tags),
   }));
 
-  const edit = toEdit(fields);
+  const edit = useMemo<TaskEdit>(
+    () => ({
+      ...toEdit(fields),
+      ...(baseline.recurrence && !fields.recurrence
+        ? { recurrence: null }
+        : {}),
+    }),
+    [fields, baseline.recurrence],
+  );
   const dirty = !sameEdit(edit, toEdit(toFields(baseline)));
-  const busy = saving || deleting;
+  const busy = saving || deleting || skipping;
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -244,6 +270,11 @@ export function TaskEditor({
     setFeedbackAttempt((current) => current + 1);
     setLocalError(undefined);
     let resolved = edit;
+    if (
+      resolved.recurrence?.type === 'weekly' &&
+      resolved.recurrence.weekdays.length === 0
+    )
+      return;
     if (fields.title !== baseline.title) {
       const parsed = parseQuickEntry(fields.title, projects, {
         timezone,
@@ -286,6 +317,10 @@ export function TaskEditor({
           ? {}
           : { deferUntil: draft.deferUntil }),
       };
+    }
+    if (resolved.title === '') {
+      setLocalError(COPY.titleRequired);
+      return;
     }
     resolved = applyDateRules(
       resolved,
@@ -356,9 +391,15 @@ export function TaskEditor({
    * status the task is actually in is always among the choices, and stops
    * being offered the moment it is changed away from.
    */
-  const statuses = STATUS_ORDER.includes(fields.status)
-    ? STATUS_ORDER
-    : [fields.status, ...STATUS_ORDER];
+  const statusChoices = fields.recurrence
+    ? STATUS_ORDER.filter((status) => status !== 'done')
+    : STATUS_ORDER;
+  const statuses = statusChoices.includes(fields.status)
+    ? statusChoices
+    : [fields.status, ...statusChoices];
+  const showNote = !creating || task.note !== '';
+  const showTags = !creating || task.tags.length > 0;
+  const showProject = !creating || task.projectUid !== '';
 
   return (
     <>
@@ -420,132 +461,144 @@ export function TaskEditor({
               </div>
             </div>
 
-            <div className="focus-field focus-field--block">
-              <label
-                className={
-                  compact
-                    ? 'focus-field__symbol text-meta'
-                    : 'focus-field__label text-meta'
-                }
-                htmlFor="task-note"
-              >
-                {compact ? (
-                  <>
-                    <span aria-hidden="true">!</span>
-                    <span className="sr-only">{COPY.noteLabel}</span>
-                  </>
-                ) : (
-                  COPY.noteLabel
-                )}
-              </label>
-              <div
-                className="focus-grow focus-detail__note text-task"
-                data-value={fields.note}
-              >
-                <textarea
-                  id="task-note"
-                  className="focus-detail__input"
-                  value={fields.note}
-                  onChange={(event) => {
-                    update('note', event.target.value);
-                  }}
-                  placeholder={COPY.placeholder}
-                  rows={1}
-                />
+            {showNote ? (
+              <div className="focus-field focus-field--block">
+                <label
+                  className={
+                    compact
+                      ? 'focus-field__symbol text-meta'
+                      : 'focus-field__label text-meta'
+                  }
+                  htmlFor="task-note"
+                >
+                  {compact ? (
+                    <>
+                      <span aria-hidden="true">!</span>
+                      <span className="sr-only">{COPY.noteLabel}</span>
+                    </>
+                  ) : (
+                    COPY.noteLabel
+                  )}
+                </label>
+                <div
+                  className="focus-grow focus-detail__note text-task"
+                  data-value={fields.note}
+                >
+                  <textarea
+                    id="task-note"
+                    className="focus-detail__input"
+                    value={fields.note}
+                    onChange={(event) => {
+                      update('note', event.target.value);
+                    }}
+                    placeholder={COPY.placeholder}
+                    rows={1}
+                  />
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
 
           {/* Where it is filed. */}
-          <div className="focus-group">
-            <Field id="task-tags" label="Tags" compact={compact}>
-              <div className="focus-detail__value focus-capture__field">
-                <div
-                  className="focus-tokens focus-tokens--compact text-task"
-                  data-value={fields.tags}
-                >
-                  <TokenChips
-                    value={fields.tags}
-                    spans={tagSuggestions.spans}
-                  />
-                  <textarea
-                    {...tagSuggestions.fieldProps}
-                    id="task-tags"
-                    className="focus-detail__value"
-                    rows={1}
-                    value={fields.tags}
-                    onBlur={() => {
-                      if (compact) update('tags', compactTags(fields.tags));
-                    }}
-                    onChange={(event) => {
-                      update('tags', event.target.value);
-                      tagSuggestions.noteCaret(event);
-                    }}
-                    onKeyDown={(event) => {
-                      tagSuggestions.fieldProps.onKeyDown(event);
-                      if (event.defaultPrevented || event.key !== 'Enter')
-                        return;
-                      /* A tag list is one line however long it gets: return
+          {showTags || showProject ? (
+            <div className="focus-group">
+              {showTags ? (
+                <Field id="task-tags" label="Tags" compact={compact}>
+                  <div className="focus-detail__value focus-capture__field">
+                    <div
+                      className="focus-tokens focus-tokens--compact text-task"
+                      data-value={fields.tags}
+                    >
+                      <TokenChips
+                        value={fields.tags}
+                        spans={tagSuggestions.spans}
+                      />
+                      <textarea
+                        {...tagSuggestions.fieldProps}
+                        id="task-tags"
+                        className="focus-detail__value"
+                        rows={1}
+                        value={fields.tags}
+                        onBlur={() => {
+                          if (compact) update('tags', compactTags(fields.tags));
+                        }}
+                        onChange={(event) => {
+                          update('tags', event.target.value);
+                          tagSuggestions.noteCaret(event);
+                        }}
+                        onKeyDown={(event) => {
+                          tagSuggestions.fieldProps.onKeyDown(event);
+                          if (event.defaultPrevented || event.key !== 'Enter')
+                            return;
+                          /* A tag list is one line however long it gets: return
                        means save here, exactly as it does in the title. */
-                      event.preventDefault();
-                      event.currentTarget.form?.requestSubmit();
-                    }}
-                    placeholder={COPY.placeholder}
-                    autoCorrect="off"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                  />
-                </div>
-                {tagSuggestions.open ? (
-                  <SuggestionList
-                    id={tagSuggestions.listId}
-                    items={tagSuggestions.items}
-                    activeIndex={tagSuggestions.activeIndex}
-                    optionId={tagSuggestions.optionId}
-                    onPick={tagSuggestions.pick}
-                    label="Tags already in use"
-                  />
-                ) : null}
-              </div>
-            </Field>
+                          event.preventDefault();
+                          event.currentTarget.form?.requestSubmit();
+                        }}
+                        placeholder={COPY.placeholder}
+                        autoCorrect="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                      />
+                    </div>
+                    {tagSuggestions.open ? (
+                      <SuggestionList
+                        id={tagSuggestions.listId}
+                        items={tagSuggestions.items}
+                        activeIndex={tagSuggestions.activeIndex}
+                        optionId={tagSuggestions.optionId}
+                        onPick={tagSuggestions.pick}
+                        label="Tags already in use"
+                      />
+                    ) : null}
+                  </div>
+                </Field>
+              ) : null}
 
-            <Field id="task-project" label="Project" compact={compact}>
-              <Select
-                id="task-project"
-                value={fields.projectUid}
-                onChange={(value) => {
-                  update('projectUid', value);
-                }}
-              >
-                <option value="" aria-label={COPY.noValueName}>
-                  {COPY.noValue}
-                </option>
-                {options.map((project) => (
-                  <option key={project.uid} value={project.uid}>
-                    {compact ? `+${project.name}` : project.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
+              {showProject ? (
+                <Field id="task-project" label="Project" compact={compact}>
+                  <Select
+                    id="task-project"
+                    value={fields.projectUid}
+                    onChange={(value) => {
+                      update('projectUid', value);
+                    }}
+                  >
+                    <option value="" aria-label={COPY.noValueName}>
+                      {COPY.noValue}
+                    </option>
+                    {options.map((project) => (
+                      <option key={project.uid} value={project.uid}>
+                        {compact ? `+${project.name}` : project.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* What it asks of the day. */}
           <div className="focus-group">
-            <Field id="task-status" label="Status" compact={compact}>
-              <Select
-                id="task-status"
-                value={fields.status}
-                onChange={(value) => {
-                  update('status', value as TaskStatus);
-                }}
-              >
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {STATUS_NAME[status]}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+            {!creating ? (
+              <Field id="task-status" label="Status" compact={compact}>
+                <Select
+                  id="task-status"
+                  value={fields.status}
+                  onChange={(value) => {
+                    update('status', value as TaskStatus);
+                  }}
+                >
+                  {statuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status === 'not_started' && fields.recurrence
+                        ? 'Scheduled'
+                        : STATUS_NAME[status]}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            ) : null}
 
             <Field id="task-priority" label="Priority" compact={compact}>
               <Select
@@ -577,7 +630,7 @@ export function TaskEditor({
               />
             </Field>
 
-            {fields.status === 'not_started' ? (
+            {fields.status === 'not_started' && !fields.recurrence ? (
               <Field id="task-defer" label="Hide until">
                 <DateValue
                   id="task-defer"
@@ -591,6 +644,22 @@ export function TaskEditor({
               </Field>
             ) : null}
           </div>
+          <RecurrenceFields
+            value={fields.recurrence}
+            dueDate={fields.dueDate || currentDate({ timezone })}
+            onChange={(recurrence) => {
+              setFields((current) => ({
+                ...current,
+                recurrence,
+                ...(recurrence
+                  ? {
+                      dueDate: current.dueDate || currentDate({ timezone }),
+                      deferUntil: '',
+                    }
+                  : {}),
+              }));
+            }}
+          />
         </div>
 
         <FeedbackToast
@@ -642,6 +711,17 @@ export function TaskEditor({
             <path d="M12 9v11M3.5 9h17M3.5 14.5h17" />
           </svg>
         </button>
+        {onSkip ? (
+          <button
+            type="button"
+            className="focus-repeat-skip text-action"
+            onClick={onSkip}
+            disabled={disabled || busy}
+            aria-busy={skipping}
+          >
+            {skipping ? 'Skipping…' : 'Skip this occurrence'}
+          </button>
+        ) : null}
       </footer>
     </>
   );

@@ -110,6 +110,8 @@ src/config/routes.test.ts
 src/config/routes.ts
 src/features/tasks/BacklogPage.tsx
 src/features/tasks/GuidePage.tsx
+src/features/tasks/RepeatingCreatePage.tsx
+src/features/tasks/RepeatingPage.tsx
 src/features/tasks/SettingsPage.tsx
 src/features/tasks/TaskDetailPage.tsx
 src/features/tasks/TaskListPage.tsx
@@ -144,6 +146,7 @@ src/features/tasks/components/MorePanel.tsx
 src/features/tasks/components/NavigationIcons.tsx
 src/features/tasks/components/PriorityIndicator.tsx
 src/features/tasks/components/PriorityMarker.tsx
+src/features/tasks/components/RecurrenceFields.tsx
 src/features/tasks/components/SearchField.test.tsx
 src/features/tasks/components/SearchField.tsx
 src/features/tasks/components/SelectionButton.tsx
@@ -187,6 +190,7 @@ src/features/tasks/domain/project-lookup.test.ts
 src/features/tasks/domain/project-lookup.ts
 src/features/tasks/domain/quick-entry.test.ts
 src/features/tasks/domain/quick-entry.ts
+src/features/tasks/domain/recurrence.ts
 src/features/tasks/domain/tag-list.test.ts
 src/features/tasks/domain/tag-list.ts
 src/features/tasks/domain/task-dates.test.ts
@@ -245,6 +249,19 @@ tests/e2e/dates.spec.ts
 tests/e2e/fixtures.ts
 tests/e2e/only-tdy.spec.ts
 tests/e2e/pwa.spec.ts
+tests/e2e/repeating.spec.ts
+tests/e2e/repeating.spec.ts-snapshots/repeat-editor-1440-dark-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeat-editor-1440-light-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeat-editor-390-dark-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeat-editor-390-light-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-1440-dark-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-1440-light-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-320-dark-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-320-light-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-390-dark-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-390-light-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-768-dark-chromium-linux.png
+tests/e2e/repeating.spec.ts-snapshots/repeating-768-light-chromium-linux.png
 tests/e2e/settings.spec.ts
 tests/visual/only-tdy.visual.spec.ts
 tests/visual/only-tdy.visual.spec.ts-snapshots/all-1440-dark-chromium-linux.png

@@ -45,10 +45,14 @@ export function navigate(path: string, options: NavigateOptions = {}): void {
   const destination = parseRoute(path.split('?')[0] ?? path).kind;
   const current = parseRoute(window.location.pathname).kind;
   const state =
-    destination === 'task' || destination === 'settings'
+    destination === 'task' ||
+    destination === 'settings' ||
+    destination === 'new-repeating'
       ? {
           returnTo:
-            current === 'task' || current === 'settings'
+            current === 'task' ||
+            current === 'settings' ||
+            current === 'new-repeating'
               ? pageReturnPath(APP_BASE_PATH)
               : currentPath,
         }
@@ -101,6 +105,7 @@ export function pageReturnPath(fallback: string): string {
   const route = parseRoute(path.split('?')[0] ?? path);
   return route.kind === 'task' ||
     route.kind === 'settings' ||
+    route.kind === 'new-repeating' ||
     route.kind === 'unknown'
     ? fallback
     : path;

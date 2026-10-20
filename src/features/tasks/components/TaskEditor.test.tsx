@@ -44,7 +44,14 @@ function Harness(props: TaskEditorProps) {
 
 function renderEditor(props: Partial<TaskEditorProps> = {}) {
   const onSave = vi.fn<(edit: TaskEdit) => Promise<TaskDetail | undefined>>(
-    (edit) => Promise.resolve({ ...TASK, ...edit, tags: edit.tags }),
+    (edit) => {
+      const { recurrence, ...fields } = edit;
+      return Promise.resolve({
+        ...TASK,
+        ...fields,
+        ...(recurrence ? { recurrence } : {}),
+      });
+    },
   );
   render(
     <Harness
@@ -470,4 +477,23 @@ it('toggles compact layout without losing edits or making the form dirty', async
   expect(onSave).toHaveBeenCalledWith(
     expect.objectContaining({ note: 'Updated note', tags: ['finance', 'q4'] }),
   );
+});
+
+it('adds Repeat quietly and saves the chosen schedule', async () => {
+  const user = userEvent.setup();
+  const { onSave } = renderEditor();
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Repeat' }),
+    'weekly',
+  );
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  await user.clear(screen.getByRole('spinbutton', { name: 'Every' }));
+  await user.type(screen.getByRole('spinbutton', { name: 'Every' }), '2');
+  await user.click(screen.getByRole('button', { name: 'Friday' }));
+  await user.click(screen.getByRole('button', { name: 'Save' }));
+  expect(onSave).toHaveBeenCalledOnce();
+  const recurrence = onSave.mock.calls[0]?.[0].recurrence;
+  expect(recurrence?.type).toBe('weekly');
+  expect(recurrence?.interval).toBe(2);
+  expect(recurrence?.weekdays).toContain(5);
 });

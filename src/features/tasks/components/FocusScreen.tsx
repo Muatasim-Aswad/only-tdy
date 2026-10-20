@@ -99,6 +99,7 @@ export function FocusScreen({
 }: FocusScreenProps) {
   const history = view !== 'tasks';
   const all = view === 'all';
+  const repeating = view === 'repeating';
 
   return (
     <main className="focus-shell">
@@ -107,13 +108,23 @@ export function FocusScreen({
           <SearchField
             value={searchValue}
             onToggleMode={onToggleInputMode}
-            pageName={all ? 'All' : history ? 'Completed' : 'Today'}
+            pageName={
+              repeating
+                ? 'Repeating'
+                : all
+                  ? 'All'
+                  : history
+                    ? 'Completed'
+                    : 'Today'
+            }
             label={
-              all
-                ? COPY.allSearchLabel
-                : history
-                  ? COPY.historySearchLabel
-                  : 'Search Today'
+              repeating
+                ? 'Search repeating tasks'
+                : all
+                  ? COPY.allSearchLabel
+                  : history
+                    ? COPY.historySearchLabel
+                    : 'Search Today'
             }
             onValueChange={onSearchChange}
             onSubmit={onSearchSubmit}
@@ -146,21 +157,25 @@ export function FocusScreen({
       ) : null}
       <TaskList
         state={listState}
-        details={all}
-        mode={all ? 'view' : 'complete'}
+        details={all || repeating}
+        mode={all || repeating ? 'view' : 'complete'}
         onToggle={onToggle}
         onOpenTask={onOpenTask}
         onRetry={onRetry}
         emptyMessage={
-          history
-            ? all
-              ? searching
-                ? COPY.allSearchEmpty
-                : COPY.allEmpty
-              : searching
-                ? COPY.historySearchEmpty
-                : COPY.historyEmpty
-            : 'Nothing on Today matches that.'
+          repeating
+            ? searching
+              ? 'No matching repeating tasks.'
+              : 'No repeating tasks.'
+            : history
+              ? all
+                ? searching
+                  ? COPY.allSearchEmpty
+                  : COPY.allEmpty
+                : searching
+                  ? COPY.historySearchEmpty
+                  : COPY.historyEmpty
+              : 'Nothing on Today matches that.'
         }
         ruled={history}
         disabled={disabled}

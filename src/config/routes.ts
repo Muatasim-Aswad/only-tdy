@@ -22,6 +22,8 @@ export type Route =
   | { readonly kind: 'version' }
   | { readonly kind: 'guide' }
   | { readonly kind: 'settings' }
+  | { readonly kind: 'repeating' }
+  | { readonly kind: 'new-repeating' }
   | { readonly kind: 'task'; readonly uid: string }
   | { readonly kind: 'unknown' };
 
@@ -55,6 +57,10 @@ export function routePath(route: Route): string {
       return `${APP_BASE_PATH}${GUIDE_SEGMENT}`;
     case 'settings':
       return `${APP_BASE_PATH}${SETTINGS_SEGMENT}`;
+    case 'repeating':
+      return `${APP_BASE_PATH}repeating`;
+    case 'new-repeating':
+      return `${APP_BASE_PATH}repeating/new`;
     case 'tasks':
     case 'unknown':
       return APP_BASE_PATH;
@@ -82,6 +88,8 @@ export function parseRoute(pathname: string): Route {
   if (rest === ABOUT_SEGMENT || rest === 'version') return { kind: 'version' };
   if (rest === GUIDE_SEGMENT) return { kind: 'guide' };
   if (rest === SETTINGS_SEGMENT) return { kind: 'settings' };
+  if (rest === 'repeating') return { kind: 'repeating' };
+  if (rest === 'repeating/new') return { kind: 'new-repeating' };
 
   if (rest.startsWith(TASK_SEGMENT)) {
     const encoded = rest.slice(TASK_SEGMENT.length);
