@@ -62,6 +62,7 @@ export const rawTaskDetail = {
   ...rawTodayTask,
   note: 'Attach the timesheet.',
   due_date: '2026-10-01',
+  due_time: null,
   defer_until: null,
   project_uid: 'project-work',
 };

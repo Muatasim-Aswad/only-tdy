@@ -15,13 +15,12 @@ import {
   adaptTaskDetail,
   adaptTaskList,
   adaptTaskTotal,
+  TududiShapeError,
 } from './adapters.ts';
 
 import {
   applyDateRules,
-  currentDate,
   dateAtMidnight,
-  hideDate,
   isTodayStatus,
   validateHideDate,
 } from '../domain/task-dates.ts';
@@ -31,6 +30,8 @@ import {
   type TududiClient,
 } from '../../../infra/tududi-client.ts';
 import type { TududiApi } from '../api-contract.ts';
+import { visibleBacklogTasks } from '../domain/backlog-visibility.ts';
+import { preferencesStore } from '../preferences/store.ts';
 
 /**
  * Every backlog request starts here: open tasks, capped at the page limit. The
@@ -118,13 +119,10 @@ export function createTududiApi(
     tasks: readonly Task[],
   ): Promise<readonly Task[]> => {
     const timezone = await fetchAccountTimezone();
-    const today = currentDate({ timezone, now: now() });
-    return tasks.filter(
-      (task) =>
-        task.status !== 'not_started' ||
-        !task.deferUntil ||
-        hideDate(task.deferUntil, timezone) <= today,
-    );
+    return visibleBacklogTasks(tasks, preferencesStore.getSnapshot().settings, {
+      timezone,
+      now: now(),
+    });
   };
 
   const readAllPages = async (
@@ -294,10 +292,8 @@ export function createTududiApi(
         }),
       ),
     /*
-     * Every field is sent every time. Tududi's PATCH merges, so an omitted
-     * field keeps its old value and an emptied one has to be sent explicitly
-     * as empty — which is also how each of these is cleared: `''` for the
-     * project and due date, null for Hide until, and `[]` for the tags.
+     * Tududi's PATCH merges omitted fields. Leave an unchanged due date
+     * untouched so a date-only save cannot remove its time.
      */
     updateTask: async (uid, edit, previousDueDate, previousStatus) => {
       const timezone = await fetchAccountTimezone();
@@ -308,6 +304,26 @@ export function createTududiApi(
         previousStatus,
       );
       validateHideDate(dated.dueDate, dated.deferUntil);
+      const path = `/api/task/${encodeURIComponent(uid)}`;
+      const dueDateChanged = dated.dueDate !== previousDueDate;
+      let dueTime: string | undefined;
+      if (dueDateChanged && dated.dueDate !== '') {
+        const current = await request(path);
+        if (
+          typeof current !== 'object' ||
+          current === null ||
+          Array.isArray(current)
+        ) {
+          throw new TududiShapeError('Expected a Tududi task object.');
+        }
+        const time = 'due_time' in current ? current.due_time : undefined;
+        if (time !== undefined && time !== null && typeof time !== 'string') {
+          throw new TududiShapeError(
+            'Expected Tududi due_time to be a string.',
+          );
+        }
+        if (typeof time === 'string') dueTime = time;
+      }
       const projectUid =
         edit.newProjectName === undefined
           ? edit.projectUid
@@ -316,20 +332,17 @@ export function createTududiApi(
                 name: edit.newProjectName,
               }),
             ).uid;
-      const payload = await mutate(
-        `/api/task/${encodeURIComponent(uid)}`,
-        'PATCH',
-        {
-          name: dated.title,
-          note: dated.note,
-          status: dated.status,
-          priority: dated.priority,
-          project_uid: projectUid,
-          due_date: dated.dueDate,
-          defer_until: dateAtMidnight(dated.deferUntil, timezone),
-          tags: [...dated.tags],
-        },
-      );
+      const payload = await mutate(path, 'PATCH', {
+        name: dated.title,
+        note: dated.note,
+        status: dated.status,
+        priority: dated.priority,
+        project_uid: projectUid,
+        ...(dueDateChanged ? { due_date: dated.dueDate } : {}),
+        ...(dueTime === undefined ? {} : { due_time: dueTime }),
+        defer_until: dateAtMidnight(dated.deferUntil, timezone),
+        tags: [...dated.tags],
+      });
       return adaptTaskDetail(payload, timezone);
     },
     deleteTask: async (uid) => {

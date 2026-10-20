@@ -1,0 +1,36 @@
+@layer components {
+  .help-tip {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+
+  .help-tip__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .help-tip__trigger:focus-visible,
+  .help-tip__trigger[aria-expanded='true'] {
+    color: var(--accent);
+  }
+
+  .help-tip__content {
+    position: absolute;
+    z-index: 30;
+    right: 0;
+    bottom: calc(100% + 4px);
+    width: min(19rem, calc(100vw - 72px));
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: var(--surface);
+    color: var(--ink);
+  }
+}

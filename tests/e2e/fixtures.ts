@@ -218,12 +218,27 @@ export async function installApi(page: Page, scenario: ApiScenario = {}) {
       })),
     }),
   );
-  await page.route('**/api/profile', (route) =>
-    json(route, { timezone: 'Europe/Amsterdam' }),
-  );
+  await installProfileApi(page);
   await page.route('**/api/csrf-token', (route) =>
     json(route, { csrfToken: 'csrf-e2e' }),
   );
+}
+
+export async function installProfileApi(page: Page) {
+  let uiSettings: Record<string, unknown> = {};
+  await page.route('**/api/profile', async (route) => {
+    if (route.request().method() === 'PATCH') {
+      const body = route.request().postDataJSON() as {
+        readonly ui_settings: Record<string, unknown>;
+      };
+      uiSettings = body.ui_settings;
+    }
+    await json(route, {
+      uid: 'user-e2e',
+      timezone: 'Europe/Amsterdam',
+      ui_settings: uiSettings,
+    });
+  });
 }
 
 /**
@@ -260,7 +275,9 @@ export async function installTaskApi(
           : detail.status,
       defer_until: (patch.defer_until ?? null) as string | null,
       note: (patch.note ?? detail.note) as string | null,
-      due_date: (patch.due_date ?? null) as string | null,
+      due_date: (patch.due_date === undefined
+        ? detail.due_date
+        : patch.due_date) as string | null,
       project_uid: (patch.project_uid ?? null) as string | null,
       tags: Array.isArray(patch.tags)
         ? patch.tags.map((name) => ({ name: String(name) }))

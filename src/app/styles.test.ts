@@ -425,9 +425,13 @@ describe('motion and platform behaviour', () => {
   });
 
   it('drops travel under reduced motion, keeping colour', () => {
-    const reduced = block(
-      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n {2}\}/,
-    );
+    const reduced = [
+      ...css.matchAll(
+        /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n {2}\}/g,
+      ),
+    ]
+      .map(([value]) => value)
+      .join('\n');
 
     expect(reduced).toContain('.focus-row--inserted');
     expect(reduced).toContain('.focus-row--restoring');
@@ -492,8 +496,8 @@ describe('motion and platform behaviour', () => {
    */
   it('never lends the warning colour to reaching a delete answer', () => {
     for (const selector of [
-      /\.focus-delete:focus-visible \{[^}]*\}/,
-      /\.focus-delete:hover \{[^}]*\}/,
+      /\.focus-delete:focus-visible[^{]*\{[^}]*\}/,
+      /\.focus-delete:hover[^{]*\{[^}]*\}/,
     ]) {
       const rule = block(selector);
       expect(rule).toContain('text-decoration: underline;');

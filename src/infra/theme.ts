@@ -23,12 +23,7 @@ export type ThemeChoice = 'system' | 'light' | 'dark';
 
 export const THEME_ORDER: readonly ThemeChoice[] = ['system', 'light', 'dark'];
 
-/**
- * Where the choice is kept between visits. It is a preference about this one
- * browser rather than about the account, so it stays in this one browser:
- * Tududi has nowhere to put it, and a theme that followed the account would
- * make a phone in the dark obey a laptop in daylight.
- */
+/** First-paint mirror of the active account's cached theme. */
 export const THEME_STORAGE_KEY = 'only-tdy:theme';
 
 function isThemeChoice(value: unknown): value is ThemeChoice {

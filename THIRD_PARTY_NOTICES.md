@@ -1,10 +1,10 @@
 # Third-party notices
 
-This file covers third-party assets committed directly to the repository. Build and runtime dependencies are declared in `package.json` and pinned in `pnpm-lock.yaml`; static and container artifacts include `DEPENDENCY_LICENSES.txt` for runtime packages and Workbox, `FONT_LICENSE.txt`, `LICENSE` and this notice; distribution tooling preserves their required license notices as well as this file and [LICENSE](LICENSE).
+This file covers committed third-party assets. `package.json` and `pnpm-lock.yaml` declare and pin build/runtime dependencies. Static and container artifacts preserve `DEPENDENCY_LICENSES.txt` (runtime packages and Workbox), `FONT_LICENSE.txt`, [LICENSE](LICENSE) and this notice.
 
 ## Atkinson Hyperlegible Next
 
-The locally bundled font is `src/assets/fonts/AtkinsonHyperlegibleNext-Variable.woff2`; no external font service is used at runtime.
+The bundled font is `src/assets/fonts/AtkinsonHyperlegibleNext-Variable.woff2`; runtime uses no external font service.
 
 | Field | Value |
 | --- | --- |
@@ -15,7 +15,7 @@ The locally bundled font is `src/assets/fonts/AtkinsonHyperlegibleNext-Variable.
 | License | SIL Open Font License 1.1 |
 | License text | [src/assets/fonts/OFL.txt](src/assets/fonts/OFL.txt) |
 
-Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors. The file is committed unmodified, with the full character set and a `200..800` weight axis; only-tdy uses `400`, `500` and `600`. When replacing it, refresh the source revision, hash and license together:
+Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors. The unmodified file includes the full character set and `200..800` weight axis; only-tdy uses `400`, `500` and `600`. Replace its source revision, hash and license together:
 
 ```sh
 sha256sum src/assets/fonts/AtkinsonHyperlegibleNext-Variable.woff2
@@ -23,6 +23,6 @@ sha256sum src/assets/fonts/AtkinsonHyperlegibleNext-Variable.woff2
 
 ## Original artwork and screenshots
 
-`public/icons/` contains original repository artwork under the repository license; see [the icon notes](public/icons/README.md). The screenshots in `docs/images/` are copies of synthetic visual-test baselines and contain no live account data.
+`public/icons/` contains original artwork under the repository license; see [icon notes](public/icons/README.md). Images in `docs/images/` use synthetic data, including visual-test baselines; none contain live account data.
 
-The container archive also preserves the pinned nginx/Alpine image’s upstream copyright files under `/usr/share/licenses/` and package/license metadata in `/lib/apk/db/installed`. Static-only distribution contains no server binaries. The runtime base and its dependency sources are maintained by [nginx-unprivileged](https://github.com/nginx/docker-nginx-unprivileged) and [Alpine Linux](https://pkgs.alpinelinux.org/); image updates require reviewing those redistribution notices together with the runtime inventory.
+The container archive preserves nginx/Alpine copyright files in `/usr/share/licenses/` and package/license metadata in `/lib/apk/db/installed`. Static-only distributions contain no server binaries. [nginx-unprivileged](https://github.com/nginx/docker-nginx-unprivileged) and [Alpine Linux](https://pkgs.alpinelinux.org/) maintain the runtime base and dependency sources; review redistribution notices and the runtime inventory when updating images.

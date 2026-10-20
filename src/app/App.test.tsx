@@ -8,7 +8,21 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { App } from './App.tsx';
 
 const server = setupServer(
-  http.get('/api/profile', () => HttpResponse.json({ timezone: 'UTC' })),
+  http.get('/api/profile', () =>
+    HttpResponse.json({
+      uid: 'user-app',
+      timezone: 'UTC',
+      ui_settings: { onlyTdy: {} },
+    }),
+  ),
+  http.patch('/api/profile', async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      uid: 'user-app',
+      timezone: 'UTC',
+      ...(body as object),
+    });
+  }),
   http.get('/api/tags', () => HttpResponse.json({ tags: [] })),
 );
 

@@ -29,6 +29,15 @@ export function TasksIcon() {
   );
 }
 
+export function SettingsIcon() {
+  return (
+    <Icon>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+      <path d="M8 3.5v5M16 9.5v5M10 15.5v5" />
+    </Icon>
+  );
+}
+
 export function HistoryIcon() {
   return (
     <Icon>

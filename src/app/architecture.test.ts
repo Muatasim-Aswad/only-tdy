@@ -11,6 +11,7 @@ const FEATURE_API = new Set([
   'features/tasks/BacklogPage.tsx',
   'features/tasks/TaskDetailPage.tsx',
   'features/tasks/GuidePage.tsx',
+  'features/tasks/SettingsPage.tsx',
   'features/tasks/navigation-ui.ts',
   'features/tasks/styles.css',
 ]);

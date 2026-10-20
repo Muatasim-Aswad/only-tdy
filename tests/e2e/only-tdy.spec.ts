@@ -5,9 +5,7 @@ test.use({ timezoneId: 'Europe/Amsterdam' });
 
 test.beforeEach(async ({ page }) => {
   await page.clock.setFixedTime(new Date(FIXTURE_NOW));
-  await page.route('**/api/profile', (route) =>
-    route.fulfill({ json: { timezone: 'Europe/Amsterdam' } }),
-  );
+  await installProfileApi(page);
 });
 
 import {
@@ -16,6 +14,7 @@ import {
   FIXTURE_NOW,
   HISTORY_TASKS,
   installApi,
+  installProfileApi,
   installTaskApi,
   INVOICE_DETAIL,
   TODAY_TASKS,
@@ -468,6 +467,9 @@ test('disables saves offline and replaces the list for an expired session', asyn
 }) => {
   await installApi(page);
   await page.goto('/only-tdy/');
+  await expect(
+    page.getByRole('button', { name: 'Complete “Send the invoice”' }),
+  ).toBeEnabled();
   await context.setOffline(true);
   await expect(
     page.getByText('You’re offline. Reconnect to load and save tasks.'),
@@ -1626,35 +1628,87 @@ test('opens the task page with the way back, above everything else', async ({
   await expect(del).toHaveCount(0);
 });
 
-test('rotates the palette through system, light, and dark', async ({
+for (const compact of [false, true]) {
+  test(`preserves a Tududi due time through the ${compact ? 'compact' : 'normal'} editor`, async ({
+    page,
+  }) => {
+    await installApi(page);
+    let stored = {
+      ...INVOICE_DETAIL,
+      due_date: '2026-11-03',
+      due_time: '14:30' as string | null,
+    };
+    await page.route('**/api/task/*', async (route) => {
+      if (route.request().method() === 'PATCH') {
+        const patch = route.request().postDataJSON() as Record<string, unknown>;
+        stored = {
+          ...stored,
+          ...(typeof patch.name === 'string'
+            ? { name: patch.name, original_name: patch.name }
+            : {}),
+          ...(patch.due_date === undefined
+            ? {}
+            : {
+                due_date:
+                  typeof patch.due_date === 'string' ? patch.due_date : '',
+                due_time:
+                  typeof patch.due_time === 'string' ? patch.due_time : null,
+              }),
+        };
+      }
+      await route.fulfill({ json: stored });
+    });
+    await page.goto('/only-tdy/task/task-invoice');
+    if (compact) {
+      await page.getByRole('button', { name: 'Compact form' }).click();
+    }
+    await page
+      .getByRole('combobox', { name: 'Title' })
+      .fill('Send the updated invoice');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page).toHaveURL(/\/only-tdy\/$/);
+    const saved = await page.evaluate(async () => {
+      const response = await fetch('/api/task/task-invoice');
+      return (await response.json()) as {
+        readonly name: string;
+        readonly due_date: string;
+        readonly due_time: string | null;
+      };
+    });
+    expect(saved.name).toBe('Send the updated invoice');
+    expect(saved.due_date).toBe('2026-11-03');
+    expect(saved.due_time).toBe('14:30');
+  });
+}
+
+test('changes the palette in Settings and keeps it across reloads', async ({
   page,
 }) => {
   await installApi(page);
   await page.goto('/only-tdy/');
   await page.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
 
-  const mark = page.getByRole('button', { name: /^Theme: / });
-  await expect(mark).toHaveAccessibleName('Theme: system');
+  const theme = page.getByRole('combobox', { name: 'Theme', exact: true });
+  await expect(theme).toHaveValue('system');
   const attribute = () =>
     page.evaluate(() => document.documentElement.getAttribute('data-theme'));
   expect(await attribute()).toBeNull();
 
-  await mark.click();
-  await expect(mark).toHaveAccessibleName('Theme: light');
+  await theme.selectOption('light');
   expect(await attribute()).toBe('light');
 
-  await mark.click();
-  await expect(mark).toHaveAccessibleName('Theme: dark');
+  await theme.selectOption('dark');
   expect(await attribute()).toBe('dark');
+  await expect(page.getByRole('status')).toHaveText('Saved');
 
   // It survives a reload, and the document is already right on first paint.
   await page.reload();
   expect(await attribute()).toBe('dark');
-  await page.getByRole('button', { name: 'More' }).click();
-  await expect(page.getByRole('button', { name: 'Theme: dark' })).toBeVisible();
+  await expect(theme).toHaveValue('dark');
 
   // And three presses come back to where it started.
-  await page.getByRole('button', { name: 'Theme: dark' }).click();
+  await theme.selectOption('system');
   expect(await attribute()).toBeNull();
 });
 

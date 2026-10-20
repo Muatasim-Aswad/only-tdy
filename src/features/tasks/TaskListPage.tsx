@@ -44,6 +44,9 @@ import { isUnauthorized } from '../../infra/tududi-client.ts';
 import { COPY } from './components/copy.ts';
 import { FocusScreen } from './components/FocusScreen.tsx';
 import type { TaskRowMotion } from './components/TaskRow.tsx';
+import { usePreferences } from './preferences/usePreferences.ts';
+import { useDateTimezone } from './date-timezone.ts';
+import { visibleBacklogTasks } from './domain/backlog-visibility.ts';
 
 const INSERTION_MOTION_MS = 180;
 const RESTORE_MOTION_MS = 120;
@@ -65,6 +68,8 @@ function linkedQuery(): string {
 }
 
 export function TaskListPage({ view }: TaskListPageProps) {
+  const { settings } = usePreferences();
+  const timezone = useDateTimezone();
   const { captureValue, onCaptureChange } = useTaskSession();
   const [inputMode, setInputMode] = useState<'add' | 'search'>(
     view === 'tasks' ? 'add' : 'search',
@@ -302,11 +307,22 @@ export function TaskListPage({ view }: TaskListPageProps) {
     () =>
       taskQueries.todayClear
         ? {
-            backlogCount: taskQueries.backlog.data?.length,
+            backlogCount:
+              taskQueries.backlog.data === undefined
+                ? undefined
+                : visibleBacklogTasks(taskQueries.backlog.data, settings, {
+                    timezone,
+                  }).length,
             onNavigate: handleOpenBacklog,
           }
         : undefined,
-    [taskQueries.todayClear, taskQueries.backlog.data, handleOpenBacklog],
+    [
+      taskQueries.todayClear,
+      taskQueries.backlog.data,
+      handleOpenBacklog,
+      settings,
+      timezone,
+    ],
   );
 
   const handleRetry = useCallback(() => {

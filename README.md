@@ -5,11 +5,9 @@ Capture tasks quickly, choose what matters today, and leave the rest in Backlog.
 only-tdy makes organizing todos approachable through a minimalist, distraction-free daily flow. Pick tasks from Backlog, work through Today, and edit details without leaving that flow.
 
 <p>
-  <img align="left" width="43%" src="docs/images/today-at-rest.png" alt="Today at rest with an unobtrusive capture bar and a completed task">
-  <img align="right" width="43%" src="docs/images/task-editor.png" alt="Edit a task in the normal form, with title, project, tags, status, priority, due date and Hide until">
+  <img width="280" src="docs/images/today-at-rest.png" alt="Today at rest with an unobtrusive capture bar and a completed task">
+  <img width="280" src="docs/images/task-editor.png" alt="Edit a task in the normal form, with title, project, tags, status, priority, due date and Hide until">
 </p>
-<br clear="all">
-<br>
 
 ## See it in action
 
@@ -17,13 +15,21 @@ The unobtrusive bar stays quiet until you focus it. The same field supports quic
 
 Add a task to Backlog quickly using the parser and auto-completion for a project, priority, due date and tag.
 
-<img src="docs/images/capture-add.gif" alt="Add a task using project, priority, due date and tag suggestions, then find it in Backlog" width="390">
+<img src="docs/images/capture-add.gif" alt="Add a task using project, priority, due date and tag suggestions, then find it in Backlog" width="280">
 
 Filter Backlog by tag, select tasks across priorities, move them to Today, then search for a moved task.
 
-<img src="docs/images/backlog-move.gif" alt="Search Backlog by tag, select tasks with different priorities, move them to Today, and search for a moved task" width="390">
+<img src="docs/images/backlog-move.gif" alt="Search Backlog by tag, select tasks with different priorities, move them to Today, and search for a moved task" width="280">
 
 Try `Call plumber +Renovation #repairs !3 /today`; omit `/today` to leave an undated task in Backlog. Use `/due:tomorrow` or `/hide:+3` for dates, or edit dates and notes in the task editor. A new project name can create a project. Switch the empty bar between capture and search; search one phrase, tag, project or priority at a time.
+
+## Features
+
+- **Quick capture.** Add tasks with projects, tags, priorities, notes and dates, using inline shortcuts and auto-completion.
+- **Today and Backlog.** Choose tasks individually or together for Today. Due and overdue tasks move there automatically during sync unless you disable that setting.
+- **Backlog visibility.** Hide tasks until a chosen day or show dated tasks only near their due date. Always visible in All page.
+- **Search and history.** Search titles and notes, filter by tag, project or priority, and review or reopen completed tasks.
+- **Flexible editing.** Update task details in normal or compact forms, with system, light and dark themes and keyboard-accessible controls.
 
 ## Try it locally
 
@@ -37,23 +43,26 @@ mise exec -- pnpm install --frozen-lockfile
 mise run dev:seeded
 ```
 
-Open the `/only-tdy/` URL printed by the server. The seeded demo needs no Tududi installation: it uses synthetic data, supports edits, and forgets changes when the server stops. It is excluded from production builds.
+Open the printed `/only-tdy/` URL. The seeded demo uses editable synthetic data, needs no Tududi installation, and forgets changes when stopped. Production builds exclude it.
 
-## Use with your tasks
+## Deploy
 
-A current Tududi installation providing the expected `/api/` session, CSRF, profile, task, project, tag and search endpoints is required for real data. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in through Tududi. Tududi owns your tasks and remains available as an optional fuller UI for complex planning. Use the [published Docker image](docs/deployment.md#published-image) or [build from source](docs/deployment.md#build-from-source) with the same Compose file. See [deployment](docs/deployment.md) and [API compatibility limits](docs/limitations.md#compatibility).
+Requires [Tududi 1.9.4](docs/deployment.md#tududi-backend-pin) as its backend. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in through Tududi, which owns your tasks and provides fuller planning tools. The same Compose file supports the [published image](docs/deployment.md#published-image), [source builds](docs/deployment.md#build-from-source) and optional [srvr management](docs/deployment.md#deploy-with-srvr).
 
-This is an unofficial integration, unaffiliated with Tududi. Upstream API changes may break it; use it in accordance with Tududi's license and applicable service terms. No real-backend version is currently verified.
+The current source's core API flow is verified against the pin; your HTTPS deployment still needs smoke checks.
 
-- Automatic promotion of existing due tasks is an explicit opt-in setting, off by default.
-- Install as a PWA where your browser supports it. The shell can reopen offline after a successful online visit; task loading and saving require a connection.
+Install as a PWA where supported. After an online visit, the shell can reopen offline; loading and saving tasks require a connection.
 
-## Coverage and development
+## Documentation
 
-Verification covers Chromium on Linux, including narrow layouts, keyboard interaction, themes, reduced motion and forced colors. Firefox, WebKit/Safari, real mobile devices and their installation flows are unverified; viewport tests do not establish device support.
+| I want to… | Read |
+| --- | --- |
+| Deploy, update or remove only-tdy | [Deployment](docs/deployment.md) |
+| Develop or contribute | [Development](docs/development.md) · [Contributing](CONTRIBUTING.md) |
+| Understand code ownership and task rules | [Architecture](docs/architecture.md) |
+| Check support, data handling or recovery | [Limitations](docs/limitations.md) · [Security](SECURITY.md) |
+| Prepare a release or read changes | [Releases](docs/releases.md) · [Changelog](CHANGELOG.md) |
 
-See [contributing](CONTRIBUTING.md#setup-and-checks) for setup and the shared local/CI gate, and [releases](docs/releases.md) for deterministic release rehearsals.
-
-Read [architecture](docs/architecture.md) for ownership and planning rules, [limitations](docs/limitations.md) for data handling and recovery, [security](SECURITY.md) for vulnerability reporting, and [the changelog](CHANGELOG.md) for release changes. Ask questions in [Discussions](https://github.com/Muatasim-Aswad/only-tdy/discussions).
+Ask questions in [Discussions](https://github.com/Muatasim-Aswad/only-tdy/discussions); report vulnerabilities through [Security](SECURITY.md).
 
 Licensed under [MIT](LICENSE). Bundled asset attribution is in [third-party notices](THIRD_PARTY_NOTICES.md).

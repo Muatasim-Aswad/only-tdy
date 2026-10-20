@@ -5,15 +5,16 @@ import {
 
 const STORAGE_KEY = 'only-tdy:auto-due-promotion:v1';
 const CHANGE_EVENT = 'only-tdy:due-promotion';
-let unavailableChoice = false;
+let unavailableChoice: boolean | undefined;
 
 export function readDuePromotion(): boolean {
-  return readBrowserStorage(STORAGE_KEY) === 'on' || unavailableChoice;
+  return unavailableChoice ?? readBrowserStorage(STORAGE_KEY) !== 'off';
 }
 
 export function setDuePromotion(enabled: boolean): void {
-  unavailableChoice =
-    !writeBrowserStorage(STORAGE_KEY, enabled ? 'on' : null) && enabled;
+  unavailableChoice = writeBrowserStorage(STORAGE_KEY, enabled ? 'on' : 'off')
+    ? undefined
+    : enabled;
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 

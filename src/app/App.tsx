@@ -6,7 +6,11 @@ import { UpdateToast } from './UpdateToast.tsx';
 
 import { buildLabel, type BuildInfo } from '../infra/build-info.ts';
 import { handleLinkNavigation, useRoute } from '../infra/navigation.ts';
-import { TaskListPage } from '../features/tasks/TaskListPage.tsx';
+const TaskListPage = lazy(() =>
+  import('../features/tasks/TaskListPage.tsx').then((module) => ({
+    default: module.TaskListPage,
+  })),
+);
 
 const BacklogPage = lazy(() =>
   import('../features/tasks/BacklogPage.tsx').then((module) => ({
@@ -29,6 +33,12 @@ const GuidePage = lazy(() =>
 const VersionPage = lazy(() =>
   import('./VersionPage.tsx').then((module) => ({
     default: module.VersionPage,
+  })),
+);
+
+const SettingsPage = lazy(() =>
+  import('../features/tasks/SettingsPage.tsx').then((module) => ({
+    default: module.SettingsPage,
   })),
 );
 
@@ -64,6 +74,14 @@ export function App({ updateNotice = null }: AppProps) {
 
 function Page() {
   const route = useRoute();
+
+  if (route.kind === 'settings') {
+    return (
+      <Suspense fallback={null}>
+        <SettingsPage />
+      </Suspense>
+    );
+  }
 
   if (route.kind === 'task') {
     return (
@@ -130,11 +148,23 @@ function Page() {
   }
 
   return (
-    <TaskListPage
-      key={route.kind}
-      view={
-        route.kind === 'history' || route.kind === 'all' ? route.kind : 'tasks'
+    <Suspense
+      fallback={
+        <main className="focus-shell">
+          <div className="focus-listing" aria-live="polite">
+            Loading tasks…
+          </div>
+        </main>
       }
-    />
+    >
+      <TaskListPage
+        key={route.kind}
+        view={
+          route.kind === 'history' || route.kind === 'all'
+            ? route.kind
+            : 'tasks'
+        }
+      />
+    </Suspense>
   );
 }

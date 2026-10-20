@@ -123,21 +123,20 @@ describe('FocusFooter', () => {
     ).toBeNull();
   });
 
-  it('rotates the palette in place, keeping the menu open', async () => {
+  it('puts preferences behind one Settings destination', async () => {
     const user = userEvent.setup();
     render(<FocusFooter current="tasks" onNavigate={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'More' }));
-    await user.click(
-      await screen.findByRole('button', { name: 'Theme: system' }),
-    );
-    expect(document.documentElement.dataset.theme).toBe('light');
-
-    await user.click(screen.getByRole('button', { name: 'Theme: light' }));
-    expect(document.documentElement.dataset.theme).toBe('dark');
-
-    await user.click(screen.getByRole('button', { name: 'Theme: dark' }));
-    expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+    expect(
+      await screen.findByRole('link', { name: 'Settings' }),
+    ).toHaveAttribute('href', '/only-tdy/settings');
+    expect(screen.queryByRole('button', { name: /^Theme: / })).toBeNull();
+    expect(
+      screen.queryByRole('button', {
+        name: 'Automatically move due tasks to Today',
+      }),
+    ).toBeNull();
   });
 
   it('closes on Escape and hands focus back to the dots', async () => {

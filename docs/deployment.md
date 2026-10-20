@@ -1,10 +1,22 @@
 # Docker deployment
 
-only-tdy is a static app served by nginx. Tududi owns authentication and task data; install and back it up separately. Configure a prefix-stripping HTTPS proxy on the Tududi origin as described below. Real-backend compatibility remains [unverified](limitations.md#compatibility).
+[README](../README.md) · [Limitations](limitations.md) · [Releases](releases.md)
+
+only-tdy is a static app served by nginx. Install and back up Tududi separately; it owns authentication and tasks. Use a prefix-stripping HTTPS proxy on its origin. See [API compatibility](limitations.md#compatibility).
+
+## Tududi backend pin
+
+Pin your existing Tududi service to the tested **1.9.4** image:
+
+```yaml
+image: chrisvel/tududi:1.9.4@sha256:dd930f0fb48988e03e199b1c22016dcd95dad9eade073e8f45c2a0d250106bcf
+```
+
+Keep Tududi's environment, volumes and proxy settings. only-tdy's Compose file serves just the frontend. Back up Tududi before upgrading, then run the smoke checks below. The pin verifies an API baseline, not your database upgrade or HTTPS deployment.
 
 ## Published image
 
-Requires Docker with Compose. Download one Compose file and run the matching public image; no clone or build tools are needed:
+With Docker Compose, download and run the matching published image; no clone or build tools are needed:
 
 ```sh
 mkdir -p only-tdy && cd only-tdy
@@ -12,11 +24,11 @@ curl -fsSLO https://raw.githubusercontent.com/Muatasim-Aswad/only-tdy/v0.1.2/com
 docker compose up -d --no-build
 ```
 
-Compose pulls `ghcr.io/muatasim-aswad/only-tdy:v0.1.2` if missing. It binds only `127.0.0.1:3003`; the proxy exposes it at `/only-tdy/`. Linux/amd64 only. There are no persistent container volumes or secrets.
+Compose pulls `ghcr.io/muatasim-aswad/only-tdy:v0.1.2` if missing and binds `127.0.0.1:3003`; the proxy exposes `/only-tdy/`. Linux/amd64 only, with no persistent volumes or secrets.
 
 ## Build from source
 
-Requires Git and Docker with Compose. Docker installs the build tools internally:
+Requires Git and Docker Compose; build tools run inside Docker:
 
 ```sh
 git clone https://github.com/Muatasim-Aswad/only-tdy.git
@@ -26,11 +38,52 @@ docker compose build
 docker compose up -d --no-build --pull never
 ```
 
-[`compose.yaml`](../compose.yaml) owns the build context, platform, and arguments; `ONLY_TDY_IMAGE` names the local image. No host mise, Node, pnpm, identity generation, or release rehearsal is required. Ordinary source builds report revision `dev`; deployment tools can supply `APP_REVISION`, `APP_COMMIT_TIME`, and `APP_BUILD_TIME` to identify the deployed source. The default `SOURCE_DATE_EPOCH=0` permits separate commit and build times; release builds select a nonzero commit epoch and require matching timestamps. Nothing is published.
+[`compose.yaml`](../compose.yaml) defines the build; `ONLY_TDY_IMAGE` names the local image. No host mise/Node/pnpm, identity generation or release rehearsal is needed; nothing is published. Ordinary builds report revision `dev`; deployment tools can supply [build identity](development.md#build-identity).
+
+## Deploy with srvr
+
+[Install srvr](https://github.com/Muatasim-Aswad/srvr/blob/main/docs/install.md) and prepare the published-image directory or source checkout above. From that directory, register either mode using the existing Compose file.
+
+For published images:
+
+```sh
+srvr add only-tdy --kind image --workdir "$PWD" \
+  --compose-file compose.yaml --update-component only-tdy \
+  --health http://127.0.0.1:3003/healthz
+```
+
+For source builds, use a clean checkout containing `main`, with `ONLY_TDY_IMAGE=only-tdy:local` in its ignored `.env`:
+
+```sh
+srvr add only-tdy --kind git --branch main --workdir "$PWD" \
+  --compose-file compose.yaml --health http://127.0.0.1:3003/healthz \
+  --version-url http://127.0.0.1:3003/version.json
+```
+
+Registration leaves running containers alone; add `--start` for a stopped project. Keep project name `only-tdy`, or pass an existing override with `--project`. Adjust loopback URLs for `ONLY_TDY_PORT`. The project's `.env` is automatic; register external settings with `--env-file`. Existing Compose arguments carry srvr's source commit/build identity.
+
+For a running source image built directly with Compose (`dev`), first run `srvr update only-tdy --force` to rebuild with commit identity. Then inspect:
+
+```sh
+srvr info only-tdy
+srvr health only-tdy
+srvr logs only-tdy -f
+```
+
+For image updates, replace `IMAGE` with a published `ghcr.io/muatasim-aswad/only-tdy` version tag or digest. Review, then apply:
+
+```sh
+srvr update only-tdy --image IMAGE --check
+srvr update only-tdy --image IMAGE
+```
+
+For source updates, run `srvr update only-tdy --check`, then `srvr update only-tdy`; `--ref` selects a release tag or commit. `srvr rollback only-tdy` undoes the last successful update. See [srvr update/recovery rules](https://github.com/Muatasim-Aswad/srvr/blob/main/docs/updates.md).
+
+only-tdy needs no data registration or migration job. Manage Tududi's pin/backups separately; frontend rollback cannot undo task writes. Preserve [proxy routing](#exposure-and-routing) and run the [smoke checks](#smoke-checks); srvr health does not verify login or routing.
 
 ## Configuration and health
 
-`ONLY_TDY_IMAGE` selects a versioned image, digest, or local build; `ONLY_TDY_PORT` changes the loopback host port. Export overrides for subsequent commands or save them in an ignored mode `0600` `.env` beside `compose.yaml`. [`.env.example`](../.env.example) lists the settings. Preserve `ONLY_TDY_IMAGE=only-tdy:local` for source deployments.
+`ONLY_TDY_IMAGE` selects a versioned image, digest or local build; `ONLY_TDY_PORT` sets the loopback port. Export overrides or save them in an ignored mode `0600` `.env` beside `compose.yaml`; see [`.env.example`](../.env.example). Keep `ONLY_TDY_IMAGE=only-tdy:local` for source deployments.
 
 With settings loaded:
 
@@ -41,7 +94,7 @@ curl -fsS http://127.0.0.1:3003/healthz
 curl -fsS http://127.0.0.1:3003/version.json
 ```
 
-Compose sets a non-root runtime, read-only filesystem, temporary nginx scratch space, dropped capabilities, resource limits, bounded logs and automatic restart. Health checks nginx readiness; they do not verify Tududi or login validity. Build information is available through the proxy at `/only-tdy/version.json` and in About. Reloading to a new build loses unsaved drafts.
+Compose enforces non-root execution, a read-only filesystem, temporary nginx scratch space, dropped capabilities, resource limits, bounded logs and automatic restart. Health checks nginx readiness only, not Tududi or login. Build identity is at `/only-tdy/version.json` and in About. Reloading a new build loses drafts.
 
 ## Exposure and routing
 
@@ -52,9 +105,9 @@ Use an HTTPS reverse proxy on the Tududi origin:
 | `/api/**`, login and other Tududi routes | Tududi. |
 | `/only-tdy` and `/only-tdy/**` | only-tdy on loopback, **stripping the `/only-tdy` prefix** before forwarding. |
 
-The browser retains `/only-tdy/`, while the static server receives `/`, `/assets/...`, and other stripped paths. The app canonicalizes the exact `/only-tdy` URL to `/only-tdy/`. Deep links fall back to the shell. Prefix-preserving proxies and cross-origin APIs are unsupported. Configure Tududi's proxy trust for your trusted proxy according to its own guidance; do not trust arbitrary forwarded headers.
+The browser keeps `/only-tdy/`; the static server receives `/`, `/assets/...` and other stripped paths. The app canonicalizes `/only-tdy` to `/only-tdy/`; deep links fall back to the shell. Prefix-preserving proxies and cross-origin APIs are unsupported. Follow Tududi's proxy-trust guidance; never trust arbitrary forwarded headers.
 
-Keep the container loopback-only: `ONLY_TDY_PORT` defaults to `3003` and maps `127.0.0.1:<port>` to container port `8080`. Add only the only-tdy path route; do not replace Tududi's root or API routes. Applications sharing this origin must be trusted. See [Security](../SECURITY.md).
+Keep `127.0.0.1:<ONLY_TDY_PORT>` (default `3003`) mapped to container port `8080`. Add only the only-tdy path route; retain Tududi's root/API routes. Trust every app sharing this origin; see [Security](../SECURITY.md).
 
 ## Smoke checks
 
@@ -68,21 +121,21 @@ curl -fsS "$origin/only-tdy/sw.js"
 
 In a browser signed in through Tududi:
 
-- Confirm Tududi's root, login and API routes still behave correctly.
-- Open `/only-tdy`, refresh `/only-tdy/` and a deep task link, and verify scripts, styles, icons and the manifest load without redirects or missing assets.
-- Confirm the active worker scope is `/only-tdy/` and `/api/**` requests reach Tududi without service-worker caching.
-- Create a disposable synthetic task in Backlog, move it to Today, edit it, complete it, then remove it. Verify these changes in Tududi too; record the backend version you actually tested.
-- Verify account timezone behavior, session expiration recovery and the deployed identity in About.
-- Check installation where your browser supports it. After an online visit, the offline shell should reopen and explain that task loading/saving needs a connection.
+- Confirm Tududi's root, login and API routes still work.
+- Open `/only-tdy`, refresh `/only-tdy/` and a deep task link. Check scripts, styles, icons and manifest for redirects/missing assets.
+- Confirm worker scope `/only-tdy/` and uncached `/api/**` requests reaching Tududi.
+- Create a synthetic Backlog task, move it to Today, edit, complete and delete it. Check changes in Tududi and record its tested version.
+- Verify account timezone, session-expiry recovery and deployed identity in About.
+- Check installation where supported. After an online visit, the offline shell should reopen and explain that loading/saving needs a connection.
 
-Avoid copying real task data, cookies or private host details into public reports.
+Keep real task data, cookies and private host details out of public reports.
 
 ## Update, rollback and removal
 
-Prepare and verify the new revision, then replace only the static assets or container and repeat the smoke checks. Keep the prior verified assets/image and identity for rollback. A container rollback does not roll back Tududi task writes or data; manage that through Tududi's backup/recovery procedures. Avoid changing proxy routes during routine updates.
+Verify the new revision, replace only the static assets/container, and repeat smoke checks. Keep prior verified assets/image and identity for rollback. This cannot undo task writes or restore data; use Tududi's backup/recovery procedures. Keep proxy routes unchanged during routine updates.
 
-To remove only-tdy, remove only its proxy route and stop its container. Uninstall the PWA and clear only-tdy's browser preferences, worker and caches if desired; [storage clearing](limitations.md#offline-behavior-and-retention) describes shared-origin effects. Tududi's service, routes and data remain independently managed.
+To remove only-tdy, remove its proxy route and stop its container. Optionally uninstall the PWA and clear its preferences, worker and caches; see [shared-origin effects](limitations.md#offline-behavior-and-retention). Leave Tududi's service, routes and data independently managed.
 
-Older installations under `/focus/` need a temporary equivalent prefix-stripping route to the same static server until devices have loaded the migration. The old worker removes its legacy caches and unregisters, and the shell moves the address to `/only-tdy/`. Reinstall home-screen shortcuts at the new path before retiring the old route.
+For older `/focus/` installations, keep a temporary prefix-stripping route to the same server until devices load the migration. The old worker removes legacy caches and unregisters; the shell moves to `/only-tdy/`. Reinstall home-screen shortcuts before retiring the old route.
 
-For maintainer verification, release archives and registry publication, see [releases](releases.md).
+For release verification, archives and publication, see [releases](releases.md).
