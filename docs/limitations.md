@@ -14,7 +14,7 @@ Browser/visual checks cover Chromium on Linux: narrow layouts, keyboard use, the
 
 ## Lists and search
 
-Today, Backlog and Completed are capped at 50 tasks. Filtering capped responses can hide matches; counts may exceed visible rows. All tasks and its searches read successive upstream pages without a transactionally consistent snapshot. Archived/cancelled tasks are excluded. Hidden tasks stay out of Backlog and its searches but can appear in All tasks.
+Today, Backlog and Completed are capped at 50 tasks. Filtering capped responses can hide matches; counts may exceed visible rows. All tasks and its searches read successive upstream pages without a transactionally consistent snapshot. Archived/cancelled tasks are excluded.
 
 Search accepts one phrase, exact tag, project or priority, without combining filters or intersecting capped results. Typing narrows loaded rows; submitting queries Tududi on Backlog, All and Completed. Today searches displayed rows only. Projects require unambiguous names. Capture creates new projects separately; they can remain if task creation fails.
 
