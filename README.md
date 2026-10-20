@@ -5,11 +5,9 @@ Capture tasks quickly, choose what matters today, and leave the rest in Backlog.
 only-tdy makes organizing todos approachable through a minimalist, distraction-free daily flow. Pick tasks from Backlog, work through Today, and edit details without leaving that flow.
 
 <p>
-  <img align="left" width="43%" src="docs/images/today-at-rest.png" alt="Today at rest with an unobtrusive capture bar and a completed task">
-  <img align="right" width="43%" src="docs/images/task-editor.png" alt="Edit a task in the normal form, with title, project, tags, status, priority, due date and Hide until">
+  <img width="280" src="docs/images/today-at-rest.png" alt="Today at rest with an unobtrusive capture bar and a completed task">
+  <img width="280" src="docs/images/task-editor.png" alt="Edit a task in the normal form, with title, project, tags, status, priority, due date and Hide until">
 </p>
-<br clear="all">
-<br>
 
 ## See it in action
 
@@ -17,11 +15,11 @@ The unobtrusive bar stays quiet until you focus it. The same field supports quic
 
 Add a task to Backlog quickly using the parser and auto-completion for a project, priority, due date and tag.
 
-<img src="docs/images/capture-add.gif" alt="Add a task using project, priority, due date and tag suggestions, then find it in Backlog" width="390">
+<img src="docs/images/capture-add.gif" alt="Add a task using project, priority, due date and tag suggestions, then find it in Backlog" width="280">
 
 Filter Backlog by tag, select tasks across priorities, move them to Today, then search for a moved task.
 
-<img src="docs/images/backlog-move.gif" alt="Search Backlog by tag, select tasks with different priorities, move them to Today, and search for a moved task" width="390">
+<img src="docs/images/backlog-move.gif" alt="Search Backlog by tag, select tasks with different priorities, move them to Today, and search for a moved task" width="280">
 
 Try `Call plumber +Renovation #repairs !3 /today`; omit `/today` to leave an undated task in Backlog. Use `/due:tomorrow` or `/hide:+3` for dates, or edit dates and notes in the task editor. A new project name can create a project. Switch the empty bar between capture and search; search one phrase, tag, project or priority at a time.
 
