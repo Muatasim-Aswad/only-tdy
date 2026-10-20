@@ -34,7 +34,7 @@ export function CompletionButton({
   return (
     <button
       type="button"
-      className="focus-complete"
+      className="focus-complete flex-none flex items-center justify-center w-rail h-rail mt-1.5 cursor-pointer disabled:cursor-default disabled:opacity-50"
       onClick={onToggle}
       disabled={disabled}
       aria-pressed={done}

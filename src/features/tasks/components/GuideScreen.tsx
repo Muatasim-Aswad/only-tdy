@@ -1,3 +1,5 @@
+import { FieldRow } from '../../../shared/FieldRow.tsx';
+import { PageShell } from '../../../shared/PageShell.tsx';
 import type { FocusDestination } from '../contracts.ts';
 import { navigate } from '../../../infra/navigation.ts';
 import { routePath } from '../../../config/routes.ts';
@@ -22,7 +24,7 @@ import { TokenChips, type ChipSpan } from './TokenChips.tsx';
  */
 export function GuideScreen() {
   return (
-    <main className="focus-shell">
+    <PageShell>
       <GuideSection
         id="focus-guide-capture"
         heading={GUIDE_COPY.guideCaptureHeading}
@@ -42,7 +44,7 @@ export function GuideScreen() {
         intro={GUIDE_COPY.guideSearchIntro}
       />
       <FocusFooter current="guide" onNavigate={navigateFromFooter} />
-    </main>
+    </PageShell>
   );
 }
 
@@ -62,23 +64,28 @@ function GuideSection({
   entries = [],
 }: GuideSectionProps) {
   return (
-    <section className="focus-guide" aria-labelledby={id}>
-      <h2 id={id} className="focus-guide__heading text-section">
+    <section
+      className="focus-guide [.focus-guide_+_&]:mt-7"
+      aria-labelledby={id}
+    >
+      <h2 id={id} className="focus-guide__heading m-0 pl-rail text-section">
         {heading}
       </h2>
-      <p className="focus-guide__intro text-meta">{intro}</p>
+      <p className="focus-guide__intro mt-1 mr-0 mb-0 ml-0 pl-rail text-muted text-meta">
+        {intro}
+      </p>
       {example === undefined ? null : (
         <Typed
-          className="focus-guide__example"
+          className="focus-guide__example mt-3 pl-rail"
           value={example}
           spans={captureChips(example)}
         />
       )}
       {entries.length === 0 ? null : (
-        <dl className="focus-guide__list">
+        <dl className="focus-guide__list mt-2 mr-0 mb-0 ml-0">
           {entries.map((entry) => (
-            <div key={entry.typed} className="focus-field">
-              <dt className="focus-guide__typed">
+            <FieldRow key={entry.typed}>
+              <dt className="focus-guide__typed flex-none min-[360px]:w-34">
                 <Typed
                   value={entry.typed}
                   spans={
@@ -94,10 +101,10 @@ function GuideSection({
                   }
                 />
               </dt>
-              <dd className="focus-guide__meaning text-task">
+              <dd className="focus-guide__meaning flex-auto min-w-0 m-0 text-task">
                 {entry.meaning}
               </dd>
-            </div>
+            </FieldRow>
           ))}
         </dl>
       )}
@@ -116,7 +123,12 @@ function Typed({
   readonly className?: string;
 }) {
   return (
-    <div className={classNames('focus-guide__line text-task', className)}>
+    <div
+      className={classNames(
+        'focus-guide__line [&_>_*]:[grid-area:1_/_1_/_2_/_2] [&_>_*]:whitespace-pre-wrap grid text-task',
+        className,
+      )}
+    >
       <TokenChips value={value} spans={spans} />
       <span>{value}</span>
     </div>

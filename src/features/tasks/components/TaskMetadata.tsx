@@ -20,7 +20,7 @@ export function TaskMetadata({ projectName, tags }: TaskMetadataProps) {
   const remaining = tags.length - shown.length;
 
   return (
-    <p className="focus-row__meta text-meta">
+    <p className="focus-row__meta flex flex-wrap gap-3 mt-0.5 text-muted text-meta">
       {hasProject ? <span>{projectName}</span> : null}
       {shown.map((tag) => (
         <span key={tag}>#{tag}</span>

@@ -1,3 +1,4 @@
+import { PageShell } from '../shared/PageShell.tsx';
 import { TaskProvider } from '../features/tasks/TaskProvider.tsx';
 import { lazy, Suspense, useCallback, useState, type MouseEvent } from 'react';
 
@@ -109,11 +110,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading task…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <TaskDetailPage key={route.uid} uid={route.uid} />
@@ -125,11 +126,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading tasks…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <BacklogPage />
@@ -141,11 +142,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <VersionPage />
@@ -157,11 +158,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <GuidePage />
@@ -172,11 +173,11 @@ function Page() {
   return (
     <Suspense
       fallback={
-        <main className="focus-shell">
-          <div className="focus-listing" aria-live="polite">
+        <PageShell>
+          <div className="focus-listing mt-0 min-h-30" aria-live="polite">
             Loading tasks…
           </div>
-        </main>
+        </PageShell>
       }
     >
       <TaskListPage

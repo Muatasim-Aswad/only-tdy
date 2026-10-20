@@ -1,3 +1,5 @@
+import { FieldRow } from '../shared/FieldRow.tsx';
+import { PageShell } from '../shared/PageShell.tsx';
 import {
   FocusFooter,
   type FocusDestination,
@@ -43,18 +45,24 @@ export function VersionScreen({
       : null;
 
   return (
-    <main className="focus-shell">
-      <section className="focus-about" aria-labelledby="about-heading">
-        <h1 id="about-heading" className="focus-about__heading text-section">
+    <PageShell>
+      <section
+        className="focus-about mb-7 pl-rail"
+        aria-labelledby="about-heading"
+      >
+        <h1
+          id="about-heading"
+          className="focus-about__heading m-0 text-section"
+        >
           About only-tdy
         </h1>
-        <p className="focus-about__intro text-task">
+        <p className="focus-about__intro mt-2 mr-0 mb-0 ml-0 text-task">
           Capture tasks quickly, choose what matters today, and leave the rest
           in Backlog. A minimalist daily flow, with projects, tags, priorities
           and dates available as you type.
         </p>
       </section>
-      <dl className="focus-version">
+      <dl className="focus-version m-0">
         {running.version === null ? null : (
           <Fact label={COPY.versionApp} value={running.version} />
         )}
@@ -68,12 +76,12 @@ export function VersionScreen({
           value={shortRevision(running.revision)}
         />
       </dl>
-      <div className="focus-version__status">
+      <div className="focus-version__status flex items-baseline flex-wrap gap-y-0 gap-x-3 mt-2">
         <InlineMessage message={statusMessage(deployed, update)} kind="hint" />
         {update === null ? null : (
           <button
             type="button"
-            className="focus-state__action text-action"
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer text-action"
             onClick={onReload}
           >
             {COPY.versionReload}
@@ -81,7 +89,7 @@ export function VersionScreen({
         )}
       </div>
       <FocusFooter current="version" onNavigate={navigateFromFooter} />
-    </main>
+    </PageShell>
   );
 }
 
@@ -93,10 +101,14 @@ function Fact({
   readonly value: string;
 }) {
   return (
-    <div className="focus-field">
-      <dt className="focus-field__label text-meta">{label}</dt>
-      <dd className="focus-version__value text-task">{value}</dd>
-    </div>
+    <FieldRow>
+      <dt className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta">
+        {label}
+      </dt>
+      <dd className="focus-version__value flex-auto min-w-0 m-0 tabular-nums wrap-anywhere text-task">
+        {value}
+      </dd>
+    </FieldRow>
   );
 }
 

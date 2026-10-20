@@ -20,11 +20,11 @@ With Docker Compose, download and run the matching published image; no clone or 
 
 ```sh
 mkdir -p only-tdy && cd only-tdy
-curl -fsSLO https://raw.githubusercontent.com/Muatasim-Aswad/only-tdy/v0.1.2/compose.yaml
+curl -fsSLO https://raw.githubusercontent.com/Muatasim-Aswad/only-tdy/v0.1.3/compose.yaml
 docker compose up -d --no-build
 ```
 
-Compose pulls `ghcr.io/muatasim-aswad/only-tdy:v0.1.2` if missing and binds `127.0.0.1:3003`; the proxy exposes `/only-tdy/`. Linux/amd64 only, with no persistent volumes or secrets.
+Compose pulls `ghcr.io/muatasim-aswad/only-tdy:v0.1.3` if missing and binds `127.0.0.1:3003`; the proxy exposes `/only-tdy/`. Linux/amd64 only, with no persistent volumes or secrets.
 
 ## Build from source
 

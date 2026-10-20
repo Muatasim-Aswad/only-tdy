@@ -1,3 +1,4 @@
+import { PageShell } from '../shared/PageShell.tsx';
 import { Component, type ReactNode } from 'react';
 
 interface Props {
@@ -18,15 +19,15 @@ export class ErrorBoundary extends Component<
   override render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <main className="focus-shell">
-        <section className="focus-listing" role="alert">
+      <PageShell>
+        <section className="focus-listing mt-0 min-h-30" role="alert">
           <h1 className="text-section">only-tdy couldn’t display this page.</h1>
           <p className="text-task">
             Reload to try again. Unsaved drafts will be lost.
           </p>
           <button
             type="button"
-            className="focus-state__action text-action"
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer text-action"
             onClick={
               this.props.onReload ??
               (() => {
@@ -37,7 +38,7 @@ export class ErrorBoundary extends Component<
             Reload
           </button>
         </section>
-      </main>
+      </PageShell>
     );
   }
 }

@@ -19,6 +19,8 @@ Dependencies flow from app to features, infrastructure, configuration and shared
 
 Use focused public APIs, including task page/provider entrypoints. Task-specific code and tests stay with their owner; production imports exclude fixtures. `src/app/architecture.test.ts` enforces direction, cycles, entrypoints and fixture isolation. `src/features/tasks/data/tududi-api.ts` adapts raw Tududi payloads.
 
+Component styling uses Tailwind utilities and shared layout, field-row and button primitives. Custom CSS owns theme/base rules, synchronized growing text layers, native picker/date fallbacks, completion drawings and keyframes. `TaskInput` owns list-page typing and mode shortcuts; pages retain separate Add/Search drafts, and the editor owns its save shortcut.
+
 ## API authority
 
 Tududi controls the API schema and guarantees. The task feature owns internal models and payload adaptation; generic transport has no task-model dependency. Update adapters and contract fixtures together, then verify a real backend before declaring support. Mocks verify client expectations only.

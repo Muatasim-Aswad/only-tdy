@@ -1,4 +1,10 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { useState } from 'react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -71,6 +77,67 @@ const save = () => screen.queryByRole('button', { name: 'Save' });
 const clickSave = () => screen.getByRole('button', { name: 'Save' });
 
 describe('TaskEditor', () => {
+  it.each(['mouse', 'touch'])(
+    'closes tag suggestions on outside %s without requiring blur',
+    async (pointerType) => {
+      const user = userEvent.setup();
+      renderEditor({ tags: ['finance'] });
+      const tags = screen.getByRole('combobox', { name: 'Tags' });
+      await user.clear(tags);
+      await user.type(tags, 'fi');
+      expect(
+        screen.getByRole('listbox', { name: 'Tags already in use' }),
+      ).toBeInTheDocument();
+      fireEvent.pointerDown(document.body, { pointerType });
+      expect(tags).toHaveFocus();
+      expect(
+        screen.queryByRole('listbox', { name: 'Tags already in use' }),
+      ).not.toBeInTheDocument();
+      expect(tags).toHaveValue('fi');
+    },
+  );
+
+  it('closes tag suggestions on blur and keeps the edited tags', async () => {
+    const user = userEvent.setup();
+    renderEditor({ tags: ['finance', 'family'] });
+    const tags = screen.getByRole('combobox', { name: 'Tags' });
+    await user.clear(tags);
+    await user.type(tags, 'fa');
+    expect(
+      screen.getByRole('listbox', { name: 'Tags already in use' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByLabelText('Notes'));
+    expect(
+      screen.queryByRole('listbox', { name: 'Tags already in use' }),
+    ).not.toBeInTheDocument();
+    expect(tags).toHaveValue('fa');
+  });
+
+  it('saves from Notes with Ctrl+Enter without adding a newline', async () => {
+    const user = userEvent.setup();
+    const { onSave } = renderEditor();
+    const note = screen.getByLabelText('Notes');
+    await user.clear(note);
+    await user.type(note, 'Updated note');
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSave).toHaveBeenCalledOnce();
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ note: 'Updated note' }),
+    );
+  });
+
+  it('saves typed tags with Ctrl+Enter instead of picking a suggestion', async () => {
+    const user = userEvent.setup();
+    const { onSave } = renderEditor({ tags: ['family'] });
+    const tags = screen.getByRole('combobox', { name: 'Tags' });
+    await user.clear(tags);
+    await user.type(tags, 'fa');
+    await user.keyboard('{Control>}{Enter}{/Control}');
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ tags: ['fa'] }),
+    );
+  });
+
   it('preserves editing and compact mode when the browser denies storage', async () => {
     vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
       throw new DOMException('Blocked', 'SecurityError');

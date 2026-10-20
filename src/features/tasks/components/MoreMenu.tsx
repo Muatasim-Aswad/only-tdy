@@ -1,3 +1,4 @@
+import { RailButton } from '../../../shared/RailButton.tsx';
 import {
   lazy,
   Suspense,
@@ -8,7 +9,6 @@ import {
   useState,
 } from 'react';
 
-import { classNames } from '../../../shared/classNames.ts';
 import { COPY } from './copy.ts';
 
 const MorePanel = lazy(() =>
@@ -51,11 +51,10 @@ export function MoreMenu({ historyActive, onOpenHistory }: MoreMenuProps) {
   }, [open, close]);
 
   return (
-    <div className="focus-more" ref={root}>
-      <button
-        type="button"
+    <div className="focus-more relative" ref={root}>
+      <RailButton
         ref={trigger}
-        className={classNames('focus-history', open && 'focus-history--active')}
+        active={open}
         onClick={() => {
           setOpen((value) => !value);
         }}
@@ -65,7 +64,7 @@ export function MoreMenu({ historyActive, onOpenHistory }: MoreMenuProps) {
         title={COPY.more}
       >
         <svg
-          className="focus-home__icon"
+          className="focus-home__icon block"
           viewBox="0 0 24 24"
           width="20"
           height="20"
@@ -77,7 +76,7 @@ export function MoreMenu({ historyActive, onOpenHistory }: MoreMenuProps) {
           <circle cx="12" cy="12" r="1.6" />
           <circle cx="19" cy="12" r="1.6" />
         </svg>
-      </button>
+      </RailButton>
       {open ? (
         <Suspense fallback={null}>
           <MorePanel

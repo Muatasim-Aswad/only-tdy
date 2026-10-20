@@ -1,6 +1,9 @@
+import { classNames } from './classNames.ts';
 import type { ReactNode } from 'react';
 
 interface SelectProps {
+  readonly className?: string;
+  readonly controlClassName?: string;
   readonly id: string;
   readonly value: string;
   readonly onChange: (value: string) => void;
@@ -27,6 +30,8 @@ interface SelectProps {
  */
 export function Select({
   id,
+  className,
+  controlClassName,
   value,
   onChange,
   children,
@@ -34,10 +39,19 @@ export function Select({
   description,
 }: SelectProps) {
   return (
-    <span className="focus-select" data-empty={value === '' ? '' : undefined}>
+    <span
+      className={classNames(
+        'focus-select group/select flex items-center gap-1.5 min-w-0 min-[360px]:flex-auto',
+        className,
+      )}
+      data-empty={value === '' ? '' : undefined}
+    >
       <select
         id={id}
-        className="focus-select__control text-task"
+        className={classNames(
+          'focus-select__control min-[360px]:flex-auto text-task',
+          controlClassName,
+        )}
         value={value}
         disabled={disabled}
         aria-description={description}
@@ -48,7 +62,7 @@ export function Select({
         {children}
       </select>
       <svg
-        className="focus-select__mark"
+        className="focus-select__mark flex-none block text-muted opacity-55 pointer-events-none transition-[color,opacity] duration-140 ease-focus group-focus-within/select:text-accent group-focus-within/select:opacity-100"
         viewBox="0 0 24 24"
         width="16"
         height="16"

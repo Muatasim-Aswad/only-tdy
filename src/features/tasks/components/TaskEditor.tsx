@@ -1,3 +1,6 @@
+import { RailButton } from '../../../shared/RailButton.tsx';
+import { PageFooter } from '../../../shared/PageFooter.tsx';
+import { FieldRow } from '../../../shared/FieldRow.tsx';
 import { Select } from '../../../shared/Select.tsx';
 import { taskErrorMessage } from '../data/errors.ts';
 import { readBrowserStorage } from '../../../infra/browser-storage.ts';
@@ -359,6 +362,7 @@ export function TaskEditor({
      line in the note, which is the one field a new line belongs in. */
   const handleTitleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (event.nativeEvent.isComposing) return;
       titleSuggestions.fieldProps.onKeyDown(event);
       if (event.defaultPrevented || event.key !== 'Enter' || event.shiftKey)
         return;
@@ -405,8 +409,21 @@ export function TaskEditor({
     <>
       <form
         id={formId}
+        onKeyDownCapture={(event) => {
+          if (
+            event.key !== 'Enter' ||
+            !(event.ctrlKey || event.metaKey) ||
+            event.altKey ||
+            event.shiftKey ||
+            event.nativeEvent.isComposing
+          )
+            return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (!event.repeat) event.currentTarget.requestSubmit();
+        }}
         className={classNames(
-          'focus-detail',
+          'focus-detail flex flex-col',
           compact && 'focus-detail--compact',
         )}
         onSubmit={(event) => {
@@ -415,19 +432,23 @@ export function TaskEditor({
           void handleSubmit();
         }}
       >
-        <div className="focus-detail__fields">
+        <div className="focus-detail__fields mt-1">
           {/* What the task is. */}
-          <div className="focus-group">
-            <div className="focus-field focus-field--block">
+          <div className="focus-group [.focus-group_+_&]:mt-7">
+            <FieldRow block>
               <label
-                className={compact ? 'sr-only' : 'focus-field__label text-meta'}
+                className={
+                  compact
+                    ? 'sr-only'
+                    : 'focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta'
+                }
                 htmlFor="task-title"
               >
                 {COPY.titleLabel}
               </label>
-              <div className="focus-capture__field">
+              <div className="focus-capture__field relative flex-auto min-w-0">
                 <div
-                  className="focus-grow focus-detail__title focus-tokens text-capture"
+                  className="focus-grow min-w-0 min-[360px]:flex-auto focus-detail__title pt-0.5 focus-tokens text-capture"
                   data-value={fields.title}
                 >
                   <TokenChips
@@ -437,7 +458,7 @@ export function TaskEditor({
                   <textarea
                     {...titleSuggestions.fieldProps}
                     id="task-title"
-                    className="focus-detail__input"
+                    className="focus-detail__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder w-full resize-none bg-transparent text-ink"
                     value={fields.title}
                     onChange={(event) => {
                       update('title', event.target.value);
@@ -459,15 +480,15 @@ export function TaskEditor({
                   />
                 ) : null}
               </div>
-            </div>
+            </FieldRow>
 
             {showNote ? (
-              <div className="focus-field focus-field--block">
+              <FieldRow block>
                 <label
                   className={
                     compact
-                      ? 'focus-field__symbol text-meta'
-                      : 'focus-field__label text-meta'
+                      ? 'focus-field__symbol flex-none text-muted text-meta'
+                      : 'focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta'
                   }
                   htmlFor="task-note"
                 >
@@ -481,12 +502,12 @@ export function TaskEditor({
                   )}
                 </label>
                 <div
-                  className="focus-grow focus-detail__note text-task"
+                  className="focus-grow min-w-0 min-[360px]:flex-auto focus-detail__note group/note pt-0.5 text-task"
                   data-value={fields.note}
                 >
                   <textarea
                     id="task-note"
-                    className="focus-detail__input"
+                    className="focus-detail__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder w-full resize-none bg-transparent text-muted group-focus-within/note:text-ink"
                     value={fields.note}
                     onChange={(event) => {
                       update('note', event.target.value);
@@ -495,16 +516,16 @@ export function TaskEditor({
                     rows={1}
                   />
                 </div>
-              </div>
+              </FieldRow>
             ) : null}
           </div>
 
           {/* Where it is filed. */}
           {showTags || showProject ? (
-            <div className="focus-group">
+            <div className="focus-group [.focus-group_+_&]:mt-7">
               {showTags ? (
                 <Field id="task-tags" label="Tags" compact={compact}>
-                  <div className="focus-detail__value focus-capture__field">
+                  <div className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto focus-capture__field relative flex-auto min-w-0">
                     <div
                       className="focus-tokens focus-tokens--compact text-task"
                       data-value={fields.tags}
@@ -516,10 +537,11 @@ export function TaskEditor({
                       <textarea
                         {...tagSuggestions.fieldProps}
                         id="task-tags"
-                        className="focus-detail__value"
+                        className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto"
                         rows={1}
                         value={fields.tags}
                         onBlur={() => {
+                          tagSuggestions.fieldProps.onBlur();
                           if (compact) update('tags', compactTags(fields.tags));
                         }}
                         onChange={(event) => {
@@ -527,6 +549,7 @@ export function TaskEditor({
                           tagSuggestions.noteCaret(event);
                         }}
                         onKeyDown={(event) => {
+                          if (event.nativeEvent.isComposing) return;
                           tagSuggestions.fieldProps.onKeyDown(event);
                           if (event.defaultPrevented || event.key !== 'Enter')
                             return;
@@ -579,7 +602,7 @@ export function TaskEditor({
           ) : null}
 
           {/* What it asks of the day. */}
-          <div className="focus-group">
+          <div className="focus-group [.focus-group_+_&]:mt-7">
             {!creating ? (
               <Field id="task-status" label="Status" compact={compact}>
                 <Select
@@ -674,13 +697,9 @@ export function TaskEditor({
           }
         />
       </form>
-      <footer className="focus-footer">
-        <button
-          type="button"
-          className={classNames(
-            'focus-history',
-            compact && 'focus-history--active',
-          )}
+      <PageFooter>
+        <RailButton
+          active={compact}
           aria-label="Compact form"
           title={compact ? 'Use full form' : 'Use compact form'}
           aria-pressed={compact}
@@ -710,11 +729,11 @@ export function TaskEditor({
             <rect x="3.5" y="4" width="17" height="16" rx="1.5" />
             <path d="M12 9v11M3.5 9h17M3.5 14.5h17" />
           </svg>
-        </button>
+        </RailButton>
         {onSkip ? (
           <button
             type="button"
-            className="focus-repeat-skip text-action"
+            className="focus-repeat-skip focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] disabled:cursor-default disabled:opacity-50 min-h-11 ms-auto px-2.5 text-muted cursor-pointer text-action"
             onClick={onSkip}
             disabled={disabled || busy}
             aria-busy={skipping}
@@ -722,7 +741,7 @@ export function TaskEditor({
             {skipping ? 'Skipping…' : 'Skip this occurrence'}
           </button>
         ) : null}
-      </footer>
+      </PageFooter>
     </>
   );
 }
@@ -753,15 +772,19 @@ interface FieldProps {
  */
 function Field({ id, label, compact = false, children }: FieldProps) {
   return (
-    <div className="focus-field">
+    <FieldRow>
       <label
-        className={compact ? 'sr-only' : 'focus-field__label text-meta'}
+        className={
+          compact
+            ? 'sr-only'
+            : 'focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta'
+        }
         htmlFor={id}
       >
         {label}
       </label>
       {children}
-    </div>
+    </FieldRow>
   );
 }
 
@@ -789,10 +812,13 @@ interface DateValueProps {
 function DateValue({ id, type, value, placeholder, onChange }: DateValueProps) {
   const empty = value === '';
   return (
-    <span className="focus-date" data-empty={empty ? '' : undefined}>
+    <span
+      className="focus-date [&_>_*]:[grid-area:1_/_1] [&_>_*]:min-w-0 grid [grid-template-columns:minmax(0,_1fr)] items-center w-max max-w-full min-[360px]:flex-auto min-[360px]:w-auto"
+      data-empty={empty ? '' : undefined}
+    >
       <input
         id={id}
-        className="focus-detail__value focus-detail__value--date text-task"
+        className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent resize-none min-[360px]:flex-auto focus-detail__value--date w-full text-task"
         type={type}
         value={value}
         onChange={(event) => {
@@ -800,7 +826,10 @@ function DateValue({ id, type, value, placeholder, onChange }: DateValueProps) {
         }}
       />
       {empty ? (
-        <span className="focus-date__prompt text-task" aria-hidden="true">
+        <span
+          className="focus-date__prompt [.focus-date[data-empty]:focus-within_&]:opacity-0 pointer-events-none whitespace-nowrap overflow-hidden text-ellipsis text-muted text-task"
+          aria-hidden="true"
+        >
           {placeholder}
         </span>
       ) : null}

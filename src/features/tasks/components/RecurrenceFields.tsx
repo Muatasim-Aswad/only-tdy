@@ -1,3 +1,4 @@
+import { FieldRow } from '../../../shared/FieldRow.tsx';
 import type { Recurrence } from '../contracts.ts';
 import { defaultRecurrence, WEEKDAYS } from '../domain/recurrence.ts';
 import { Select } from '../../../shared/Select.tsx';
@@ -17,9 +18,12 @@ export function RecurrenceFields({
     if (value) onChange({ ...value, ...changes });
   };
   return (
-    <div className="focus-group focus-repeat-fields">
-      <div className="focus-field">
-        <label className="focus-field__label text-meta" htmlFor="task-repeat">
+    <div className="focus-group [.focus-group_+_&]:mt-7 focus-repeat-fields [&_input:focus-visible]:[box-shadow:inset_0_-1px_0_var(--accent)]">
+      <FieldRow className="min-w-0 min-[360px]:justify-start">
+        <label
+          className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
+          htmlFor="task-repeat"
+        >
           Repeat
         </label>
         <Select
@@ -44,20 +48,20 @@ export function RecurrenceFields({
           <option value="monthly_weekday">Monthly on a weekday</option>
           <option value="monthly_last_day">Last day of the month</option>
         </Select>
-      </div>
+      </FieldRow>
       {value ? (
         <>
-          <div className="focus-field">
+          <FieldRow className="min-w-0 min-[360px]:justify-start">
             <label
-              className="focus-field__label text-meta"
+              className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
               htmlFor="task-repeat-interval"
             >
               Every
             </label>
-            <div className="focus-repeat-fields__interval text-task">
+            <div className="focus-repeat-fields__interval [&_input]:flex-none [&_input]:w-[5ch] flex-auto flex items-center gap-3 min-w-0 text-task">
               <input
                 id="task-repeat-interval"
-                className="focus-detail__value"
+                className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto"
                 type="number"
                 min="1"
                 max="365"
@@ -75,26 +79,27 @@ export function RecurrenceFields({
                     : 'months'}
               </span>
             </div>
-          </div>
+          </FieldRow>
           {value.type === 'weekly' ? (
-            <div
-              className="focus-field focus-field--block focus-repeat-fields__weekdays"
+            <FieldRow
+              className="focus-repeat-fields__weekdays min-w-0 min-[360px]:justify-start"
+              block
               role="group"
               aria-labelledby="task-repeat-days-label"
             >
               <span
                 id="task-repeat-days-label"
-                className="focus-field__label text-meta"
+                className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
               >
                 On
               </span>
-              <div className="focus-detail__value">
-                <div className="focus-repeat-fields__days">
+              <div className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto">
+                <div className="focus-repeat-fields__days flex flex-wrap gap-1">
                   {[1, 2, 3, 4, 5, 6, 0].map((day) => (
                     <button
                       type="button"
                       key={day}
-                      className="text-action"
+                      className="min-h-11 min-w-9.5 py-1 px-0 text-muted text-start border-b border-transparent aria-pressed:text-ink aria-pressed:border-b-current focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] text-action"
                       aria-label={WEEKDAYS[day]}
                       aria-pressed={value.weekdays.includes(day)}
                       onClick={() => {
@@ -113,19 +118,19 @@ export function RecurrenceFields({
                   <p className="text-meta">Choose at least one day.</p>
                 ) : null}
               </div>
-            </div>
+            </FieldRow>
           ) : null}
           {value.type === 'monthly' ? (
-            <div className="focus-field">
+            <FieldRow className="min-w-0 min-[360px]:justify-start">
               <label
                 htmlFor="task-repeat-day"
-                className="focus-field__label text-meta"
+                className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
               >
                 Day of month
               </label>
               <input
                 id="task-repeat-day"
-                className="focus-detail__value focus-repeat-fields__number"
+                className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none focus-repeat-fields__number flex-none w-[5ch]"
                 type="number"
                 min="1"
                 max="31"
@@ -135,14 +140,14 @@ export function RecurrenceFields({
                   update({ monthDay: Number(event.target.value) });
                 }}
               />
-            </div>
+            </FieldRow>
           ) : null}
           {value.type === 'monthly_weekday' ? (
             <>
-              <div className="focus-field">
+              <FieldRow className="min-w-0 min-[360px]:justify-start">
                 <label
                   htmlFor="task-repeat-week"
-                  className="focus-field__label text-meta"
+                  className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
                 >
                   Week
                 </label>
@@ -166,11 +171,11 @@ export function RecurrenceFields({
                     </option>
                   ))}
                 </Select>
-              </div>
-              <div className="focus-field">
+              </FieldRow>
+              <FieldRow className="min-w-0 min-[360px]:justify-start">
                 <label
                   htmlFor="task-repeat-weekday"
-                  className="focus-field__label text-meta"
+                  className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
                 >
                   Weekday
                 </label>
@@ -187,13 +192,13 @@ export function RecurrenceFields({
                     </option>
                   ))}
                 </Select>
-              </div>
+              </FieldRow>
             </>
           ) : null}
-          <div className="focus-field">
+          <FieldRow className="min-w-0 min-[360px]:justify-start">
             <label
               htmlFor="task-repeat-based"
-              className="focus-field__label text-meta"
+              className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
             >
               Based on
             </label>
@@ -207,17 +212,17 @@ export function RecurrenceFields({
               <option value="scheduled">Scheduled date</option>
               <option value="completion">Completion date</option>
             </Select>
-          </div>
-          <div className="focus-field">
+          </FieldRow>
+          <FieldRow className="min-w-0 min-[360px]:justify-start">
             <label
               htmlFor="task-repeat-end"
-              className="focus-field__label text-meta"
+              className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
             >
               Ends on (optional)
             </label>
             <input
               id="task-repeat-end"
-              className="focus-detail__value text-task"
+              className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto text-task"
               type="date"
               min={dueDate || undefined}
               value={value.endDate}
@@ -225,7 +230,7 @@ export function RecurrenceFields({
                 update({ endDate: event.target.value });
               }}
             />
-          </div>
+          </FieldRow>
         </>
       ) : null}
     </div>

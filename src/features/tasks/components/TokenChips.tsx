@@ -47,7 +47,7 @@ export function TokenChips({ value, spans }: TokenChipsProps) {
     parts.push(
       <span
         key={`chip-${String(span.start)}`}
-        className={`focus-chip focus-chip--${span.kind}`}
+        className={`focus-chip rounded-fill bg-selection box-decoration-clone focus-chip--${span.kind}`}
       >
         {value.slice(span.start, span.end)}
       </span>,
@@ -60,7 +60,10 @@ export function TokenChips({ value, spans }: TokenChipsProps) {
   );
 
   return (
-    <div className="focus-chips" aria-hidden="true">
+    <div
+      className="focus-chips text-transparent select-none"
+      aria-hidden="true"
+    >
       {parts}
     </div>
   );

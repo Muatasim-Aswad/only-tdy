@@ -1,3 +1,4 @@
+import { PageShell } from '../../../shared/PageShell.tsx';
 import type { MouseEvent } from 'react';
 
 import type {
@@ -7,12 +8,11 @@ import type {
   TaskListState,
 } from '../contracts.ts';
 
-import { CaptureField } from './CaptureField.tsx';
+import { TaskInput } from './TaskInput.tsx';
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
 import { COPY } from './copy.ts';
 import { FocusFooter } from './FocusFooter.tsx';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
-import { SearchField } from './SearchField.tsx';
 import { TaskList } from './TaskList.tsx';
 import type { TaskRowMotion } from './TaskRow.tsx';
 import { TodayClear, type TodayClearProps } from './TodayClear.tsx';
@@ -102,55 +102,45 @@ export function FocusScreen({
   const repeating = view === 'repeating';
 
   return (
-    <main className="focus-shell">
+    <PageShell>
+      <TaskInput
+        mode={inputMode}
+        onToggleMode={onToggleInputMode}
+        value={inputMode === 'search' ? searchValue : captureValue}
+        onValueChange={
+          inputMode === 'search' ? onSearchChange : onCaptureChange
+        }
+        onSubmit={inputMode === 'search' ? onSearchSubmit : onCaptureSubmit}
+        pageName={
+          repeating
+            ? 'Repeating'
+            : all
+              ? 'All'
+              : history
+                ? 'Completed'
+                : 'Today'
+        }
+        label={
+          repeating
+            ? 'Search repeating tasks'
+            : all
+              ? COPY.allSearchLabel
+              : history
+                ? COPY.historySearchLabel
+                : 'Search Today'
+        }
+        projects={projectNames}
+        tags={tagNames}
+        disabled={disabled}
+      />
       {inputMode === 'search' ? (
-        <>
-          <SearchField
-            value={searchValue}
-            onToggleMode={onToggleInputMode}
-            pageName={
-              repeating
-                ? 'Repeating'
-                : all
-                  ? 'All'
-                  : history
-                    ? 'Completed'
-                    : 'Today'
-            }
-            label={
-              repeating
-                ? 'Search repeating tasks'
-                : all
-                  ? COPY.allSearchLabel
-                  : history
-                    ? COPY.historySearchLabel
-                    : 'Search Today'
-            }
-            onValueChange={onSearchChange}
-            onSubmit={onSearchSubmit}
-            projects={projectNames}
-            tags={tagNames}
-            disabled={disabled}
-          />
-          <FeedbackToast message={searchMessage} />
-        </>
+        <FeedbackToast message={searchMessage} />
       ) : (
-        <>
-          <CaptureField
-            value={captureValue}
-            onToggleMode={onToggleInputMode}
-            onValueChange={onCaptureChange}
-            onSubmit={onCaptureSubmit}
-            projects={projectNames}
-            tags={tagNames}
-            disabled={disabled}
-          />
-          <CaptureFeedbackMessage
-            feedback={feedback}
-            onDismiss={onDismissFeedback}
-            onOpenTask={onOpenTask}
-          />
-        </>
+        <CaptureFeedbackMessage
+          feedback={feedback}
+          onDismiss={onDismissFeedback}
+          onOpenTask={onOpenTask}
+        />
       )}
       {!history && todayClear !== undefined ? (
         <TodayClear {...todayClear} />
@@ -183,6 +173,6 @@ export function FocusScreen({
         rowErrors={rowErrors}
       />
       <FocusFooter current={view} onNavigate={onNavigate} />
-    </main>
+    </PageShell>
   );
 }

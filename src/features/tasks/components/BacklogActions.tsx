@@ -1,3 +1,4 @@
+import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import { classNames } from '../../../shared/classNames.ts';
 import { COPY } from './copy.ts';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
@@ -34,26 +35,34 @@ export function BacklogActions({
       />
       <div
         className={classNames(
-          'focus-backlog__actions',
-          !chosen && 'focus-backlog__actions--empty',
+          'focus-backlog__actions flex items-center gap-4 pl-rail',
+          chosen ? 'min-h-11' : 'focus-backlog__actions--empty min-h-0',
         )}
       >
-        <div className="focus-backlog__status" aria-live="polite">
+        <div
+          className="focus-backlog__status min-w-0 flex-auto"
+          aria-live="polite"
+        >
           {said === undefined ? null : (
-            <p className={classNames('focus-backlog__count', 'text-action')}>
+            <p
+              className={classNames(
+                'focus-backlog__count text-muted',
+                'text-action',
+              )}
+            >
               {said}
             </p>
           )}
         </div>
         {chosen ? (
-          <button
+          <SubmitButton
             type="button"
-            className="focus-detail__save text-action"
+            className="focus-detail__save ml-auto"
             onClick={onMove}
             disabled={disabled || moving}
           >
             {COPY.moveToToday}
-          </button>
+          </SubmitButton>
         ) : null}
       </div>
     </>

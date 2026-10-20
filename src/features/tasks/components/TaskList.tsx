@@ -61,20 +61,28 @@ export function TaskList({
 
   switch (state.kind) {
     case 'loading':
-      content = <p className="focus-state text-task">{COPY.loading}</p>;
+      content = (
+        <p className="focus-state pl-rail py-4 text-muted text-task">
+          {COPY.loading}
+        </p>
+      );
       break;
 
     case 'empty':
-      content = <p className="focus-state text-task">{emptyMessage}</p>;
+      content = (
+        <p className="focus-state pl-rail py-4 text-muted text-task">
+          {emptyMessage}
+        </p>
+      );
       break;
 
     case 'error':
       content = (
-        <p className="focus-state text-task">
+        <p className="focus-state pl-rail py-4 text-muted text-task">
           {COPY.loadFailed}{' '}
           <button
             type="button"
-            className="focus-state__action"
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             onClick={onRetry}
           >
             {COPY.retry}
@@ -85,9 +93,12 @@ export function TaskList({
 
     case 'session-expired':
       content = (
-        <p className="focus-state text-task">
+        <p className="focus-state pl-rail py-4 text-muted text-task">
           {COPY.sessionExpired}{' '}
-          <a className="focus-state__action" href={TUDUDI_LOGIN_PATH}>
+          <a
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
+            href={TUDUDI_LOGIN_PATH}
+          >
             {COPY.signIn}
           </a>
         </p>
@@ -96,7 +107,12 @@ export function TaskList({
 
     case 'ready':
       content = (
-        <ul className={classNames('focus-list', ruled && 'focus-list--ruled')}>
+        <ul
+          className={classNames(
+            'focus-list list-none m-0 p-0',
+            ruled && 'focus-list--ruled',
+          )}
+        >
           {state.tasks.map((task) => (
             <TaskRow
               key={task.uid}
@@ -117,7 +133,7 @@ export function TaskList({
   }
 
   return (
-    <div className="focus-listing" aria-live="polite">
+    <div className="focus-listing mt-0 min-h-30" aria-live="polite">
       {content}
     </div>
   );

@@ -4,10 +4,12 @@ LICENSE
 THIRD_PARTY_NOTICES.md
 assets/AtkinsonHyperlegibleNext-Variable-{hash}.woff2
 assets/BacklogPage-{hash}.js
+assets/FieldRow-{hash}.js
 assets/FocusFooter-{hash}.js
 assets/FocusScreen-{hash}.js
 assets/GuidePage-{hash}.js
 assets/MorePanel-{hash}.js
+assets/PageFooter-{hash}.js
 assets/PublicError-{hash}.js
 assets/RepeatingCreatePage-{hash}.js
 assets/RepeatingPage-{hash}.js

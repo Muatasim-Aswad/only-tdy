@@ -95,8 +95,13 @@
 }
 
 @theme {
+  --animate-row-insert: focus-row-insert 180ms var(--ease-focus) both;
+  --animate-row-restore: focus-row-restore 120ms var(--ease-focus) both;
+  --animate-appear: focus-submit-appear 120ms var(--ease-focus) both;
+  --animate-submit: focus-submit-appear 140ms var(--ease-focus) both;
   /* The fallback stack is deliberately short: the self-hosted variable face,
      one widely installed humanist sans, then the platform default. */
+  --font-placeholder: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-sans: 'Atkinson Hyperlegible Next', 'Segoe UI', sans-serif;
 
   /* Type scale. Every role carries its own line height, weight, and tracking so

@@ -30,11 +30,14 @@ export function HelpTip({
     };
   }, [open]);
   return (
-    <span className="help-tip" ref={root}>
+    <span
+      className="help-tip relative inline-flex flex-none items-center"
+      ref={root}
+    >
       <button
         type="button"
         ref={trigger}
-        className="help-tip__trigger"
+        className="help-tip__trigger focus-visible:text-accent aria-expanded:text-accent inline-flex items-center justify-center w-11 h-11 text-muted cursor-pointer"
         aria-label={label}
         aria-expanded={open}
         aria-controls={id}
@@ -57,7 +60,11 @@ export function HelpTip({
         </svg>
       </button>
       {open ? (
-        <span className="help-tip__content text-meta" id={id} role="tooltip">
+        <span
+          className="help-tip__content absolute z-30 right-0 bottom-[calc(100%_+_4px)] w-[min(19rem,_calc(100vw_-_72px))] px-3 py-2.5 border border-line rounded-[6px] bg-surface text-ink text-meta"
+          id={id}
+          role="tooltip"
+        >
           {text}
         </span>
       ) : null}

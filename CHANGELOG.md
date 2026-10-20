@@ -2,23 +2,25 @@
 
 Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. The version in `package.json` is authoritative.
 
-## Unreleased
+## [0.1.3] - 2026-10-21
 
 ### Added
 
 - Repeating page with Add/Search, recurrence editing, due occurrences in Today, read-only occurrence records and Skip in the editor footer.
-
 - Settings page with synced preferences and configurable Backlog visibility for dated tasks.
+- Typing focuses the current list input; Ctrl+/ (Cmd+/ on Mac) switches Add/Search while preserving separate drafts. Ctrl+Enter (Cmd+Enter on Mac) saves from any task-editor field.
 
 ### Fixed
 
 - Task saves preserve Tududi due times, including when moving a deadline to another day; removing a deadline clears its time.
+- Tag suggestions close when clicking or tapping outside the field; compact tag formatting still runs on blur.
 
 ### Changed
 
 - Due tasks move from Backlog to Today during list sync by default; Settings can disable this and remembers that choice.
 - The documented Tududi backend baseline is pinned to 1.9.4 by digest, with the verified API scope and deployment limits recorded.
 - Future image releases use GHCR only; the verified CI container export is excluded from GitHub release downloads and their checksum manifest.
+- Component styling uses Tailwind utilities and shared layout, field-row and button primitives, preserving the existing appearance and interaction states.
 
 ## [0.1.2] - 2026-10-14
 

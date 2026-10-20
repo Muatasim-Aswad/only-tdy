@@ -1284,10 +1284,12 @@ usr/share/nginx/html/LICENSE
 usr/share/nginx/html/THIRD_PARTY_NOTICES.md
 usr/share/nginx/html/assets/AtkinsonHyperlegibleNext-Variable-{hash}.woff2
 usr/share/nginx/html/assets/BacklogPage-{hash}.js
+usr/share/nginx/html/assets/FieldRow-{hash}.js
 usr/share/nginx/html/assets/FocusFooter-{hash}.js
 usr/share/nginx/html/assets/FocusScreen-{hash}.js
 usr/share/nginx/html/assets/GuidePage-{hash}.js
 usr/share/nginx/html/assets/MorePanel-{hash}.js
+usr/share/nginx/html/assets/PageFooter-{hash}.js
 usr/share/nginx/html/assets/PublicError-{hash}.js
 usr/share/nginx/html/assets/RepeatingCreatePage-{hash}.js
 usr/share/nginx/html/assets/RepeatingPage-{hash}.js

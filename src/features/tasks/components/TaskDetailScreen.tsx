@@ -1,3 +1,5 @@
+import { SubmitButton } from '../../../shared/SubmitButton.tsx';
+import { PageShell } from '../../../shared/PageShell.tsx';
 import { useId, useState, type MouseEvent, type ReactNode } from 'react';
 
 import type {
@@ -72,20 +74,21 @@ export function TaskDetailScreen({
   const [dirty, setDirty] = useState(false);
 
   return (
-    <main className="focus-shell">
-      <div className="focus-head">
+    <PageShell>
+      <div className="focus-head flex items-center justify-between gap-4 mb-2">
         <BackLink href={backHref} onNavigate={onBack} />
         {state.kind === 'ready' ? (
-          <div className="focus-head__action">
+          <div className="focus-head__action flex items-center justify-end min-w-0 -mr-2">
             {dirty || creating ? (
-              <button
-                type="submit"
+              <SubmitButton
+                title="Save (Ctrl+Enter; Cmd+Enter on Mac)"
+                aria-keyshortcuts="Control+Enter Meta+Enter"
                 form={formId}
-                className="focus-detail__save text-action"
+                className="focus-detail__save ml-auto"
                 disabled={disabled || saving || deleting || skipping}
               >
                 {COPY.save}
-              </button>
+              </SubmitButton>
             ) : (
               <DeleteTaskAction
                 onDelete={onDelete}
@@ -119,11 +122,11 @@ export function TaskDetailScreen({
           onDirtyChange={setDirty}
         />
       ) : (
-        <div className="focus-listing" aria-live="polite">
+        <div className="focus-listing mt-0 min-h-30" aria-live="polite">
           {renderState(state, backHref, onBack, onRetry)}
         </div>
       )}
-    </main>
+    </PageShell>
   );
 }
 
@@ -135,13 +138,21 @@ function renderState(
 ): ReactNode {
   switch (state.kind) {
     case 'loading':
-      return <p className="focus-state text-task">{COPY.taskLoading}</p>;
+      return (
+        <p className="focus-state pl-rail py-4 text-muted text-task">
+          {COPY.taskLoading}
+        </p>
+      );
 
     case 'not-found':
       return (
-        <p className="focus-state text-task">
+        <p className="focus-state pl-rail py-4 text-muted text-task">
           {COPY.taskMissing}{' '}
-          <a className="focus-state__action" href={backHref} onClick={onBack}>
+          <a
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
+            href={backHref}
+            onClick={onBack}
+          >
             {COPY.backToList}
           </a>
         </p>
@@ -149,11 +160,11 @@ function renderState(
 
     case 'error':
       return (
-        <p className="focus-state text-task">
+        <p className="focus-state pl-rail py-4 text-muted text-task">
           {COPY.taskLoadFailed}{' '}
           <button
             type="button"
-            className="focus-state__action"
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             onClick={onRetry}
           >
             {COPY.retry}
@@ -163,9 +174,12 @@ function renderState(
 
     case 'session-expired':
       return (
-        <p className="focus-state text-task">
+        <p className="focus-state pl-rail py-4 text-muted text-task">
           {COPY.sessionExpired}{' '}
-          <a className="focus-state__action" href={TUDUDI_LOGIN_PATH}>
+          <a
+            className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
+            href={TUDUDI_LOGIN_PATH}
+          >
             {COPY.signIn}
           </a>
         </p>

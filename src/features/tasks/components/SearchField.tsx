@@ -1,3 +1,5 @@
+import { SubmitButton } from '../../../shared/SubmitButton.tsx';
+import type { Ref } from 'react';
 import { InputAction } from './InputAction.tsx';
 import { COPY } from './copy.ts';
 import { SuggestionList } from './SuggestionList.tsx';
@@ -6,6 +8,7 @@ import { useSuggestions } from './useSuggestions.ts';
 import { useFocusWithin } from '../../../shared/useFocusWithin.ts';
 
 export interface SearchFieldProps {
+  readonly formRef?: Ref<HTMLFormElement>;
   readonly value: string;
   readonly onToggleMode?: (() => void) | undefined;
   readonly pageName?: string;
@@ -44,6 +47,7 @@ const SUGGESTION_LABEL = 'Suggestions';
  */
 export function SearchField({
   value,
+  formRef,
   onToggleMode,
   pageName = 'Backlog',
   label = COPY.backlogSearchLabel,
@@ -66,7 +70,8 @@ export function SearchField({
 
   return (
     <form
-      className="focus-capture"
+      ref={formRef}
+      className="focus-capture flex items-center min-h-15 bg-transparent"
       {...focusWithin.containerProps}
       role="search"
       onSubmit={(event) => {
@@ -85,7 +90,7 @@ export function SearchField({
         }}
         onToggle={onToggleMode}
       />
-      <div className="focus-capture__field">
+      <div className="focus-capture__field relative flex-auto min-w-0">
         <div
           className="focus-tokens focus-tokens--line text-capture"
           data-value={value}
@@ -93,7 +98,7 @@ export function SearchField({
           <TokenChips value={value} spans={suggestions.spans} />
           <input
             {...suggestions.fieldProps}
-            className="focus-capture__input focus-search__input"
+            className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none focus-search__input"
             type="search"
             value={value}
             placeholder={COPY.searchPlaceholder}
@@ -124,9 +129,8 @@ export function SearchField({
         ) : null}
       </div>
       {hasText || focusWithin.focused ? (
-        <button
-          type="submit"
-          className="focus-capture__submit text-action"
+        <SubmitButton
+          className="focus-capture__submit"
           disabled={!canSubmit}
           onMouseDown={(event) => {
             // Keep the field focused so the button stays mounted until the click lands.
@@ -134,7 +138,7 @@ export function SearchField({
           }}
         >
           {`${COPY.searchSubmit} ${pageName}`}
-        </button>
+        </SubmitButton>
       ) : null}
     </form>
   );

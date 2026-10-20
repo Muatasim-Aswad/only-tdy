@@ -29,7 +29,7 @@ export function RepeatingPage() {
   );
   const tags = useTagsQuery(inputMode === 'add' ? captureValue : search);
   const tasks = useMemo(() => {
-    const term = parseSearch(search);
+    const term = parseSearch(inputMode === 'search' ? search : '');
     return (query.data ?? [])
       .filter((task) => matchesTask(task, term))
       .sort(
@@ -37,7 +37,7 @@ export function RepeatingPage() {
           Number(a.status === 'done') - Number(b.status === 'done') ||
           (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'),
       );
-  }, [query.data, search]);
+  }, [query.data, search, inputMode]);
   const state: TaskListState = isUnauthorized(query.error)
     ? { kind: 'session-expired' }
     : query.isError
@@ -78,7 +78,6 @@ export function RepeatingPage() {
       inputMode={inputMode}
       onToggleInputMode={() => {
         setInputMode((current) => (current === 'add' ? 'search' : 'add'));
-        setSearch('');
         setFeedback({ kind: 'none' });
       }}
       onNavigate={(destination) => {
@@ -105,7 +104,7 @@ export function RepeatingPage() {
         setSearch(value);
       }}
       onSearchSubmit={() => undefined}
-      searching={search.trim() !== ''}
+      searching={inputMode === 'search' && search.trim() !== ''}
       listState={state}
       onToggle={() => undefined}
       onOpenTask={(event, uid) => {

@@ -27,8 +27,9 @@ export type TaskRowMotion = 'idle' | 'inserted' | 'restoring';
 
 const MOTION_CLASS: Readonly<Record<TaskRowMotion, string>> = {
   idle: '',
-  inserted: 'focus-row--inserted',
-  restoring: 'focus-row--restoring',
+  inserted: 'focus-row--inserted animate-row-insert motion-reduce:animate-none',
+  restoring:
+    'focus-row--restoring animate-row-restore motion-reduce:animate-none',
 };
 
 /**
@@ -107,16 +108,16 @@ export const TaskRow = memo(function TaskRow({
   return (
     <li
       className={classNames(
-        'focus-row',
-        hasMetadata && 'focus-row--metadata',
+        'focus-row [.focus-list--ruled_.focus-row_+_&]:border-t [.focus-list--ruled_.focus-row_+_&]:border-t-line flex items-start cursor-default bg-transparent hover:bg-surface transition-colors duration-120 ease-focus',
+        hasMetadata ? 'focus-row--metadata min-h-16' : 'min-h-14',
         done && 'focus-row--done',
-        choosing && selected && 'focus-row--selected',
+        choosing && selected && 'focus-row--selected forced-colors:bg-[Canvas]',
         MOTION_CLASS[motion],
       )}
     >
       {task.sourceTaskUid ? (
         <span
-          className="focus-complete focus-complete--record"
+          className="focus-complete flex-none flex items-center justify-center w-rail h-rail mt-1.5 cursor-default focus-complete--record"
           aria-label={`Completed “${task.title}”`}
         >
           <span className="focus-complete__box" aria-hidden="true" />
@@ -125,7 +126,10 @@ export const TaskRow = memo(function TaskRow({
         details ? (
           <PriorityIndicator priority={task.priority} />
         ) : (
-          <span className="focus-row__spacer" aria-hidden="true" />
+          <span
+            className="focus-row__spacer flex-none w-rail"
+            aria-hidden="true"
+          />
         )
       ) : choosing ? (
         <SelectionButton
@@ -144,30 +148,33 @@ export const TaskRow = memo(function TaskRow({
           disabled={disabled}
         />
       )}
-      <div className="focus-row__body">
+      <div className="focus-row__body flex-auto min-w-0 py-4">
         <a
-          className="focus-row__title text-task"
+          className="focus-row__title [:where(.focus-row--done)_&]:text-muted [:where(.focus-row--done)_&]:line-through [:where(.focus-row--done)_&]:decoration-muted [:where(.focus-row--done)_&]:decoration-[1px] block text-ink no-underline wrap-anywhere transition-[opacity,color] duration-120 ease-focus focus-visible:text-accent hover:text-accent text-task"
           href={taskPath(task.sourceTaskUid ?? task.uid)}
           onClick={handleOpen}
         >
           {task.title}
           {isRepeating(task) ? (
-            <span className="focus-row__repeat" aria-label="Repeating">
+            <span
+              className="focus-row__repeat [&_svg]:w-3.5 [&_svg]:h-3.5 inline-flex ms-[0.5em] text-muted align-middle"
+              aria-label="Repeating"
+            >
               <RepeatIcon />
             </span>
           ) : null}
         </a>
         <TaskMetadata projectName={task.projectName} tags={task.tags} />
         {details && task.recurrence ? (
-          <p className="focus-row__meta text-meta">
+          <p className="focus-row__meta flex flex-wrap gap-3 mt-0.5 text-muted text-meta">
             {recurrenceLabel(task.recurrence)}
           </p>
         ) : null}
         {details ? (
           <>
-            <p className="focus-row__badges text-meta">
+            <p className="focus-row__badges flex flex-wrap gap-1.5 mt-1.5 empty:hidden text-meta">
               {!done ? (
-                <span className="focus-row__badge focus-row__badge--list">
+                <span className="focus-row__badge focus-row__badge--list px-1.75 py-0.5 border-2 border-line rounded-fill text-muted">
                   {task.status === 'not_started'
                     ? isRepeating(task)
                       ? 'Scheduled'
@@ -176,18 +183,20 @@ export const TaskRow = memo(function TaskRow({
                 </span>
               ) : null}
               {hiddenUntil !== '' ? (
-                <span className="focus-row__badge">
+                <span className="focus-row__badge px-1.75 py-0.5 border border-line rounded-[5px] text-muted">
                   Hide until {displayDate(hiddenUntil)}
                 </span>
               ) : null}
               {task.dueDate ? (
-                <span className="focus-row__badge">
+                <span className="focus-row__badge px-1.75 py-0.5 border border-line rounded-[5px] text-muted">
                   Due {displayDate(task.dueDate.slice(0, 10))}
                 </span>
               ) : null}
             </p>
             {task.note ? (
-              <p className="focus-row__note text-meta">{task.note}</p>
+              <p className="focus-row__note mt-1.5 text-muted whitespace-pre-wrap wrap-anywhere text-meta">
+                {task.note}
+              </p>
             ) : null}
           </>
         ) : null}

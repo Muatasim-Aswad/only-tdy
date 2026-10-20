@@ -59,7 +59,7 @@ export function DeleteTaskAction({
       <button
         type="button"
         ref={restoreOnMount}
-        className="focus-delete focus-delete--danger text-action"
+        className="focus-delete focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] disabled:cursor-default disabled:opacity-50 min-h-11 px-2 cursor-pointer transition-[color] duration-120 ease-focus focus-delete--danger text-priority-high text-action"
         onClick={handleAsk}
         disabled={disabled || pending}
       >
@@ -69,14 +69,14 @@ export function DeleteTaskAction({
   }
 
   return (
-    <span className="focus-delete__confirm">
-      <span className="focus-delete__question text-action">
+    <span className="focus-delete__confirm flex items-center flex-wrap justify-end gap-1">
+      <span className="focus-delete__question mr-3 text-muted text-action">
         {COPY.deleteConfirm}
       </span>
       <button
         type="button"
         ref={focusOnMount}
-        className="focus-delete focus-delete--danger text-action"
+        className="focus-delete focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] disabled:cursor-default disabled:opacity-50 min-h-11 px-2 cursor-pointer transition-[color] duration-120 ease-focus focus-delete--danger text-priority-high text-action"
         onClick={onDelete}
         disabled={disabled || pending}
       >
@@ -84,7 +84,7 @@ export function DeleteTaskAction({
       </button>
       <button
         type="button"
-        className="focus-delete text-action"
+        className="focus-delete focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] disabled:cursor-default disabled:opacity-50 min-h-11 px-2 text-muted cursor-pointer transition-[color] duration-120 ease-focus text-action"
         onClick={handleKeep}
         disabled={pending}
       >

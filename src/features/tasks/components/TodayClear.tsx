@@ -18,13 +18,13 @@ export interface TodayClearProps {
  */
 export function TodayClear({ backlogCount, onNavigate }: TodayClearProps) {
   return (
-    <p className="focus-state text-task" role="status">
+    <p className="focus-state pl-rail py-4 text-muted text-task" role="status">
       {COPY.todayClear}{' '}
       {backlogCount === 0 ? (
         COPY.backlogEmpty
       ) : (
         <a
-          className="focus-state__action"
+          className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
           href={routePath({ kind: 'backlog' })}
           onClick={onNavigate}
         >

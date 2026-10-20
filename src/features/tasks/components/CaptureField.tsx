@@ -1,3 +1,5 @@
+import { SubmitButton } from '../../../shared/SubmitButton.tsx';
+import type { Ref } from 'react';
 import { InputAction } from './InputAction.tsx';
 import type { KeyboardEvent } from 'react';
 
@@ -16,6 +18,7 @@ const CAPTURE_PLACEHOLDER = '.....';
 const SUGGESTION_LABEL = 'Suggestions';
 
 export interface CaptureFieldProps {
+  readonly formRef?: Ref<HTMLFormElement>;
   readonly value: string;
   readonly onToggleMode?: (() => void) | undefined;
   readonly onValueChange: (value: string) => void;
@@ -57,6 +60,7 @@ export interface CaptureFieldProps {
  */
 export function CaptureField({
   value,
+  formRef,
   onToggleMode,
   onValueChange,
   onSubmit,
@@ -84,6 +88,7 @@ export function CaptureField({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.nativeEvent.isComposing) return;
     suggestions.fieldProps.onKeyDown(event);
     /* The list had it: an arrow walked the rows, or return took one. */
     if (event.defaultPrevented) return;
@@ -96,7 +101,8 @@ export function CaptureField({
 
   return (
     <form
-      className="focus-capture"
+      ref={formRef}
+      className="focus-capture flex items-center min-h-15 bg-transparent"
       {...focusWithin.containerProps}
       onSubmit={(event) => {
         // The form exists so Enter submits natively; the page must not reload.
@@ -112,12 +118,12 @@ export function CaptureField({
         }}
         onToggle={onToggleMode}
       />
-      <div className="focus-capture__field">
+      <div className="focus-capture__field relative flex-auto min-w-0">
         <div className="focus-tokens text-capture" data-value={value}>
           <TokenChips value={value} spans={suggestions.spans} />
           <textarea
             {...suggestions.fieldProps}
-            className="focus-capture__input"
+            className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none"
             value={value}
             rows={1}
             placeholder={CAPTURE_PLACEHOLDER}
@@ -152,9 +158,8 @@ export function CaptureField({
         quietly lose its affordance.
       */}
       {hasText || focusWithin.focused ? (
-        <button
-          type="submit"
-          className="focus-capture__submit text-action"
+        <SubmitButton
+          className="focus-capture__submit"
           disabled={!canSubmit}
           onMouseDown={(event) => {
             // Keep the field focused so the button stays mounted until the click lands.
@@ -162,7 +167,7 @@ export function CaptureField({
           }}
         >
           Add
-        </button>
+        </SubmitButton>
       ) : null}
     </form>
   );

@@ -23,7 +23,7 @@ export function UpdateToast({
       onDismiss={onDismiss}
       action={
         <a
-          className="focus-toast__action"
+          className="focus-toast__action flex-none pt-3 pr-2 pb-3 pl-2 text-accent focus-visible:underline focus-visible:underline-offset-[3px]"
           href={href}
           onClick={(event) => {
             onDismiss();

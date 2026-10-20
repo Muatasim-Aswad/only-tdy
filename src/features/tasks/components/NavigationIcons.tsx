@@ -1,7 +1,7 @@
 function Icon({ children }: { readonly children: React.ReactNode }) {
   return (
     <svg
-      className="focus-more__icon"
+      className="focus-more__icon flex-none block text-[var(--menu-icon-color,_currentColor)]"
       viewBox="0 0 24 24"
       width="20"
       height="20"

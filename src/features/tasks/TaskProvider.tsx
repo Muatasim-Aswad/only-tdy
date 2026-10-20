@@ -1,3 +1,4 @@
+import { PageShell } from '../../shared/PageShell.tsx';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -58,11 +59,11 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
         {preferences.status !== 'loading' ? (
           children
         ) : (
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading…
             </div>
-          </main>
+          </PageShell>
         )}
       </DateTimezoneContext>
     </TaskSessionContext>
