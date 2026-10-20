@@ -3,7 +3,17 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import type { PropsWithChildren } from 'react';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vitest';
+
+import { setDuePromotion } from '../due-promotion.ts';
 
 import {
   todayQueryOptions,
@@ -34,8 +44,12 @@ const resolvedFetch: typeof fetch = (input, init) =>
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });
+beforeEach(() => {
+  setDuePromotion(false);
+});
 afterEach(() => {
   server.resetHandlers();
+  localStorage.clear();
 });
 afterAll(() => {
   server.close();
@@ -51,7 +65,7 @@ function createHarness() {
   return { queryClient, wrapper };
 }
 
-describe('Tududi queries', () => {
+describe('Tududi queries with automatic promotion disabled', () => {
   it('fetches Today before enabling an empty-Today Backlog', async () => {
     const order: string[] = [];
     server.use(

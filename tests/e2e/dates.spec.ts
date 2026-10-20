@@ -198,7 +198,7 @@ test('Hide until is date-only and its draft survives unsaved status changes', as
   });
 });
 
-test('leaves due promotion off until the user chooses it in the menu', async ({
+test('enables due promotion by default and remembers when it is turned off', async ({
   page,
 }) => {
   await installApi(page);
@@ -219,26 +219,25 @@ test('leaves due promotion off until the user chooses it in the menu', async ({
   const setting = page.getByRole('button', {
     name: 'Automatically move due tasks to Today',
   });
-  await expect(setting).toHaveAttribute('aria-pressed', 'false');
-  expect(promotions).toBe(0);
-  expect(writes).toBe(0);
-  await setting.click();
   await expect(setting).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => promotions).toBeGreaterThan(0);
+  expect(writes).toBe(0);
   await setting.click();
   await expect(setting).toHaveAttribute('aria-pressed', 'false');
+  const beforeReload = promotions;
   await page.reload();
   await page.getByRole('button', { name: 'More', exact: true }).click();
   await expect(setting).toHaveAttribute('aria-pressed', 'false');
+  expect(promotions).toBe(beforeReload);
+  await setting.click();
+  await expect(setting).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => promotions).toBeGreaterThan(beforeReload);
   expect(writes).toBe(0);
 });
 
-test('due sync promotes a hidden Backlog task and clears its hide value', async ({
+test('default due sync promotes a hidden Backlog task and clears its hide value', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem('only-tdy:auto-due-promotion:v1', 'on');
-  });
   await installApi(page);
   let moved = false;
   let writes = 0;

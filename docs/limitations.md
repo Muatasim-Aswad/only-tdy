@@ -18,7 +18,7 @@ Today, Backlog and Completed are capped at 50 tasks. Filtering capped responses 
 
 Search accepts one phrase, exact tag, project or priority, without combining filters or intersecting capped results. Typing narrows loaded rows; submitting queries Tududi on Backlog, All and Completed. Today searches displayed rows only. Projects require unambiguous names. Capture creates new projects separately; they can remain if task creation fails.
 
-Automatic due promotion is off by default. Enabling it permits writes during list sync, without polling or background scheduling; it cannot guarantee midnight promotion while closed. Explicit capture/save still applies due-date rules. Relative dates and hiding use the account timezone, which may differ from your device's.
+Automatic due promotion is on by default and can be disabled in More. It writes during list sync, without polling or background scheduling; it cannot guarantee midnight promotion while closed. Explicit capture/save still applies due-date rules. Relative dates and hiding use the account timezone, which may differ from your device's.
 
 ## Recovery
 
@@ -35,7 +35,7 @@ After an online visit, the installed PWA can reopen its cached shell. The worker
 | Browser state | Contents | Retention and clearing |
 | --- | --- | --- |
 | In-memory state | Tasks, projects, tags, account timezone, CSRF token, searches, selections and drafts. | Lost on reload/tab closure; editor drafts also end with their screen. |
-| `localStorage` | Theme (`only-tdy:theme`), editor layout (`only-tdy:editor-layout:v1`), due promotion (`only-tdy:auto-due-promotion:v1`, `on` enables it), last seen revision (`only-tdy:seen-revision`). | No expiry; retained until changed/cleared. Without storage, the app works but preferences may not survive reload. |
+| `localStorage` | Theme (`only-tdy:theme`), editor layout (`only-tdy:editor-layout:v1`), due promotion (`only-tdy:auto-due-promotion:v1`, `off` disables the on default), last seen revision (`only-tdy:seen-revision`). | No expiry; retained until changed/cleared. Without storage, the app works but preferences may not survive reload. |
 | Service-worker Cache Storage | Static shell, scripts, styles, icons and bundled fonts in the only-tdy namespace. | The worker updates/retires caches; remove its caches and registration to clear the offline shell. |
 | Tududi session cookie | Tududi login session. | Tududi controls lifetime and sign-out. |
 

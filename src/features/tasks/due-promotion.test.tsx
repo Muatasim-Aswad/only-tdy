@@ -9,25 +9,38 @@ import { readDuePromotion, setDuePromotion } from './due-promotion.ts';
 
 afterEach(() => {
   vi.restoreAllMocks();
-  setDuePromotion(false);
+  setDuePromotion(true);
   localStorage.clear();
 });
 
 describe('automatic due promotion', () => {
-  it('has a neutral off default and reads lists without initiating writes', async () => {
+  it('synchronizes due tasks by default before reading lists', async () => {
     const api = createTududiApi();
     const sync = vi.spyOn(api, 'syncDueTasks').mockResolvedValue([]);
     vi.spyOn(api, 'fetchTodayTasks').mockResolvedValue([]);
     vi.spyOn(api, 'fetchBacklogTasks').mockResolvedValue([]);
     const client = new QueryClient();
+    expect(readDuePromotion()).toBe(true);
+    await client.query(todayQueryOptions(api));
+    await client.query(backlogQueryOptions(true, api));
+    expect(sync).toHaveBeenCalledOnce();
+  });
+
+  it('preserves an explicit off choice and reads lists without initiating writes', async () => {
+    setDuePromotion(false);
+    const api = createTududiApi();
+    const sync = vi.spyOn(api, 'syncDueTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'fetchTodayTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'fetchBacklogTasks').mockResolvedValue([]);
+    const client = new QueryClient();
+    expect(localStorage.getItem('only-tdy:auto-due-promotion:v1')).toBe('off');
     expect(readDuePromotion()).toBe(false);
     await client.query(todayQueryOptions(api));
     await client.query(backlogQueryOptions(true, api));
     expect(sync).not.toHaveBeenCalled();
   });
 
-  it('deduplicates opted-in synchronization across concurrent list reads', async () => {
-    setDuePromotion(true);
+  it('deduplicates synchronization across concurrent list reads', async () => {
     const api = createTududiApi();
     const sync = vi.spyOn(api, 'syncDueTasks').mockResolvedValue([]);
     vi.spyOn(api, 'fetchTodayTasks').mockResolvedValue([]);
@@ -48,16 +61,21 @@ describe('automatic due promotion', () => {
     const action = screen.getByRole('button', {
       name: 'Automatically move due tasks to Today',
     });
-    expect(action).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(action);
     expect(action).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(action);
     expect(action).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(action);
+    expect(action).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('clears opt-in when the preference is removed', () => {
-    setDuePromotion(true);
+  it('restores the on default when the preference is removed', () => {
+    setDuePromotion(false);
     localStorage.clear();
-    expect(readDuePromotion()).toBe(false);
+    expect(readDuePromotion()).toBe(true);
+  });
+
+  it('retains the existing on preference', () => {
+    localStorage.setItem('only-tdy:auto-due-promotion:v1', 'on');
+    expect(readDuePromotion()).toBe(true);
   });
 });

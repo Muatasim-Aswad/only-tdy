@@ -468,6 +468,9 @@ test('disables saves offline and replaces the list for an expired session', asyn
 }) => {
   await installApi(page);
   await page.goto('/only-tdy/');
+  await expect(
+    page.getByRole('button', { name: 'Complete “Send the invoice”' }),
+  ).toBeEnabled();
   await context.setOffline(true);
   await expect(
     page.getByText('You’re offline. Reconnect to load and save tasks.'),

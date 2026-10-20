@@ -7,9 +7,18 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import type { PropsWithChildren } from 'react';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vitest';
 
 import type { Task } from '../contracts.ts';
+import { setDuePromotion } from '../due-promotion.ts';
 import {
   useCreateTaskMutation,
   useDeleteTaskMutation,
@@ -46,8 +55,12 @@ const resolvedFetch: typeof fetch = (input, init) =>
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });
+beforeEach(() => {
+  setDuePromotion(false);
+});
 afterEach(() => {
   server.resetHandlers();
+  localStorage.clear();
 });
 afterAll(() => {
   server.close();
