@@ -38,6 +38,47 @@ docker compose up -d --no-build --pull never
 
 [`compose.yaml`](../compose.yaml) owns the build context, platform, and arguments; `ONLY_TDY_IMAGE` names the local image. No host mise, Node, pnpm, identity generation, or release rehearsal is required. Ordinary source builds report revision `dev`; deployment tools can supply `APP_REVISION`, `APP_COMMIT_TIME`, and `APP_BUILD_TIME` to identify the deployed source. The default `SOURCE_DATE_EPOCH=0` permits separate commit and build times; release builds select a nonzero commit epoch and require matching timestamps. Nothing is published.
 
+## Deploy with srvr
+
+[srvr](https://github.com/Muatasim-Aswad/srvr) can manage the existing Compose project. [Install srvr](https://github.com/Muatasim-Aswad/srvr/blob/main/docs/install.md), then prepare the published-image directory or source checkout above. From that directory, choose one registration method.
+
+For published images:
+
+```sh
+srvr add only-tdy --kind image --workdir "$PWD" \
+  --compose-file compose.yaml --update-component only-tdy \
+  --health http://127.0.0.1:3003/healthz
+```
+
+For source builds, use a clean checkout containing `main` and save `ONLY_TDY_IMAGE=only-tdy:local` in its ignored `.env`:
+
+```sh
+srvr add only-tdy --kind git --branch main --workdir "$PWD" \
+  --compose-file compose.yaml --health http://127.0.0.1:3003/healthz \
+  --version-url http://127.0.0.1:3003/version.json
+```
+
+Registration leaves running containers alone. For a stopped project, add `--start` to prepare and start it. Preserve the Compose project name `only-tdy`; if you previously overrode it, pass that name with `--project`. Match both loopback URLs to `ONLY_TDY_PORT` if changed. Register an external settings file with `--env-file`; the project's `.env` is read automatically. Source builds receive srvr's commit/build identity through the existing Compose arguments.
+
+An already-running source image built directly with Compose reports `dev`; run `srvr update only-tdy --force` once to rebuild it with srvr's commit identity before checking health. Then inspect the registered service:
+
+```sh
+srvr info only-tdy
+srvr health only-tdy
+srvr logs only-tdy -f
+```
+
+For image updates, replace `IMAGE` below with a chosen published `ghcr.io/muatasim-aswad/only-tdy` version tag or digest; review before applying:
+
+```sh
+srvr update only-tdy --image IMAGE --check
+srvr update only-tdy --image IMAGE
+```
+
+For source updates, use `srvr update only-tdy --check`, then `srvr update only-tdy`; add `--ref` to select a release tag or commit. `srvr rollback only-tdy` returns to the version before the last successful update. See [srvr's update and recovery rules](https://github.com/Muatasim-Aswad/srvr/blob/main/docs/updates.md).
+
+only-tdy needs no data registration or migration job. Manage Tududi's pin and backups separately; frontend rollback cannot undo task writes. Keep the [same-origin prefix-stripping proxy](#exposure-and-routing) and complete the [smoke checks](#smoke-checks) after deployment; srvr's health check does not verify login or routing.
+
 ## Configuration and health
 
 `ONLY_TDY_IMAGE` selects a versioned image, digest, or local build; `ONLY_TDY_PORT` changes the loopback host port. Export overrides for subsequent commands or save them in an ignored mode `0600` `.env` beside `compose.yaml`. [`.env.example`](../.env.example) lists the settings. Preserve `ONLY_TDY_IMAGE=only-tdy:local` for source deployments.
