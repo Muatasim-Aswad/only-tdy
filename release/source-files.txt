@@ -33,6 +33,8 @@ docs/images/backlog-search.png
 docs/images/capture-add.gif
 docs/images/capture-at-rest.png
 docs/images/capture-in-use.png
+docs/images/social-preview-stacked-selected.png
+docs/images/social-preview-stacked-selected.prompt.txt
 docs/images/task-editor.png
 docs/images/today-at-rest.png
 docs/limitations.md
