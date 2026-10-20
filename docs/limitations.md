@@ -2,7 +2,11 @@
 
 ## Compatibility
 
-only-tdy is an unofficial Tududi integration. It expects same-origin session authentication, `/api/csrf-token`, `/api/profile`, task lists and task CRUD, projects, tags and search. It does not provide a backend or duplicate Tududi's full planning model. API shape, status, search or pagination changes can break it. No actual Tududi version is currently verified; seeded and mocked tests are not real-backend compatibility evidence.
+only-tdy is an unofficial Tududi integration. It expects same-origin session authentication, `/api/csrf-token`, `/api/profile`, task lists and task CRUD, projects, tags and search. It does not provide a backend or duplicate Tududi's full planning model. API shape, status, search or pagination changes can break it. Use the exact [Tududi 1.9.4 image pin](deployment.md#tududi-backend-pin); other versions are unverified.
+
+On 2026-10-20, the current API adapter was checked against that image on Linux/amd64 with a disposable SQLite database and synthetic data. Checks covered session/CSRF, account timezone, task CRUD, Today/Backlog, dates and Hide until, projects, tags, search and All pagination over 51 matches, completion/history/reopening, opt-in due promotion and due-time preservation across an Amsterdam daylight-saving transition. This verifies current working source, not previously published images. This is API-level evidence; an existing-database upgrade, the browser/proxy combination against a live backend, and advanced Tududi features remain unverified. Seeded and mocked tests alone are not real-backend compatibility evidence.
+
+The editor remains date-only. Set specific due times and reminders in Tududi. Saving an unchanged date leaves its server value untouched. Changing a nonempty date first reads the current due time and carries it to the new day; clearing the date also clears its time. Reminders are preserved separately and are not rescheduled when the date changes. Concurrent edits can still race between the read and PATCH.
 
 Browser and visual checks cover Chromium on Linux. Firefox, WebKit/Safari, real mobile devices and browser-specific PWA installation remain unverified. A narrow viewport test is not a device test.
 

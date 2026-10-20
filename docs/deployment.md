@@ -1,6 +1,16 @@
 # Docker deployment
 
-only-tdy is a static app served by nginx. Tududi owns authentication and task data; install and back it up separately. Configure a prefix-stripping HTTPS proxy on the Tududi origin as described below. Real-backend compatibility remains [unverified](limitations.md#compatibility).
+only-tdy is a static app served by nginx. Tududi owns authentication and task data; install and back it up separately. Configure a prefix-stripping HTTPS proxy on the Tududi origin as described below. See the [verified API scope and limits](limitations.md#compatibility).
+
+## Tududi backend pin
+
+The tested backend is Tududi **1.9.4**. Set this exact image in your existing Tududi service configuration:
+
+```yaml
+image: chrisvel/tududi:1.9.4@sha256:dd930f0fb48988e03e199b1c22016dcd95dad9eade073e8f45c2a0d250106bcf
+```
+
+Keep Tududi's existing environment, volumes and proxy settings. This pin belongs to the separate Tududi deployment; only-tdy's Compose file serves the frontend. Back up Tududi before upgrading and complete the smoke checks below. The pin records the tested API baseline; it does not verify an upgrade of your existing database or HTTPS deployment.
 
 ## Published image
 

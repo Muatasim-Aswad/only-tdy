@@ -10,6 +10,7 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
+- The documented Tududi backend baseline is pinned to 1.9.4 by digest, with the verified API scope and deployment limits recorded.
 - Future image releases use GHCR only; the verified CI container export is excluded from GitHub release downloads and their checksum manifest.
 
 ## [0.1.2] - 2026-10-14
