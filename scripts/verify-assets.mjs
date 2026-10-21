@@ -3,7 +3,7 @@ import { writeArchive } from './archive.mjs';
 import {
   CONTAINER_EXPORT,
   readArtifactManifest,
-  readSourceManifest,
+  readFileManifest,
   verifiedContainerExport,
 } from './provenance.mjs';
 import {
@@ -31,8 +31,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const assets = resolve(process.argv[2] || '');
 const provenance = json(join(assets, 'provenance.json'));
 const expectedTag = `v${json(join(root, 'package.json')).version}`;
-if (provenance.schema !== 3) throw new Error('Unsupported provenance schema');
-const sourceProvenance = readSourceManifest(provenance.source);
+if (provenance.schema !== 4) throw new Error('Unsupported provenance schema');
+const sourceProvenance = readFileManifest(provenance.source);
+const staticProvenance = readFileManifest(provenance.static);
 if (
   provenance.revision === 'dev' ||
   !/^[a-f0-9]{40}$/.test(provenance.revision) ||
@@ -119,7 +120,7 @@ try {
     )
       throw new Error('Archive links/special files are forbidden');
     run('tar', ['-xzf', archive, '-C', dest, '--no-same-owner']);
-    const expected = kind === 'source' ? sourceProvenance : provenance[kind];
+    const expected = kind === 'source' ? sourceProvenance : staticProvenance;
     same(files(dest), Object.keys(expected), `${kind} installed`);
     for (const [path, hash] of Object.entries(expected))
       if (digest(join(dest, path)) !== hash)
@@ -152,7 +153,7 @@ try {
     join(installedSource, 'dist'),
     join(root, 'release/static-files.txt'),
   );
-  if (JSON.stringify(sourceBuild) !== JSON.stringify(provenance.static))
+  if (JSON.stringify(sourceBuild) !== JSON.stringify(staticProvenance))
     throw new Error('Downloaded source rebuild differs from static assets');
   const trustedTar = join(temp, 'trusted-image.tar');
   const trustedContents = join(temp, 'trusted-image');
@@ -221,7 +222,7 @@ try {
   mkdirSync(served);
   run('docker', ['cp', `${name}:/usr/share/nginx/html/.`, served]);
   const extracted = inventory(served, join(root, 'release/static-files.txt'));
-  if (JSON.stringify(extracted) !== JSON.stringify(provenance.static))
+  if (JSON.stringify(extracted) !== JSON.stringify(staticProvenance))
     throw new Error('Container/static bytes differ');
   if (output('docker', ['exec', name, 'id', '-u']) !== '101')
     throw new Error('Runtime is root or unexpected UID');

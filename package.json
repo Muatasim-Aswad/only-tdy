@@ -1,6 +1,6 @@
 {
   "name": "only-tdy",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "description": "Capture tasks quickly, choose what matters today, and leave the rest in Backlog.",
