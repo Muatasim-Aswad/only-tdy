@@ -26,9 +26,11 @@ export function InlineMessage({
       {message === undefined || message === '' ? null : (
         <p
           className={classNames(
-            'focus-message',
-            kind === 'hint' && 'focus-message--plain',
-            tone === 'error' && 'focus-message--error',
+            'focus-message mt-2 ml-rail rounded-message pt-2 pr-3 pb-2 pl-3 bg-surface text-muted',
+            kind === 'hint' &&
+              'focus-message--plain [&.focus-message--plain]:rounded-[0] [&.focus-message--plain]:px-0 [&.focus-message--plain]:bg-transparent',
+            tone === 'error' &&
+              'focus-message--error [&.focus-message--error]:text-priority-high',
             'text-action',
           )}
         >

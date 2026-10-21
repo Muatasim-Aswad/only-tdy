@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -14,7 +15,11 @@ import {
   scanEntryTokens,
   tokenMark,
 } from '../domain/entry-tokens.ts';
-import { COMMANDS, PRIORITY_VALUES } from '../domain/quick-entry.ts';
+import {
+  CAPTURE_COMMANDS,
+  COMMANDS,
+  PRIORITY_VALUES,
+} from '../domain/quick-entry.ts';
 import { isTagListWritable, scanTagSegments } from '../domain/tag-list.ts';
 import {
   applyEntrySuggestion,
@@ -66,6 +71,7 @@ export interface UseSuggestionsOptions {
    * the list has been fetched — before that, every name would look new.
    */
   readonly offersNewProject?: boolean;
+  readonly allowRepeating?: boolean;
 }
 
 export interface Suggestions<T extends Field = Field> {
@@ -207,6 +213,7 @@ export function useSuggestions<T extends Field = Field>({
   projects = NO_NAMES,
   tags = NO_NAMES,
   offersNewProject = false,
+  allowRepeating = false,
 }: UseSuggestionsOptions): Suggestions<T> {
   const timezone = useDateTimezone();
   const ref = useRef<T | null>(null);
@@ -271,11 +278,33 @@ export function useSuggestions<T extends Field = Field>({
         return PRIORITY_NAMES;
       case 'command':
         /* Search has no commands: `/` is only quick entry's. */
-        return grammar === 'entry' ? COMMANDS : NO_NAMES;
+        return grammar === 'entry'
+          ? allowRepeating
+            ? CAPTURE_COMMANDS
+            : COMMANDS
+          : NO_NAMES;
     }
   }
 
   const open = !dismissed && items.length > 0;
+  useEffect(() => {
+    if (!open) return;
+    const dismissOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (
+        !(target instanceof Node) ||
+        ref.current?.contains(target) ||
+        document.getElementById(listId)?.contains(target)
+      )
+        return;
+      setDismissed(true);
+      setSteppedIndex(undefined);
+    };
+    document.addEventListener('pointerdown', dismissOutside);
+    return () => {
+      document.removeEventListener('pointerdown', dismissOutside);
+    };
+  }, [open, listId]);
   const typedIndex = completesTyping(items, target) ? 0 : -1;
   /* Clamped rather than reset: the list shortens as more is typed, and a
      keyboard position past its end would point at nothing. */
@@ -313,6 +342,7 @@ export function useSuggestions<T extends Field = Field>({
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent<T>) => {
+      if (event.defaultPrevented || event.nativeEvent.isComposing) return;
       if (items.length === 0) return;
 
       if (event.key === 'Escape') {

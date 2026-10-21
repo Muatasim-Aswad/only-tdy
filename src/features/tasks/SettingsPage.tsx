@@ -1,3 +1,4 @@
+import { PageShell } from '../../shared/PageShell.tsx';
 import { useState } from 'react';
 import { routePath } from '../../config/routes.ts';
 import {
@@ -37,8 +38,8 @@ export function SettingsPage() {
   const disabled = account === null || status === 'loading';
 
   return (
-    <main className="focus-shell">
-      <header className="focus-head">
+    <PageShell>
+      <header className="focus-head flex items-center justify-between gap-4 mb-2">
         <BackLink
           label="Back"
           href={backHref}
@@ -47,7 +48,7 @@ export function SettingsPage() {
           }}
         />
         <span
-          className="focus-head__action focus-settings__save-state text-meta"
+          className="focus-head__action flex items-center justify-end min-w-0 -mr-2 focus-settings__save-state mr-0 text-muted text-meta"
           role="status"
         >
           {settings.datedBacklog === 'before' && daysError
@@ -62,7 +63,7 @@ export function SettingsPage() {
         </span>
       </header>
       {status === 'local' || status === 'unavailable' || !cached ? (
-        <div className="focus-settings__sync-error text-meta">
+        <div className="focus-settings__sync-error [&_p]:m-0 [&_button]:min-h-11 [&_button]:text-accent [&_button]:cursor-pointer [&_button:focus-visible]:text-accent hover:[&_button]:text-accent ml-rail text-muted text-meta">
           <p>{syncMessage(status, cached)}</p>
           {status === 'local' || status === 'unavailable' ? (
             <button
@@ -77,12 +78,20 @@ export function SettingsPage() {
           ) : null}
         </div>
       ) : null}
-      <section className="focus-settings__section" aria-label="Appearance">
-        <div className="focus-settings__field focus-settings__field--stack">
-          <label htmlFor="settings-theme" className="text-meta">
+      <section
+        className="focus-settings__section ml-rail mt-7 [&+section]:mt-0"
+        aria-label="Appearance"
+      >
+        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 focus-settings__field--stack flex flex-col items-stretch gap-1">
+          <label
+            htmlFor="settings-theme"
+            className="flex items-center min-h-11 text-muted text-meta"
+          >
             Theme
           </label>
           <Select
+            className="flex-auto"
+            controlClassName="flex-auto min-h-11"
             id="settings-theme"
             value={settings.theme}
             disabled={disabled}
@@ -96,10 +105,13 @@ export function SettingsPage() {
           </Select>
         </div>
       </section>
-      <section className="focus-settings__section" aria-label="Planning">
-        <div className="focus-settings__field">
-          <div className="focus-settings__field--stack">
-            <div className="focus-settings__label">
+      <section
+        className="focus-settings__section ml-rail mt-7 [&+section]:mt-0"
+        aria-label="Planning"
+      >
+        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 border-t border-line">
+          <div className="focus-settings__field--stack flex flex-col items-stretch gap-1">
+            <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-promotion" className="text-meta">
                 Move due tasks to Today
               </label>
@@ -109,6 +121,8 @@ export function SettingsPage() {
               />
             </div>
             <Select
+              className="flex-auto"
+              controlClassName="flex-auto min-h-11"
               id="settings-promotion"
               value={settings.autoDuePromotion ? 'auto' : 'manual'}
               disabled={disabled}
@@ -122,9 +136,9 @@ export function SettingsPage() {
             </Select>
           </div>
         </div>
-        <div className="focus-settings__field">
-          <div className="focus-settings__field--stack">
-            <div className="focus-settings__label">
+        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 border-t border-line">
+          <div className="focus-settings__field--stack flex flex-col items-stretch gap-1">
+            <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-dated" className="text-meta">
                 Show dated tasks in Backlog
               </label>
@@ -133,11 +147,11 @@ export function SettingsPage() {
                 text={BACKLOG_HELP}
               />
             </div>
-            <div className="focus-settings__dated-control">
+            <div className="focus-settings__dated-control flex items-center gap-3">
               {settings.datedBacklog === 'before' ? (
                 <input
                   id="settings-days"
-                  className="focus-settings__number text-task"
+                  className="focus-settings__number focus-visible:border-accent flex-none min-h-11 p-2 border border-line rounded-fill bg-surface text-ink tabular-nums [appearance:textfield] text-task"
                   type="number"
                   min="1"
                   max="365000"
@@ -166,6 +180,8 @@ export function SettingsPage() {
                 />
               ) : null}
               <Select
+                className="flex-auto"
+                controlClassName="flex-auto min-h-11"
                 id="settings-dated"
                 value={settings.datedBacklog}
                 disabled={disabled}
@@ -188,7 +204,7 @@ export function SettingsPage() {
             {settings.datedBacklog === 'before' && daysError ? (
               <p
                 id="settings-days-error"
-                className="focus-settings__days-error text-meta"
+                className="focus-settings__days-error mt-1 mr-0 mb-0 ml-0 text-priority-high text-meta"
               >
                 Enter a whole number from 1 to 365000.
               </p>
@@ -196,7 +212,7 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
-      <div className="focus-settings__reset">
+      <div className="focus-settings__reset [&_button]:min-h-11 [&_button]:text-priority-high [&_button]:cursor-pointer [&_button]:transition-[color] [&_button]:duration-120 [&_button]:ease-focus [&_button:focus-visible]:underline [&_button:focus-visible]:underline-offset-[3px] hover:[&_button]:underline hover:[&_button]:underline-offset-[3px] [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 ml-rail mt-7">
         <button
           type="button"
           className="text-action"
@@ -212,7 +228,7 @@ export function SettingsPage() {
           Reset settings
         </button>
       </div>
-    </main>
+    </PageShell>
   );
 }
 

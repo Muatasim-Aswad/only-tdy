@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { TaskDetail, TaskDetailState, TaskEdit } from '../contracts.ts';
+import { defaultRecurrence } from '../domain/recurrence.ts';
 
 import {
   TaskDetailScreen,
@@ -25,7 +26,14 @@ function renderScreen(props: Partial<TaskDetailScreenProps> = {}) {
   const onRetry = vi.fn<() => void>();
   const onDelete = vi.fn<() => void>();
   const onSave = vi.fn<(edit: TaskEdit) => Promise<TaskDetail | undefined>>(
-    (edit) => Promise.resolve({ ...TASK, ...edit }),
+    (edit) => {
+      const { recurrence, ...fields } = edit;
+      return Promise.resolve({
+        ...TASK,
+        ...fields,
+        ...(recurrence ? { recurrence } : {}),
+      });
+    },
   );
   render(
     <TaskDetailScreen
@@ -43,6 +51,80 @@ function renderScreen(props: Partial<TaskDetailScreenProps> = {}) {
 }
 
 describe('TaskDetailScreen', () => {
+  it('creates a repeating schedule without empty capture fields or a status picker', async () => {
+    const user = userEvent.setup();
+    const { onSave } = renderScreen({
+      creating: true,
+      state: {
+        kind: 'ready',
+        task: {
+          ...TASK,
+          status: 'not_started',
+          dueDate: '2099-10-23',
+          recurrence: defaultRecurrence('daily', '2099-10-23'),
+        },
+      },
+    });
+    expect(screen.getByRole('combobox', { name: 'Title' })).toBeVisible();
+    expect(screen.queryByRole('textbox', { name: 'Notes' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Tags' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Project' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Status' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: TASK.title,
+        status: 'not_started',
+        note: '',
+        tags: [],
+        projectUid: '',
+      }),
+    );
+  });
+
+  it('keeps supplied capture fields editable during creation', () => {
+    renderScreen({
+      creating: true,
+      state: {
+        kind: 'ready',
+        task: {
+          ...TASK,
+          note: 'Use the brush',
+          tags: ['home'],
+          projectUid: 'project-home',
+        },
+      },
+      projects: [{ uid: 'project-home', name: 'Home' }],
+    });
+    expect(screen.getByRole('textbox', { name: 'Notes' })).toHaveValue(
+      'Use the brush',
+    );
+    expect(screen.getByRole('combobox', { name: 'Tags' })).toHaveValue('home');
+    expect(
+      screen.getByRole('combobox', { name: 'Project' }),
+    ).toHaveDisplayValue('Home');
+  });
+
+  it('keeps empty fields in the recurring editor and completes occurrences outside its status picker', () => {
+    renderScreen({
+      state: {
+        kind: 'ready',
+        task: {
+          ...TASK,
+          status: 'not_started',
+          recurrence: defaultRecurrence('daily', '2099-10-23'),
+        },
+      },
+    });
+    expect(screen.getByRole('textbox', { name: 'Notes' })).toBeVisible();
+    expect(screen.getByRole('combobox', { name: 'Tags' })).toBeVisible();
+    expect(screen.getByRole('combobox', { name: 'Project' })).toBeVisible();
+    expect(screen.getByRole('combobox', { name: 'Status' })).toHaveDisplayValue(
+      'Scheduled',
+    );
+    expect(screen.queryByRole('option', { name: 'Done' })).toBeNull();
+  });
+
   it('is a page, with no overlay anywhere in it', () => {
     renderScreen();
 

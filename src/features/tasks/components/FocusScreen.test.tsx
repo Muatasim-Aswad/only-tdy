@@ -46,7 +46,7 @@ describe('FocusScreen', () => {
 
     const shell = document.querySelector('.focus-shell');
     const order = [...(shell?.children ?? [])].map(
-      (child) => `${child.tagName.toLowerCase()}.${child.className}`,
+      (child) => `${child.tagName.toLowerCase()}.${child.classList[0] ?? ''}`,
     );
     expect(order).toEqual([
       'form.focus-capture',
@@ -170,7 +170,7 @@ describe('FocusScreen', () => {
     /* Search, list, then the way out. */
     const shell = document.querySelector('.focus-shell');
     const order = [...(shell?.children ?? [])].map(
-      (child) => `${child.tagName.toLowerCase()}.${child.className}`,
+      (child) => `${child.tagName.toLowerCase()}.${child.classList[0] ?? ''}`,
     );
     expect(order).toEqual([
       'form.focus-capture',

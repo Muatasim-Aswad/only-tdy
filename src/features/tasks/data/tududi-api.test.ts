@@ -791,3 +791,148 @@ describe('Tududi API', () => {
     expect(asked?.get('limit')).toBe('50');
   });
 });
+
+describe('Tududi recurrence', () => {
+  const repeating = {
+    ...rawBacklogTask,
+    uid: 'weekly-review',
+    due_date: '2026-10-23',
+    recurrence_type: 'weekly',
+    recurrence_interval: 2,
+    recurrence_weekdays: [1, 5],
+    completion_based: false,
+  };
+
+  it('keeps schedules out of Backlog and retains them in Repeating', async () => {
+    server.use(
+      http.get('/api/tasks', () =>
+        HttpResponse.json({
+          tasks: [rawBacklogTask, repeating],
+          pagination: { hasMore: false },
+        }),
+      ),
+    );
+    const api = createTududiApi(resolvedFetch);
+    expect((await api.fetchBacklogTasks()).map((task) => task.uid)).toEqual([
+      rawBacklogTask.uid,
+    ]);
+    expect((await api.fetchRepeatingTasks()).map((task) => task.uid)).toEqual([
+      'weekly-review',
+    ]);
+  });
+
+  it('distinguishes completed occurrences from the advancing task in Today', async () => {
+    server.use(
+      http.get('/api/tasks', () =>
+        HttpResponse.json({
+          tasks: [],
+          tasks_completed_today: [
+            { ...repeating, status: 2, completed_at: '2026-10-20T09:00:00Z' },
+          ],
+        }),
+      ),
+    );
+    const [completed] = await createTududiApi(resolvedFetch).fetchTodayTasks();
+    expect(completed).toMatchObject({
+      sourceTaskUid: 'weekly-review',
+      status: 'done',
+      completedAt: '2026-10-20T09:00:00Z',
+    });
+    expect(completed?.uid).not.toBe('weekly-review');
+  });
+
+  it('reads completion events without counting skipped occurrences', async () => {
+    server.use(
+      http.get('/api/tasks', ({ request }) =>
+        HttpResponse.json({
+          tasks:
+            new URL(request.url).searchParams.get('status') === 'done'
+              ? []
+              : [repeating],
+          pagination: { hasMore: false },
+        }),
+      ),
+      http.get('/api/task/:uid/timeline', () =>
+        HttpResponse.json([
+          {
+            event_type: 'recurring_occurrence_skipped',
+            created_at: '2026-10-13T09:00:00Z',
+          },
+          {
+            event_type: 'recurring_occurrence_completed',
+            created_at: '2026-10-20T09:00:00Z',
+            metadata: { original_due_date: '2026-10-19' },
+          },
+        ]),
+      ),
+    );
+    const history = await createTududiApi(resolvedFetch).fetchDoneTasks(true);
+    expect(history).toHaveLength(1);
+    expect(history[0]).toMatchObject({
+      sourceTaskUid: 'weekly-review',
+      dueDate: '2026-10-19',
+      status: 'done',
+    });
+  });
+
+  it('saves and removes recurrence without changing unchanged due times', async () => {
+    const patches: Record<string, unknown>[] = [];
+    const transport = {
+      request: vi.fn(() => Promise.resolve({ timezone: 'UTC' })),
+      clearCsrfToken: vi.fn(),
+      mutate: vi.fn((_path: string, _method: string, body?: unknown) => {
+        const patch = body as Record<string, unknown>;
+        patches.push(patch);
+        return Promise.resolve({ ...rawTaskDetail, ...patch });
+      }),
+    };
+    const api = createTududiApi(undefined, {
+      transport,
+      now: () => new Date('2026-10-20T12:00:00Z'),
+    });
+    const edit = {
+      title: 'Review',
+      note: '',
+      status: 'not_started' as const,
+      priority: 'low' as const,
+      projectUid: '',
+      tags: [],
+      dueDate: '2026-10-23',
+      deferUntil: '',
+    };
+    await api.updateTask(
+      'weekly-review',
+      {
+        ...edit,
+        recurrence: {
+          type: 'weekly',
+          interval: 2,
+          weekdays: [1, 5],
+          monthDay: 23,
+          weekOfMonth: 4,
+          completionBased: true,
+          endDate: '',
+        },
+      },
+      edit.dueDate,
+    );
+    expect(patches[0]).toMatchObject({
+      recurrence_type: 'weekly',
+      recurrence_interval: 2,
+      recurrence_weekdays: [1, 5],
+      completion_based: true,
+      recurrence_end_date: null,
+    });
+    expect(patches[0]).not.toHaveProperty('due_date');
+    await api.updateTask(
+      'weekly-review',
+      { ...edit, recurrence: null },
+      edit.dueDate,
+    );
+    expect(patches[1]).toMatchObject({
+      recurrence_type: 'none',
+      recurrence_interval: null,
+      recurrence_weekdays: null,
+    });
+  });
+});

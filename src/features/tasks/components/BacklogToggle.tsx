@@ -1,4 +1,4 @@
-import { classNames } from '../../../shared/classNames.ts';
+import { RailButton } from '../../../shared/RailButton.tsx';
 import { COPY } from './copy.ts';
 
 export interface BacklogToggleProps {
@@ -22,16 +22,15 @@ export interface BacklogToggleProps {
  */
 export function BacklogToggle({ active, onToggle }: BacklogToggleProps) {
   return (
-    <button
-      type="button"
-      className={classNames('focus-history', active && 'focus-history--active')}
+    <RailButton
+      active={active}
       onClick={onToggle}
       aria-pressed={active}
       aria-label={COPY.backlog}
       title={COPY.backlog}
     >
       <svg
-        className="focus-home__icon"
+        className="focus-home__icon block"
         viewBox="0 0 24 24"
         width="20"
         height="20"
@@ -47,6 +46,6 @@ export function BacklogToggle({ active, onToggle }: BacklogToggleProps) {
         <path d="M5.5 8h13" />
         <path d="M5 11.5h14v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" />
       </svg>
-    </button>
+    </RailButton>
   );
 }

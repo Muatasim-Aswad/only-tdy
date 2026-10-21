@@ -38,7 +38,7 @@ export function CaptureFeedbackMessage({
           onDismiss={onDismiss}
           action={
             <a
-              className="focus-toast__icon"
+              className="focus-toast__icon inline-flex items-center justify-center flex-none w-11 h-11 text-muted rounded-[6px] focus-visible:text-accent focus-visible:bg-selection hover:text-accent hover:bg-selection"
               href={taskPath(feedback.uid)}
               aria-label="Edit task"
               title="Edit task"

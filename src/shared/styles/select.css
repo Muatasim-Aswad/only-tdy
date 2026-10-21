@@ -1,21 +1,5 @@
+/* Native picker appearance, anchored popover, fallback palette and empty state. */
 @layer components {
-  /*
-   * A select with its box taken off. The platform arrow goes with the box, so
-   * a drawn mark takes its place — the resting weight of the capture marker
-   * and the home mark, coming up to the accent while the control has focus.
-   */
-  .focus-select {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-  }
-
-  /*
-   * The closed control, in every engine: no box, and the page's own colour
-   * underneath it, so an engine that draws the open list from the control's
-   * background has the right one to draw from.
-   */
   .focus-select__control {
     min-width: 0;
     max-width: 100%;
@@ -28,32 +12,12 @@
     background-color: var(--canvas);
   }
 
-  /*
-   * The open list, where `appearance: none` stops.
-   *
-   * A legacy select's dropdown is not part of the page. Chrome paints it as a
-   * platform widget outside the document, and on Linux that widget is drawn
-   * by Chrome itself with no theme underneath it: a hard black hairline, a
-   * system-blue bar on the chosen row, and no inset of any kind. Padding
-   * written on `option` is silently dropped there — every attempt to space
-   * that list from the inside was writing rules the widget never reads.
-   *
-   * `appearance: base-select` is the only way in. It moves the list into the
-   * document as a real popover anchored to the control, and only then do a
-   * border, a radius, a fill and an inset mean anything. It applies wherever
-   * it is understood, phone included: a list drawn from these tokens is the
-   * same list on every screen, which a platform sheet was never going to be.
-   * Behind `@supports`, because an engine that cannot do this must keep the
-   * platform list rather than a half-styled one.
-   */
   @supports (appearance: base-select) {
     .focus-select__control,
     .focus-select__control::picker(select) {
       appearance: base-select;
     }
 
-    /* In base appearance the control is a button: it arrives with a box of
-       its own, which is the box this whole field was drawn without. */
     .focus-select__control {
       display: flex;
       align-items: center;
@@ -65,27 +29,16 @@
       text-align: start;
     }
 
-    /* The chosen value, which must ellipsize rather than widen the row. */
     .focus-select__control selectedcontent {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    /* The UA offers its own arrow here; the drawn mark already answers for
-       one, and two would say the same thing twice. */
     .focus-select__control::picker-icon {
       display: none;
     }
 
-    /*
-     * The list itself: the surface a message sits on, ruled at the weight
-     * every other divider uses. Nothing is thrown behind it — the page casts
-     * no shadows — so the fill and the hairline are what say it is above the
-     * page, exactly as they do for a message. It starts at the control's own
-     * width so a short list never looks clipped, and stops before the
-     * viewport edge so a long project name cannot push it off screen.
-     */
     .focus-select__control::picker(select) {
       position-area: block-end span-inline-end;
       box-sizing: border-box;
@@ -116,13 +69,6 @@
       }
     }
 
-    /*
-     * One choice to a row, at the inset the closed field never needed and the
-     * open list cannot do without. It keeps the one line an option is held to
-     * and ends a name too long for the width in an ellipsis, the way the
-     * closed control ends the same name — the trailing inset is the room the
-     * tick is given, so a long name runs out before it reaches one.
-     */
     .focus-select__control option {
       position: relative;
       display: block;
@@ -137,16 +83,6 @@
       cursor: pointer;
     }
 
-    /*
-     * The chosen row is marked and nothing else: the tick, in the accent,
-     * parked in the inset kept for it at the trailing edge. A fill is what
-     * the list says about where the pointer or the keyboard is, and it can
-     * only say that of one row at a time — giving the chosen row the same
-     * fill would put it under the pointer's answer the moment the list opens
-     * on it, and leave two rows claiming the same thing the moment an arrow
-     * key moved off. What is already true is a mark; what is happening now
-     * is a fill.
-     */
     .focus-select__control option::checkmark {
       position: absolute;
       inset-block-start: 8px;
@@ -154,18 +90,6 @@
       color: var(--accent);
     }
 
-    /*
-     * Where the keyboard is, in the palette's own quiet highlight — the
-     * colour it already uses for a selection, which is what this is.
-     *
-     * `:focus-visible`, not `:focus`. Opening the list puts focus straight on
-     * the chosen row, so plain `:focus` would fill that row the instant the
-     * list appeared — the mark and the fill back on one row, saying the same
-     * thing twice, which is what taking the fill off `:checked` was for. The
-     * browser already answers this exactly: a list opened with the pointer
-     * needs no keyboard position shown, and one opened or moved with the
-     * keyboard does.
-     */
     .focus-select__control option:focus-visible {
       background-color: var(--selection);
       outline: none;
@@ -184,38 +108,10 @@
     }
   }
 
-  /* The platform list, for an engine without `base-select`: all it reads is
-     the control's own palette, which at least keeps the page's colours. */
   @supports not (appearance: base-select) {
     .focus-select__control option {
       background-color: var(--canvas);
       color: var(--ink);
-    }
-  }
-
-  .focus-select__mark {
-    flex: none;
-    display: block;
-    color: var(--muted);
-    opacity: 0.55;
-    pointer-events: none;
-    transition:
-      color 140ms var(--ease-focus),
-      opacity 140ms var(--ease-focus);
-  }
-
-  .focus-select:focus-within .focus-select__mark {
-    color: var(--accent);
-    opacity: 1;
-  }
-
-  @media (min-width: 360px) {
-    .focus-select {
-      flex: 1 1 auto;
-    }
-
-    .focus-select__control {
-      flex: 1 1 auto;
     }
   }
 

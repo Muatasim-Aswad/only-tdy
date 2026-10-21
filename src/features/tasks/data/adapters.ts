@@ -4,9 +4,58 @@ import type {
   TaskDetail,
   TaskPriority,
   TaskStatus,
+  Recurrence,
 } from '../contracts.ts';
 import { DEFAULT_TIMEZONE, hideDate } from '../domain/task-dates.ts';
 import { TASK_PAGE_LIMIT } from '../../../config/app.ts';
+
+function adaptRecurrence(value: JsonRecord): Recurrence | undefined {
+  const type = value.recurrence_type;
+  if (type === undefined || type === null || type === '' || type === 'none')
+    return undefined;
+  if (
+    type !== 'daily' &&
+    type !== 'weekly' &&
+    type !== 'monthly' &&
+    type !== 'monthly_weekday' &&
+    type !== 'monthly_last_day'
+  )
+    throw new TududiShapeError('Unsupported Tududi recurrence.');
+  const rawDays: unknown =
+    typeof value.recurrence_weekdays === 'string'
+      ? JSON.parse(value.recurrence_weekdays)
+      : value.recurrence_weekdays;
+  const days = Array.isArray(rawDays)
+    ? rawDays
+    : [value.recurrence_weekday ?? 0];
+  if (
+    !days.every(
+      (day): day is number => Number.isInteger(day) && day >= 0 && day <= 6,
+    )
+  )
+    throw new TududiShapeError('Invalid Tududi recurrence weekdays.');
+  return {
+    type,
+    interval:
+      typeof value.recurrence_interval === 'number'
+        ? value.recurrence_interval
+        : 1,
+    weekdays: days,
+    monthDay:
+      typeof value.recurrence_month_day === 'number'
+        ? value.recurrence_month_day
+        : 1,
+    weekOfMonth:
+      typeof value.recurrence_week_of_month === 'number'
+        ? value.recurrence_week_of_month
+        : 1,
+    completionBased: value.completion_based === true,
+    endDate:
+      typeof value.recurrence_end_date === 'string'
+        ? value.recurrence_end_date.slice(0, 10)
+        : '',
+  };
+}
 
 type JsonRecord = Readonly<Record<string, unknown>>;
 
@@ -116,9 +165,15 @@ export function adaptTask(value: unknown): Task {
 
   const completedAt = value.completed_at;
   const createdAt = value.created_at;
+  const recurrence = adaptRecurrence(value);
 
   return {
     uid: requiredString(value, 'uid'),
+    ...(recurrence === undefined ? {} : { recurrence }),
+    ...(typeof value.recurring_parent_uid === 'string' &&
+    value.recurring_parent_uid !== ''
+      ? { recurringParentUid: value.recurring_parent_uid }
+      : {}),
     title:
       typeof value.original_name === 'string' && value.original_name.length > 0
         ? value.original_name

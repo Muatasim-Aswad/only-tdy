@@ -130,6 +130,8 @@ export function TaskListPage({ view }: TaskListPageProps) {
    */
   const historyQuery = useHistoryQuery(
     !history || (!all && searchRequest.kind === 'none'),
+    undefined,
+    history && !all,
   );
   const allQuery = useAllTasksQuery(all && searchRequest.kind === 'none');
   const historySearchQuery = useSearchQuery(

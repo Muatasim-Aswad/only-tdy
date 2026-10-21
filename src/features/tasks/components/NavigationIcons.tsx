@@ -1,7 +1,7 @@
 function Icon({ children }: { readonly children: React.ReactNode }) {
   return (
     <svg
-      className="focus-more__icon"
+      className="focus-more__icon flex-none block text-[var(--menu-icon-color,_currentColor)]"
       viewBox="0 0 24 24"
       width="20"
       height="20"
@@ -25,6 +25,14 @@ export function TasksIcon() {
       <path d="m3.5 13 1.5 1.5 2.5-3" />
       <path d="M11 6h9M11 13h9M11 20h9" />
       <path d="M4 20h3" />
+    </Icon>
+  );
+}
+
+export function RepeatIcon() {
+  return (
+    <Icon>
+      <path d="m16 3 4 4-4 4M20 7H8a4 4 0 0 0-4 4m4 10-4-4 4-4M4 17h12a4 4 0 0 0 4-4" />
     </Icon>
   );
 }

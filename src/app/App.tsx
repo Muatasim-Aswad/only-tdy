@@ -1,3 +1,4 @@
+import { PageShell } from '../shared/PageShell.tsx';
 import { TaskProvider } from '../features/tasks/TaskProvider.tsx';
 import { lazy, Suspense, useCallback, useState, type MouseEvent } from 'react';
 
@@ -43,6 +44,16 @@ const SettingsPage = lazy(() =>
 );
 
 const VERSION_PATH = routePath({ kind: 'version' });
+const RepeatingPage = lazy(() =>
+  import('../features/tasks/RepeatingPage.tsx').then((module) => ({
+    default: module.RepeatingPage,
+  })),
+);
+const RepeatingCreatePage = lazy(() =>
+  import('../features/tasks/RepeatingCreatePage.tsx').then((module) => ({
+    default: module.RepeatingCreatePage,
+  })),
+);
 
 export interface AppProps {
   /** A build this device has not run before, announced once over any page. */
@@ -74,6 +85,18 @@ export function App({ updateNotice = null }: AppProps) {
 
 function Page() {
   const route = useRoute();
+  if (route.kind === 'new-repeating')
+    return (
+      <Suspense fallback={null}>
+        <RepeatingCreatePage />
+      </Suspense>
+    );
+  if (route.kind === 'repeating')
+    return (
+      <Suspense fallback={null}>
+        <RepeatingPage />
+      </Suspense>
+    );
 
   if (route.kind === 'settings') {
     return (
@@ -87,11 +110,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading task…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <TaskDetailPage key={route.uid} uid={route.uid} />
@@ -103,11 +126,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading tasks…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <BacklogPage />
@@ -119,11 +142,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <VersionPage />
@@ -135,11 +158,11 @@ function Page() {
     return (
       <Suspense
         fallback={
-          <main className="focus-shell">
-            <div className="focus-listing" aria-live="polite">
+          <PageShell>
+            <div className="focus-listing mt-0 min-h-30" aria-live="polite">
               Loading…
             </div>
-          </main>
+          </PageShell>
         }
       >
         <GuidePage />
@@ -150,11 +173,11 @@ function Page() {
   return (
     <Suspense
       fallback={
-        <main className="focus-shell">
-          <div className="focus-listing" aria-live="polite">
+        <PageShell>
+          <div className="focus-listing mt-0 min-h-30" aria-live="polite">
             Loading tasks…
           </div>
-        </main>
+        </PageShell>
       }
     >
       <TaskListPage

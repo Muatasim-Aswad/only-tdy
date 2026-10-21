@@ -1,6 +1,7 @@
+import { RailButton } from '../../../shared/RailButton.tsx';
+import { PageFooter } from '../../../shared/PageFooter.tsx';
 import type { FocusDestination } from '../contracts.ts';
 
-import { classNames } from '../../../shared/classNames.ts';
 import { COPY } from './copy.ts';
 import { BacklogToggle } from './BacklogToggle.tsx';
 import { HomeToggle } from './HomeToggle.tsx';
@@ -10,6 +11,7 @@ import {
   HistoryIcon,
   GuideIcon,
   AboutIcon,
+  RepeatIcon,
 } from './NavigationIcons.tsx';
 
 export interface FocusFooterProps {
@@ -22,7 +24,7 @@ export interface FocusFooterProps {
 /** Home, Backlog and All stay on the rail; a selected menu page adds its mark. */
 export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
   return (
-    <footer className="focus-footer">
+    <PageFooter>
       <HomeToggle
         active={current === 'tasks'}
         onToggle={() => {
@@ -35,12 +37,8 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
           onNavigate('backlog');
         }}
       />
-      <button
-        type="button"
-        className={classNames(
-          'focus-history',
-          current === 'all' && 'focus-history--active',
-        )}
+      <RailButton
+        active={current === 'all'}
         aria-label={COPY.allTasks}
         title={COPY.allTasks}
         aria-pressed={current === 'all'}
@@ -49,11 +47,10 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
         }}
       >
         <TasksIcon />
-      </button>
+      </RailButton>
       {current !== 'tasks' && current !== 'backlog' && current !== 'all' ? (
-        <button
-          type="button"
-          className="focus-history focus-history--active"
+        <RailButton
+          active
           aria-label={PAGE_LABEL[current]}
           title={PAGE_LABEL[current]}
           aria-pressed="true"
@@ -61,14 +58,16 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
             onNavigate(current);
           }}
         >
-          {current === 'history' ? (
+          {current === 'repeating' ? (
+            <RepeatIcon />
+          ) : current === 'history' ? (
             <HistoryIcon />
           ) : current === 'guide' ? (
             <GuideIcon />
           ) : (
             <AboutIcon />
           )}
-        </button>
+        </RailButton>
       ) : null}
       <MoreMenu
         historyActive={current === 'history'}
@@ -76,11 +75,12 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
           onNavigate('history');
         }}
       />
-    </footer>
+    </PageFooter>
   );
 }
 
 const PAGE_LABEL = {
+  repeating: 'Repeating',
   history: 'Completed tasks',
   guide: 'Guide',
   version: COPY.about,

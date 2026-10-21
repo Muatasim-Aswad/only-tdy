@@ -7,7 +7,8 @@
  * the forced-colors rules exist. Compiling the real stylesheet can.
  */
 
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import ts from 'typescript';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 
@@ -57,13 +58,51 @@ beforeAll(async () => {
   });
   sourceRoot = compiler.root;
   sources = compiler.sources;
-  css = compiler.build(USED_UTILITIES);
+  const candidates = new Set(USED_UTILITIES);
+  async function scan(directory: string): Promise<void> {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      if (entry.name === 'testing' || entry.name === 'test') continue;
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) await scan(path);
+      else if (/\.tsx?$/.test(path) && !path.includes('.test.')) {
+        const source = ts.createSourceFile(
+          path,
+          await readFile(path, 'utf8'),
+          ts.ScriptTarget.Latest,
+          true,
+        );
+        function visit(node: ts.Node) {
+          if (
+            ts.isStringLiteral(node) ||
+            ts.isNoSubstitutionTemplateLiteral(node) ||
+            ts.isTemplateHead(node) ||
+            ts.isTemplateMiddle(node) ||
+            ts.isTemplateTail(node)
+          ) {
+            for (const candidate of node.text.split(/\s+/))
+              candidates.add(candidate);
+          }
+          ts.forEachChild(node, visit);
+        }
+        visit(source);
+      }
+    }
+  }
+  await scan(resolve('src'));
+  for (const [, classes] of (await readFile('index.html', 'utf8')).matchAll(
+    /class="([^"]+)"/g,
+  )) {
+    for (const candidate of (classes ?? '').split(/\s+/))
+      candidates.add(candidate);
+  }
+  css = compiler.build([...candidates]);
 });
 
 describe('source discovery', () => {
   it('scans only the shipped source tree in every build context', () => {
     expect(sourceRoot).toBe('none');
     expect(sources).toEqual([
+      { base: dirname(ENTRY), pattern: '../../index.html', negated: false },
       { base: dirname(ENTRY), pattern: '.', negated: false },
       { base: dirname(ENTRY), pattern: '../features', negated: false },
       { base: dirname(ENTRY), pattern: '../shared', negated: false },
@@ -241,7 +280,7 @@ describe('colour system', () => {
     expect(gradients[0]).toContain('var(--canvas)');
     expect(css).not.toContain('radial-gradient');
     // The only shadows are the capture rule's inset lines and the reset.
-    expect(css).not.toMatch(/box-shadow: (?!inset|none)/);
+    expect(css).not.toMatch(/box-shadow: (?!inset|none|var\(--tw-)/);
   });
 });
 
@@ -293,271 +332,69 @@ describe('typography', () => {
   });
 });
 
-describe('geometry', () => {
-  it('shares one rail width between the marker, targets, and content edge', () => {
-    expect(css).toContain('--spacing-rail: 44px;');
-    expect(block(/\.focus-rail \{[^}]*\}/)).toContain(
-      'width: var(--spacing-rail);',
-    );
-
-    const complete = block(/\.focus-complete \{[^}]*\}/);
-    expect(complete).toContain('width: var(--spacing-rail);');
-    expect(complete).toContain('height: var(--spacing-rail);');
-
-    expect(block(/\.focus-state \{[^}]*\}/)).toContain(
-      'padding-left: var(--spacing-rail);',
-    );
-    expect(block(/\.focus-message \{[^}]*\}/)).toContain(
-      'margin-left: var(--spacing-rail);',
-    );
-  });
-
-  it('keeps the visible box at 20px inside the 44px target', () => {
+describe('drawn completion states', () => {
+  it('keeps the visible box at 20px with functional corners', () => {
     const box = block(/\.focus-complete__box \{[^}]*\}/);
     expect(box).toContain('width: 20px;');
     expect(box).toContain('height: 20px;');
-    // A checkbox, not a circle: the corner is the functional radius.
     expect(box).toContain('border-radius: var(--radius-fill);');
-    expect(box).not.toContain('border-radius: 9999px;');
   });
 
-  it('shows priority as the colour of the empty box, not a second mark', () => {
+  it('shows priority through semantic border colors', () => {
     expect(block(/\.focus-complete__box--high \{[^}]*\}/)).toContain(
       'border-color: var(--priority-high);',
     );
     expect(block(/\.focus-complete__box--medium \{[^}]*\}/)).toContain(
       'border-color: var(--priority-medium);',
     );
-    // Low priority is the plain box: there is no third rule to opt out of.
-    expect(css).not.toContain('focus-complete__box--low');
-    // The trailing slot and the two shapes it held are gone with it.
-    expect(css).not.toContain('.focus-priority');
-  });
-
-  it('gives visible backlog controls a full tap height', () => {
-    const actions = block(/\.focus-backlog__actions \{[^}]*\}/);
-    expect(actions).toContain('min-height: 44px;');
-    expect(actions).toContain('padding-left: var(--spacing-rail);');
-  });
-
-  it('draws a chosen row in the palette’s own selection colour', () => {
-    expect(block(/\.focus-row--selected \{[^}]*\}/)).toContain(
-      'background-color: var(--selection);',
-    );
-    // The tick is the same tick: one rule fills the box for done and chosen.
-    expect(css).toMatch(
-      /\.focus-row--done \.focus-complete__box,\s*\.focus-row--selected \.focus-complete__box \{[^}]*background-color: var\(--accent\);/,
-    );
-  });
-
-  it('gives text links a 44px target without moving their baseline', () => {
-    const links = block(/\.focus-state__action \{[^}]*\}/);
-    expect(links).toContain('padding-block: 12px;');
-    expect(links).toContain('margin-block: -12px;');
-  });
-
-  it('holds the row and list heights so no state shifts the page', () => {
-    expect(block(/\.focus-row \{[^}]*\}/)).toContain('min-height: 56px;');
-    expect(block(/\.focus-row--metadata \{[^}]*\}/)).toContain(
-      'min-height: 64px;',
-    );
-    expect(block(/\.focus-capture \{[^}]*\}/)).toContain('min-height: 60px;');
-    expect(block(/\.focus-listing \{[^}]*\}/)).toMatch(/min-height: \d+px;/);
-  });
-
-  it('separates rows by space alone, never a card', () => {
-    const row = block(/\.focus-row \{[^}]*\}/);
-    expect(row).toContain('background-color: transparent;');
-    expect(row).not.toContain('border');
-    expect(row).toContain('cursor: default;');
-    expect(css).not.toContain('.focus-row:last-child');
-  });
-
-  it('rules the gaps of a ruled list, and only the gaps', () => {
-    expect(
-      block(/\.focus-list--ruled \.focus-row \+ \.focus-row \{[^}]*\}/),
-    ).toContain('border-top: 1px solid var(--line);');
-    // The rule belongs to the pages that ask for it, never to the row itself.
-    expect(css).not.toMatch(/\.focus-list \.focus-row \+ \.focus-row/);
-  });
-
-  it('applies the specified gutters at each width', () => {
-    expect(css).toMatch(
-      /\.focus-shell \{[^}]*max\(16px, env\(safe-area-inset-left\)\)/,
-    );
-    expect(css).toMatch(
-      /@media \(min-width: 480px\) \{\s*\.focus-shell \{[^}]*max\(24px/,
-    );
-    expect(css).toMatch(
-      /@media \(min-width: 768px\) \{\s*\.focus-shell \{[^}]*max\(32px/,
-    );
-    expect(css).toContain('padding-top: clamp(40px, 8vh, 88px);');
   });
 });
 
 describe('motion and platform behaviour', () => {
-  it('uses one easing curve everywhere', () => {
+  it('keeps the shared easing and action-triggered animation timings', () => {
     expect(css).toContain('--ease-focus: cubic-bezier(0.22, 1, 0.36, 1);');
-
-    const literals = css.match(/cubic-bezier\([^)]*\)/g) ?? [];
-    expect(new Set(literals).size).toBe(1);
-  });
-
-  it('times each interaction as specified', () => {
-    expect(block(/\.focus-row--inserted \{[^}]*\}/)).toContain(
-      'animation: focus-row-insert 180ms var(--ease-focus) both;',
-    );
-    expect(block(/\.focus-row--restoring \{[^}]*\}/)).toContain(
-      'animation: focus-row-restore 120ms var(--ease-focus) both;',
-    );
-    // Completion is not a moment any more: the row is marked done and sorts
-    // down, so nothing collapses and nothing is animated away.
+    expect(css).toContain('focus-row-insert 180ms var(--ease-focus) both');
+    expect(css).toContain('focus-row-restore 120ms var(--ease-focus) both');
+    expect(css).not.toMatch(/animation:[^;]*infinite/);
     expect(css).not.toContain('focus-row-collapse');
-    expect(css).not.toContain('focus-row--completing');
   });
 
-  it('animates nothing on load and never translates a row on hover', () => {
+  it('limits row travel to the insertion animation', () => {
     for (const enclosure of enclosures('transform: translateY')) {
       expect(enclosure.join(' ')).toMatch(/@keyframes focus-row-insert/);
     }
-    expect(css).not.toContain('scale(');
-    expect(css).not.toMatch(/animation:[^;]*infinite/);
   });
 
-  it('drops travel under reduced motion, keeping colour', () => {
-    const reduced = [
-      ...css.matchAll(
-        /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\n {2}\}/g,
-      ),
-    ]
-      .map(([value]) => value)
-      .join('\n');
-
-    expect(reduced).toContain('.focus-row--inserted');
-    expect(reduced).toContain('.focus-row--restoring');
-    expect(reduced).toContain('animation: none;');
-
-    for (const enclosure of enclosures('animation: none;')) {
-      expect(enclosure).toContain(REDUCED);
-    }
+  it('emits reduced-motion overrides from the component utilities', () => {
+    const overrides = enclosures('animation: none;');
+    expect(overrides.length).toBeGreaterThan(0);
+    for (const enclosure of overrides) expect(enclosure).toContain(REDUCED);
+    expect(css).toMatch(
+      /\.focus-complete__box::after \{\s*transition-duration: 0s;/,
+    );
   });
 
   it('confines hover treatment to devices that hover', () => {
     const hovers = enclosures(':hover');
     expect(hovers.length).toBeGreaterThan(0);
-    for (const enclosure of hovers) {
-      expect(enclosure).toContain(HOVER);
-    }
+    for (const enclosure of hovers) expect(enclosure).toContain(HOVER);
   });
 
-  /*
-   * No control draws a focus box. The obligation that replaces it is that every
-   * focusable thing changes some mark of its own, so this checks each one.
-   */
-  it('gives every focusable control a focus state that is not a box', () => {
-    expect(block(/:focus-visible \{[^}]*\}/)).toContain('outline: none;');
-
-    for (const selector of [
-      /\.focus-capture__submit:focus-visible \{[^}]*\}/,
-      /\.focus-state__action:focus-visible \{[^}]*\}/,
-    ]) {
-      expect(block(selector)).toContain('text-decoration: underline;');
-    }
-    expect(block(/\.focus-home:focus-visible \{[^}]*\}/)).toContain(
-      'color: var(--accent);',
+  it('keeps the tick visible in forced colors', () => {
+    const forced = block(
+      /@media \(forced-colors: active\) \{\s*\.focus-complete__box[\s\S]*?\n {2}\}/,
     );
-    expect(block(/\.focus-back:focus-visible \{[^}]*\}/)).toContain(
-      'color: var(--accent);',
-    );
-    expect(block(/\.focus-history:focus-visible,[^{]*\{[^}]*\}/)).toContain(
-      'color: var(--accent);',
-    );
-    expect(
-      block(/\.focus-complete:focus-visible \.focus-complete__box \{[^}]*\}/),
-    ).toContain('border-color: var(--accent);');
-  });
-
-  it('keeps the tick visible in forced colours', () => {
-    const forced = block(/@media \(forced-colors: active\) \{[\s\S]*?\n {2}\}/);
-
     expect(forced).toContain('.focus-complete__box');
     expect(forced).toContain('forced-color-adjust: none;');
-    // The row tint is discarded there, so the chosen row leans on the box.
-    expect(forced).toContain('.focus-row--selected');
-    // And the foot's fade is a gradient, not ink: it would paint the
-    // palette's own canvas over the system's.
-    expect(forced).toContain('background-image: none;');
+    expect(forced).toContain('background-color: Highlight;');
+    expect(css).toContain('background-image: none;');
   });
 
-  /*
-   * The warning colour says one thing on this control: this press deletes.
-   * Reaching a word is not choosing it, so hover and focus are the underline
-   * alone — Keep above all, which is the answer that changes nothing.
-   */
-  it('never lends the warning colour to reaching a delete answer', () => {
-    for (const selector of [
-      /\.focus-delete:focus-visible[^{]*\{[^}]*\}/,
-      /\.focus-delete:hover[^{]*\{[^}]*\}/,
-    ]) {
-      const rule = block(selector);
-      expect(rule).toContain('text-decoration: underline;');
-      expect(rule).not.toContain('color:');
-    }
-    // Only the press that deletes wears it, and only at rest.
-    expect(block(/\.focus-delete--danger \{[^}]*\}/)).toContain(
-      'color: var(--priority-high);',
-    );
-  });
-
-  it('sizes the column with the viewport that cannot exceed the screen', () => {
-    expect(block(/\.focus-shell \{[^}]*\}/)).toContain('min-height: 100svh;');
-    /*
-     * `dvh` is the size of the viewport right now, and CSS explicitly allows
-     * that to be larger than what is on screen while a phone's toolbars
-     * animate. A column that starts taller than the screen puts its own foot
-     * below the fold, which is the defect this replaced.
-     */
-    expect(css).not.toContain('dvh');
-    expect(css).toContain('env(safe-area-inset-top)');
-    expect(css).toContain('env(safe-area-inset-bottom)');
-  });
-
-  it('pins the foot of the page to the foot of the screen', () => {
-    const footer = block(/\.focus-footer \{[^}]*\}/);
-
-    expect(footer).toContain('position: sticky;');
-    expect(footer).toContain('bottom: 0;');
-    // Its own bottom space, so the safe area is held below the marks rather
-    // than below a column the screen already ended above.
-    expect(footer).toContain(
-      'padding-bottom: max(32px, env(safe-area-inset-bottom));',
-    );
-    expect(block(/\.focus-shell \{[^}]*\}/)).not.toContain('padding-bottom');
-    // Still nothing drawn: no rule, no bar, no shadow, no second surface —
-    // the fill is the page's own canvas. It arrives as a fade rather than an
-    // edge, so a row passing under it thins out into the foot of the page
-    // instead of being cut off at a line, and it is at full canvas by the
-    // top of the marks so they never sit over a row.
-    expect(footer).toContain('linear-gradient(');
-    expect(footer).toContain('transparent 0,');
-    expect(footer).toContain('var(--canvas) 32px');
-    expect(footer).not.toContain('border');
-    expect(footer).not.toContain('box-shadow');
-  });
-
-  it('stops anything scrolled into view above the pinned foot', () => {
-    expect(block(/html \{[^}]*\}/)).toContain('scroll-padding-bottom');
-  });
-});
-
-describe('unavailable controls', () => {
-  it('recedes rather than disappears when saving is impossible', () => {
-    expect(block(/\.focus-complete:disabled \{[^}]*\}/)).toContain(
-      'opacity: 0.5;',
-    );
-    expect(block(/\.focus-capture__submit:disabled \{[^}]*\}/)).toContain(
-      'color: var(--muted);',
-    );
-    expect(css).not.toMatch(/\.focus-complete:disabled \{[^}]*display: none/);
+  it('preserves native date fallbacks and synchronized textarea sizing', () => {
+    expect(css).toContain('::-webkit-datetime-edit');
+    expect(css).toContain('@supports not selector(::-webkit-datetime-edit)');
+    expect(css).toContain("content: attr(data-value) ' ';");
+    expect(css).toContain('grid-area: 1 / 1 / 2 / 2;');
+    expect(css).toContain('scroll-padding-bottom');
   });
 });

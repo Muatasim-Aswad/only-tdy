@@ -36,14 +36,19 @@ export function SuggestionList({
   label,
 }: SuggestionListProps) {
   return (
-    <ul className="focus-suggestions" id={id} role="listbox" aria-label={label}>
+    <ul
+      className="focus-suggestions absolute z-20 inset-x-0 top-full m-0 px-0 py-1 list-none bg-surface border border-line rounded-[10px] animate-appear motion-reduce:animate-none"
+      id={id}
+      role="listbox"
+      aria-label={label}
+    >
       {items.map((item, index) => (
         <li
           key={item.name}
           id={optionId(index)}
           role="option"
           aria-selected={index === activeIndex}
-          className="focus-suggestions__option text-task"
+          className="focus-suggestions__option block px-4 py-2 min-h-10 text-ink cursor-pointer aria-selected:bg-selection hover:bg-selection text-task"
           onMouseDown={(event) => {
             // Keep the field focused: a blur here would close the list first.
             event.preventDefault();
@@ -68,7 +73,7 @@ function SuggestionName({ suggestion }: { readonly suggestion: Suggestion }) {
   const { name, matchStart, matchEnd, mark = '', detail } = suggestion;
   const said =
     detail === undefined ? null : (
-      <span className="focus-suggestions__detail"> {detail}</span>
+      <span className="focus-suggestions__detail text-muted"> {detail}</span>
     );
   if (matchEnd === matchStart) {
     return (
@@ -84,7 +89,7 @@ function SuggestionName({ suggestion }: { readonly suggestion: Suggestion }) {
     <>
       {mark}
       {name.slice(0, matchStart)}
-      <mark className="focus-suggestions__match">
+      <mark className="focus-suggestions__match bg-transparent text-inherit font-semibold">
         {name.slice(matchStart, matchEnd)}
       </mark>
       {name.slice(matchEnd)}

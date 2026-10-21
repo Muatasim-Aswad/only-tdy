@@ -8,6 +8,7 @@ import {
 import { useMemo } from 'react';
 
 import { currentDate } from '../domain/task-dates.ts';
+import { isRepeating, recurringCompletion } from '../domain/recurrence.ts';
 import type {
   Task,
   TaskDetail,
@@ -102,7 +103,9 @@ async function withProject(
 }
 
 function listKeyForDraft(draft: TaskDraft): QueryKey {
-  return listKeyForStatus(draft.status);
+  return draft.recurrence
+    ? queryKeys.repeating
+    : listKeyForStatus(draft.status);
 }
 
 /** Which of the two open lists a status puts a task on. */
@@ -156,6 +159,9 @@ export function createTaskMutationOptions(
       await queryClient.cancelQueries({ queryKey: key, exact: true });
       const optimisticUid = nextOptimisticUid();
       const optimisticTask: Task = {
+        ...(variables.draft.recurrence
+          ? { recurrence: variables.draft.recurrence }
+          : {}),
         uid: optimisticUid,
         title: variables.draft.title,
         priority: variables.draft.priority,
@@ -240,6 +246,10 @@ export function setTaskStatusMutationOptions(
   >({
     mutationKey: ['task', 'status'],
     mutationFn: async ({ task, status }) => {
+      if (task.sourceTaskUid)
+        throw new Error(
+          'Completed occurrences cannot reopen a repeating task.',
+        );
       const timezone = await api.fetchAccountTimezone();
       const target =
         status === 'not_started' &&
@@ -345,6 +355,29 @@ export function setTaskStatusMutationOptions(
      * the right list optimistically while they answer.
      */
     onSuccess: (task, variables, context) => {
+      if (variables.status === 'done' && isRepeating(variables.task)) {
+        const completed = recurringCompletion(
+          variables.task,
+          task.completedAt ?? new Date().toISOString(),
+        );
+        for (const key of listedTaskKeys(queryClient)) {
+          queryClient.setQueryData<readonly Task[]>(key, (current) =>
+            current?.filter((item) => item.uid !== task.uid),
+          );
+        }
+        queryClient.setQueryData<readonly Task[]>(queryKeys.today, (current) =>
+          current === undefined ? undefined : [...current, completed],
+        );
+        queryClient.setQueryData<readonly Task[]>(
+          queryKeys.history,
+          (current = []) => [completed, ...current],
+        );
+        void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.task(task.uid),
+        });
+        return;
+      }
       for (const entry of context.restored) {
         queryClient.setQueryData<readonly Task[]>(entry.key, (current = []) =>
           current.map((item) => (item.uid === task.uid ? task : item)),
@@ -492,15 +525,18 @@ export function updateTaskMutationOptions(
         queryClient.setQueryData<readonly Task[]>(key, (current) => {
           if (current === undefined) return undefined;
           const belongs =
-            key === queryKeys.all
-              ? true
-              : key === queryKeys.history
-                ? task.status === 'done'
-                : key === queryKeys.backlog
-                  ? task.status === 'not_started' &&
-                    (!task.deferUntil ||
-                      task.deferUntil <= currentDate({ timezone }))
-                  : task.status !== 'not_started' && task.status !== 'done';
+            key === queryKeys.repeating
+              ? isRepeating(task)
+              : key === queryKeys.all
+                ? true
+                : key === queryKeys.history || key === queryKeys.fullHistory
+                  ? task.status === 'done'
+                  : key === queryKeys.backlog
+                    ? !isRepeating(task) &&
+                      task.status === 'not_started' &&
+                      (!task.deferUntil ||
+                        task.deferUntil <= currentDate({ timezone }))
+                    : task.status !== 'not_started' && task.status !== 'done';
           const others = current.filter((item) => item.uid !== task.uid);
           if (!belongs) return others;
           return current.some((item) => item.uid === task.uid)
@@ -542,6 +578,25 @@ export function updateTaskMutationOptions(
           queryKey: DONE_COUNT_KEY,
           refetchType: 'none',
         }),
+      ]);
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.history,
+        refetchType: 'none',
+      });
+    },
+  });
+}
+
+export function useSkipOccurrenceMutation() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: tududiApi.skipOccurrence,
+    retry: false,
+    onSuccess: async (task) => {
+      client.setQueryData(queryKeys.task(task.uid), undefined);
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['tasks'] }),
+        client.invalidateQueries({ queryKey: queryKeys.task(task.uid) }),
       ]);
     },
   });

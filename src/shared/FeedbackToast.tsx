@@ -54,7 +54,7 @@ function ToastContent({
 
   return (
     <div
-      className="focus-toast text-action"
+      className="focus-toast flex items-center gap-2 pt-1 pr-1.5 pb-1 pl-4 text-ink bg-surface border border-line rounded-[10px] pointer-events-auto animate-appear motion-reduce:animate-none text-action"
       onMouseEnter={() => {
         setHovered(true);
       }}
@@ -71,8 +71,9 @@ function ToastContent({
     >
       <p
         className={classNames(
-          'focus-toast__message',
-          tone === 'error' && 'focus-message--error',
+          'focus-toast__message min-w-0 m-0 wrap-anywhere',
+          tone === 'error' &&
+            'focus-message--error [&.focus-message--error]:text-priority-high',
         )}
       >
         {message}
@@ -80,7 +81,7 @@ function ToastContent({
       {action}
       <button
         type="button"
-        className="focus-toast__icon"
+        className="focus-toast__icon inline-flex items-center justify-center flex-none w-11 h-11 text-muted rounded-[6px] focus-visible:text-accent focus-visible:bg-selection hover:text-accent hover:bg-selection"
         aria-label="Dismiss notification"
         title="Dismiss"
         onClick={() => {

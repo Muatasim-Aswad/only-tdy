@@ -23,10 +23,13 @@ Filter Backlog by tag, select tasks across priorities, move them to Today, then 
 
 Try `Call plumber +Renovation #repairs !3 /today`; omit `/today` to leave an undated task in Backlog. Use `/due:tomorrow` or `/hide:+3` for dates, or edit dates and notes in the task editor. A new project name can create a project. Switch the empty bar between capture and search; search one phrase, tag, project or priority at a time.
 
+On list pages, start typing to focus the current Add/Search field. Ctrl+/ switches modes and restores each mode’s draft; Ctrl+Enter saves from any task-editor field. Use Cmd instead of Ctrl on Mac. Escape or clicking/tapping outside closes suggestions. Shortcuts respect other inputs and open menus or dialogs.
+
 ## Features
 
 - **Quick capture.** Add tasks with projects, tags, priorities, notes and dates, using inline shortcuts and auto-completion.
 - **Today and Backlog.** Choose tasks individually or together for Today. Due and overdue tasks move there automatically during sync unless you disable that setting.
+- **Repeating tasks.** Manage schedules in Repeating, keep them out of Backlog, and work on due occurrences in Today. Add there or use `/repeating` in any Add field to choose a schedule before saving.
 - **Backlog visibility.** Hide tasks until a chosen day or show dated tasks only near their due date. Always visible in All page.
 - **Search and history.** Search titles and notes, filter by tag, project or priority, and review or reopen completed tasks.
 - **Flexible editing.** Update task details in normal or compact forms, with system, light and dark themes and keyboard-accessible controls.

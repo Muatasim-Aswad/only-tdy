@@ -29,6 +29,7 @@ export const PRIORITY_VALUES = {
 /* Every word `/` accepts. It is one word, and it is here rather than inline so
    the parser can tell an unknown command from a known one in the same breath. */
 export const COMMANDS = ['today', 'due:', 'hide:'] as const;
+export const CAPTURE_COMMANDS = [...COMMANDS, 'repeating'] as const;
 
 function failure(
   kind: TaskDraftError['kind'],
@@ -63,7 +64,10 @@ function capitalizeTitle(title: string): string {
 export function parseQuickEntry(
   input: string,
   projects: readonly Project[] = [],
-  context: DateContext & { readonly capitalize?: boolean } = {},
+  context: DateContext & {
+    readonly capitalize?: boolean;
+    readonly allowRepeating?: boolean;
+  } = {},
 ): TaskDraftResult {
   const tokens = scanEntryTokens(input);
   const titleTokens: string[] = [];
@@ -73,6 +77,7 @@ export function parseQuickEntry(
   const noteTokens: string[] = [];
   const priorities = new Set<TaskPriority>();
   let isToday = false;
+  let repeating = false;
   let dueDate: string | undefined;
   let deferUntil: string | undefined;
 
@@ -96,6 +101,14 @@ export function parseQuickEntry(
     }
 
     if (token.kind === 'command') {
+      if (
+        !token.wrapped &&
+        token.value === 'repeating' &&
+        context.allowRepeating
+      ) {
+        repeating = true;
+        continue;
+      }
       if (!token.wrapped && token.value === 'today') {
         isToday = true;
         continue;
@@ -121,7 +134,9 @@ export function parseQuickEntry(
       }
       return failure(
         'unknown-command',
-        'Commands are /today, /due:date, and /hide:date.',
+        context.allowRepeating
+          ? 'Commands are /today, /due:date, /hide:date, and /repeating.'
+          : 'Commands are /today, /due:date, and /hide:date.',
       );
     }
 
@@ -160,7 +175,7 @@ export function parseQuickEntry(
   const plainTitle = titleTokens.join(' ');
   const title =
     context.capitalize === false ? plainTitle : capitalizeTitle(plainTitle);
-  if (title.length === 0) {
+  if (title.length === 0 && !repeating) {
     return failure('empty-title', 'Add a task title.');
   }
 
@@ -215,5 +230,5 @@ export function parseQuickEntry(
     ...(deferUntil === undefined ? {} : { deferUntil: dated.deferUntil }),
   };
 
-  return { ok: true, draft };
+  return { ok: true, draft, ...(repeating ? { repeating: true } : {}) };
 }

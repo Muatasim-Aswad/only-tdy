@@ -1,4 +1,5 @@
 import type { Task } from '../contracts.ts';
+import { isRepeating } from './recurrence.ts';
 import type { Preferences } from '../preferences/model.ts';
 import {
   currentDate,
@@ -20,6 +21,7 @@ export function visibleBacklogTasks(
   );
   const through = threshold.toISOString().slice(0, 10);
   return tasks.filter((task) => {
+    if (isRepeating(task)) return false;
     if (task.status !== 'not_started') return true;
     const explicit = hideDate(
       task.deferUntil ?? '',

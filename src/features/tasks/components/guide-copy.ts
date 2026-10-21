@@ -2,7 +2,8 @@ import type { ChipSpan } from './TokenChips.tsx';
 
 export const GUIDE_COPY = {
   guideCaptureHeading: 'Capturing a task',
-  guideCaptureIntro: 'Use these anywhere in quick entry or a task’s title.',
+  guideCaptureIntro:
+    'Use these in quick entry or a task’s title. /repeating is for Add fields only.',
   guideCaptureExample: 'call plumber +Home #errand !3 /today',
   guideSearchHeading: 'Searching',
   guideSearchIntro:
@@ -32,6 +33,10 @@ export const GUIDE_CAPTURE: readonly GuideEntry[] = [
     meaning: 'Priority: !1 low, !2 medium, !3 high. Low if left out.',
   },
   { typed: '/today', meaning: 'Put it on Today instead of the backlog.' },
+  {
+    typed: '/repeating',
+    meaning: 'Open the repeating task form before saving.',
+  },
   {
     typed: '/due:<date token>',
     chipKind: 'command',

@@ -1,4 +1,5 @@
-import type { Task, TaskFilter } from '../contracts.ts';
+import type { Recurrence, Task, TaskFilter } from '../contracts.ts';
+import { isRepeating, recurringCompletion } from '../domain/recurrence.ts';
 import { TASK_PAGE_LIMIT } from '../../../config/app.ts';
 import {
   adaptAllSearchList,
@@ -22,6 +23,7 @@ import {
   applyDateRules,
   dateAtMidnight,
   isTodayStatus,
+  hideDate,
   validateHideDate,
 } from '../domain/task-dates.ts';
 import {
@@ -83,6 +85,25 @@ function doneCountPath(filter: TaskFilter): string {
 
 function searchPath(query: string): string {
   return `/api/search?q=${encodeURIComponent(query)}&filters=Task&excludeSubtasks=true&limit=${String(TASK_PAGE_LIMIT)}`;
+}
+
+function recurrencePayload(
+  value: Recurrence | null | undefined,
+): Record<string, unknown> {
+  if (value === undefined) return {};
+  return {
+    recurrence_type: value?.type ?? 'none',
+    recurrence_interval: value?.interval ?? null,
+    recurrence_weekdays: value?.type === 'weekly' ? [...value.weekdays] : null,
+    recurrence_weekday: value?.weekdays[0] ?? null,
+    recurrence_month_day: value?.monthDay ?? null,
+    recurrence_week_of_month: value?.weekOfMonth ?? null,
+    recurrence_end_date:
+      value?.endDate === '' || value?.endDate === undefined
+        ? null
+        : value.endDate,
+    completion_based: value?.completionBased ?? false,
+  };
 }
 
 export function createTududiApi(
@@ -161,6 +182,55 @@ export function createTududiApi(
     }
   };
 
+  const fetchRepeatingTasks = async () =>
+    (await readAllPages(allPath(), adaptAllTaskList, 'tasks')).filter(
+      isRepeating,
+    );
+  const fetchRecurringHistory = async () => {
+    const [tasks, timezone] = await Promise.all([
+      fetchRepeatingTasks(),
+      fetchAccountTimezone(),
+    ]);
+    const completed: Task[] = [];
+    for (let start = 0; start < tasks.length; start += 4) {
+      const batches = await Promise.all(
+        tasks.slice(start, start + 4).map(async (task) => {
+          const payload = await request(
+            `/api/task/${encodeURIComponent(task.uid)}/timeline`,
+          );
+          if (!Array.isArray(payload))
+            throw new TududiShapeError('Expected a Tududi task timeline.');
+          return payload.flatMap((event: unknown) => {
+            if (
+              typeof event !== 'object' ||
+              event === null ||
+              !('event_type' in event) ||
+              event.event_type !== 'recurring_occurrence_completed'
+            )
+              return [];
+            const row = event as Record<string, unknown>;
+            if (typeof row.created_at !== 'string')
+              throw new TududiShapeError('Expected a completion time.');
+            const metadata: unknown =
+              typeof row.metadata === 'string'
+                ? JSON.parse(row.metadata)
+                : row.metadata;
+            const dueDate =
+              typeof metadata === 'object' &&
+              metadata !== null &&
+              'original_due_date' in metadata &&
+              typeof metadata.original_due_date === 'string'
+                ? hideDate(metadata.original_due_date, timezone)
+                : undefined;
+            return [recurringCompletion(task, row.created_at, dueDate)];
+          });
+        }),
+      );
+      completed.push(...batches.flat());
+    }
+    return completed;
+  };
+
   return {
     fetchAccountTimezone,
     syncDueTasks: async () => {
@@ -197,9 +267,35 @@ export function createTududiApi(
         now(),
       );
     },
-    fetchTodayTasks: async () =>
-      adaptTaskList(
-        await request(`/api/tasks?type=today&limit=${String(TASK_PAGE_LIMIT)}`),
+    fetchTodayTasks: async () => {
+      const payload = await request(
+        `/api/tasks?type=today&include_lists=true&limit=${String(TASK_PAGE_LIMIT)}`,
+      );
+      const tasks = adaptTaskList(payload);
+      const completed =
+        typeof payload === 'object' &&
+        payload !== null &&
+        'tasks_completed_today' in payload &&
+        Array.isArray(payload.tasks_completed_today)
+          ? payload.tasks_completed_today
+              .map(adaptTask)
+              .filter(isRepeating)
+              .flatMap((task) =>
+                task.completedAt
+                  ? [recurringCompletion(task, task.completedAt)]
+                  : [],
+              )
+          : [];
+      return [...tasks, ...completed];
+    },
+    fetchRepeatingTasks,
+    skipOccurrence: async (uid) =>
+      adaptTask(
+        await mutate(
+          `/api/task/${encodeURIComponent(uid)}/skip-occurrence`,
+          'POST',
+          {},
+        ),
       ),
     fetchBacklogTasks: async () =>
       visibleBacklog(adaptBacklogTaskList(await request(backlogPath()))),
@@ -218,7 +314,19 @@ export function createTududiApi(
               await request(`${backlogPath()}${filterParam(search)}`),
             ),
       ),
-    fetchDoneTasks: async () => adaptDoneTaskList(await request(donePath())),
+    fetchDoneTasks: async (includeRecurring = false) => {
+      const [regular, recurring] = await Promise.all([
+        request(donePath())
+          .then(adaptDoneTaskList)
+          .then((tasks) => tasks.filter((task) => !task.recurrence)),
+        includeRecurring ? fetchRecurringHistory() : Promise.resolve([]),
+      ]);
+      return [...regular, ...recurring]
+        .sort((a, b) =>
+          (b.completedAt ?? '').localeCompare(a.completedAt ?? ''),
+        )
+        .slice(0, TASK_PAGE_LIMIT);
+    },
     fetchAllTasks: () => readAllPages(allPath(), adaptAllTaskList, 'tasks'),
     searchAllTasks: (search) =>
       search.kind === 'text'
@@ -264,6 +372,7 @@ export function createTududiApi(
         await mutate('/api/task', 'POST', {
           name: draft.title,
           status: dated.status,
+          ...recurrencePayload(draft.recurrence),
           priority: draft.priority,
           tags: [...draft.tags],
           ...(draft.projectUid === undefined
@@ -333,6 +442,7 @@ export function createTududiApi(
               }),
             ).uid;
       const payload = await mutate(path, 'PATCH', {
+        ...recurrencePayload(edit.recurrence),
         name: dated.title,
         note: dated.note,
         status: dated.status,

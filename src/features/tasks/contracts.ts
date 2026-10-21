@@ -12,10 +12,25 @@ export type TaskPriority = 'low' | 'medium' | 'high';
 export type TaskStatus =
   'not_started' | 'planned' | 'in_progress' | 'waiting' | 'done';
 
+export interface Recurrence {
+  readonly type:
+    'daily' | 'weekly' | 'monthly' | 'monthly_weekday' | 'monthly_last_day';
+  readonly interval: number;
+  readonly weekdays: readonly number[];
+  readonly monthDay: number;
+  readonly weekOfMonth: number;
+  readonly completionBased: boolean;
+  readonly endDate: string;
+}
+
 /** A task as rendered in a row, with the dates used for list rules. */
 export interface Task {
   /** Tududi's stable identifier, used for completion and cache keys. */
   readonly uid: string;
+  readonly recurrence?: Recurrence;
+  readonly recurringParentUid?: string;
+  /** A completed occurrence opens its live task, but cannot reopen the series. */
+  readonly sourceTaskUid?: string;
   /** The saved title, with quick-entry tokens already removed. */
   readonly title: string;
   readonly priority: TaskPriority;
@@ -63,6 +78,7 @@ export interface TaskDetail extends Task {
 /** Editable fields for one save. Empty values clear server values; unchanged
     due dates are omitted from the PATCH to preserve their time. */
 export interface TaskEdit {
+  readonly recurrence?: Recurrence | null;
   readonly title: string;
   readonly note: string;
   readonly status: TaskStatus;
@@ -90,7 +106,7 @@ export type TaskListKind = 'today' | 'backlog' | 'history' | 'all';
 export type TaskScope = 'completed' | 'all';
 
 /** The main task-list pages, each with add and search modes. */
-export type FocusView = 'tasks' | 'history' | 'all';
+export type FocusView = 'tasks' | 'history' | 'all' | 'repeating';
 
 /**
  * The three pages the marks at the foot of the screen lead to. `tasks` is
@@ -99,7 +115,7 @@ export type FocusView = 'tasks' | 'history' | 'all';
  * read as toggles rather than as a tab bar.
  */
 export type FocusDestination =
-  'tasks' | 'backlog' | 'history' | 'all' | 'guide' | 'version';
+  'tasks' | 'backlog' | 'history' | 'all' | 'guide' | 'version' | 'repeating';
 
 /** Lists searched through Tududi; Today searches its displayed tasks locally. */
 export type SearchList = 'backlog' | 'history' | 'all';
@@ -161,6 +177,7 @@ export interface DoneCount {
 
 /** A parsed quick-entry line, ready to become a create mutation. */
 export interface TaskDraft {
+  readonly recurrence?: Recurrence;
   readonly title: string;
   readonly priority: TaskPriority;
   /** `planned` with /today or a due/overdue date, otherwise `not_started`. */
@@ -195,7 +212,7 @@ export interface TaskDraftError {
 
 /** Result of parsing a quick-entry line. */
 export type TaskDraftResult =
-  | { readonly ok: true; readonly draft: TaskDraft }
+  | { readonly ok: true; readonly draft: TaskDraft; readonly repeating?: true }
   | { readonly ok: false; readonly error: TaskDraftError };
 
 /**

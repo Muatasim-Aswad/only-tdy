@@ -44,6 +44,14 @@ interface SeedProject {
 
 /** One task, in the shape Tududi answers with. */
 interface SeedTask {
+  recurrence_type?: string;
+  recurrence_interval?: number;
+  recurrence_weekdays?: number[] | null;
+  recurrence_weekday?: number | null;
+  recurrence_month_day?: number | null;
+  recurrence_week_of_month?: number | null;
+  recurrence_end_date?: string | null;
+  completion_based?: boolean;
   uid: string;
   name: string;
   original_name: string;
@@ -120,6 +128,28 @@ function nextCreatedAt(): string {
  */
 function seed(): SeedTask[] {
   return [
+    task('task-review', 'Review the week', 'not_started', 'medium', {
+      recurrence_type: 'weekly',
+      recurrence_interval: 1,
+      recurrence_weekdays: [5],
+      due_date: nextWeekday(5),
+      tags: [{ name: 'planning' }],
+      note: 'Look back, then choose what matters next week.',
+    }),
+    task('task-plants', 'Water the plants', 'planned', 'low', {
+      recurrence_type: 'daily',
+      recurrence_interval: 3,
+      due_date: calendarDate(),
+      completion_based: true,
+      tags: [{ name: 'home' }],
+    }),
+    task('task-bills', 'Check the monthly bills', 'not_started', 'high', {
+      recurrence_type: 'monthly',
+      recurrence_interval: 1,
+      recurrence_month_day: 1,
+      due_date: nextMonthStart(),
+      project_uid: 'project-home',
+    }),
     task('task-invoice', 'Send the invoice', 'in_progress', 'high', {
       tags: [{ name: 'finance' }],
       project_uid: 'project-work',
@@ -229,6 +259,8 @@ export function seededTududiApi(): Plugin {
   let projects = PROJECTS;
   let profileSettings: Record<string, unknown> = {};
   let created = 0;
+  const occurrenceRecords: SeedTask[] = [];
+  const timelines = new Map<string, Record<string, unknown>[]>();
 
   return {
     name: 'only-tdy-seeded-tududi-api',
@@ -339,13 +371,7 @@ export function seededTududiApi(): Plugin {
             'low',
             { created_at: new Date().toISOString() },
           );
-          entry.status = asNumber(body.status, STATUS, STATUS.not_started);
-          entry.priority = asNumber(body.priority, PRIORITY, PRIORITY.low);
-          entry.tags = asTags(body.tags);
-          entry.project_uid = asNullableString(body.project_uid);
-          if (typeof body.note === 'string') entry.note = body.note;
-          entry.due_date = asNullableString(body.due_date);
-          entry.defer_until = asNullableString(body.defer_until);
+          apply(entry, body);
           tasks = [entry, ...tasks];
           send(201, decorate(entry));
           return;
@@ -353,11 +379,30 @@ export function seededTududiApi(): Plugin {
 
         if (url.pathname.startsWith('/api/task/')) {
           const uid = decodeURIComponent(
-            url.pathname.slice('/api/task/'.length),
+            url.pathname.slice('/api/task/'.length).split('/')[0] ?? '',
           );
           const entry = tasks.find((candidate) => candidate.uid === uid);
           if (entry === undefined) {
             send(404, { error: 'No such task.' });
+            return;
+          }
+          if (url.pathname.endsWith('/timeline')) {
+            send(200, timelines.get(uid) ?? []);
+            return;
+          }
+          if (url.pathname.endsWith('/skip-occurrence') && method === 'POST') {
+            if (
+              !entry.recurrence_type ||
+              entry.recurrence_type === 'none' ||
+              entry.status === STATUS.done
+            ) {
+              send(400, {
+                error: 'Only open repeating tasks can skip an occurrence.',
+              });
+              return;
+            }
+            advance(entry, true);
+            send(200, decorate(entry));
             return;
           }
 
@@ -368,7 +413,14 @@ export function seededTududiApi(): Plugin {
           }
 
           if (method === 'PATCH') {
-            apply(entry, asRecord(await readBody(request)));
+            const body = asRecord(await readBody(request));
+            apply(entry, body);
+            if (
+              entry.status === STATUS.done &&
+              entry.recurrence_type &&
+              entry.recurrence_type !== 'none'
+            )
+              advance(entry, false);
             send(200, decorate(entry));
             return;
           }
@@ -430,6 +482,15 @@ export function seededTududiApi(): Plugin {
     const offset = Number(params.get('offset') ?? '0');
     /* Tududi reports the whole count beside a limited page. */
     return {
+      ...(params.get('include_lists') === 'true'
+        ? {
+            tasks_completed_today: occurrenceRecords
+              .filter(
+                (entry) => entry.completed_at?.slice(0, 10) === calendarDate(),
+              )
+              .map(decorate),
+          }
+        : {}),
       tasks: rows
         .slice(offset, offset + (Number.isFinite(limit) ? limit : rows.length))
         .map(decorate),
@@ -457,6 +518,18 @@ export function seededTududiApi(): Plugin {
    * each other's fields.
    */
   function apply(entry: SeedTask, body: Record<string, unknown>): void {
+    for (const key of [
+      'recurrence_type',
+      'recurrence_interval',
+      'recurrence_weekdays',
+      'recurrence_weekday',
+      'recurrence_month_day',
+      'recurrence_week_of_month',
+      'recurrence_end_date',
+      'completion_based',
+    ]) {
+      if (key in body) Object.assign(entry, { [key]: body[key] });
+    }
     if (typeof body.name === 'string') {
       entry.name = body.name;
       entry.original_name = body.name;
@@ -477,4 +550,90 @@ export function seededTududiApi(): Plugin {
       entry.defer_until = asNullableString(body.defer_until);
     if ('tags' in body) entry.tags = asTags(body.tags);
   }
+
+  function advance(entry: SeedTask, skipped: boolean) {
+    const completedAt = new Date().toISOString();
+    const originalDue = entry.due_date ?? calendarDate();
+    if (!skipped)
+      occurrenceRecords.push({
+        ...structuredClone(entry),
+        status: STATUS.done,
+        completed_at: completedAt,
+      });
+    const next = nextOccurrence(entry);
+    const events = timelines.get(entry.uid) ?? [];
+    events.push({
+      event_type: skipped
+        ? 'recurring_occurrence_skipped'
+        : 'recurring_occurrence_completed',
+      created_at: completedAt,
+      metadata: { original_due_date: originalDue, next_due_date: next },
+    });
+    timelines.set(entry.uid, events);
+    if (entry.recurrence_end_date && next > entry.recurrence_end_date) {
+      entry.status = STATUS.done;
+      entry.completed_at = completedAt;
+    } else {
+      entry.due_date = next;
+      entry.status = STATUS.not_started;
+      entry.completed_at = null;
+    }
+  }
+}
+
+function calendarDate(date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Amsterdam',
+  }).format(date);
+}
+
+function nextWeekday(day: number): string {
+  const date = new Date(`${calendarDate()}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + ((day - date.getUTCDay() + 7) % 7 || 7));
+  return date.toISOString().slice(0, 10);
+}
+
+function nextMonthStart(): string {
+  const date = new Date(`${calendarDate()}T12:00:00Z`);
+  date.setUTCMonth(date.getUTCMonth() + 1, 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function nextOccurrence(entry: SeedTask): string {
+  const date = new Date(
+    `${entry.completion_based ? calendarDate() : (entry.due_date ?? calendarDate())}T12:00:00Z`,
+  );
+  const interval = entry.recurrence_interval ?? 1;
+  if (entry.recurrence_type === 'daily')
+    date.setUTCDate(date.getUTCDate() + interval);
+  else if (entry.recurrence_type === 'weekly') {
+    const weekdays = entry.recurrence_weekdays ?? [
+      entry.recurrence_weekday ?? date.getUTCDay(),
+    ];
+    const previous = date.getUTCDay();
+    do {
+      date.setUTCDate(date.getUTCDate() + 1);
+    } while (!weekdays.includes(date.getUTCDay()));
+    if (date.getUTCDay() <= previous)
+      date.setUTCDate(date.getUTCDate() + (interval - 1) * 7);
+  } else {
+    date.setUTCMonth(date.getUTCMonth() + interval, 1);
+    const last = new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
+    ).getUTCDate();
+    if (entry.recurrence_type === 'monthly_last_day') date.setUTCDate(last);
+    else if (entry.recurrence_type === 'monthly_weekday') {
+      const day = entry.recurrence_weekday ?? 1;
+      if (entry.recurrence_week_of_month === -1) {
+        date.setUTCDate(last);
+        date.setUTCDate(last - ((date.getUTCDay() - day + 7) % 7));
+      } else
+        date.setUTCDate(
+          1 +
+            ((day - date.getUTCDay() + 7) % 7) +
+            ((entry.recurrence_week_of_month ?? 1) - 1) * 7,
+        );
+    } else date.setUTCDate(Math.min(entry.recurrence_month_day ?? 1, last));
+  }
+  return date.toISOString().slice(0, 10);
 }

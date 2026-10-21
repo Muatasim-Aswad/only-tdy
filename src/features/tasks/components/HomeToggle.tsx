@@ -1,4 +1,4 @@
-import { classNames } from '../../../shared/classNames.ts';
+import { RailButton } from '../../../shared/RailButton.tsx';
 import { COPY } from './copy.ts';
 
 export interface HomeToggleProps {
@@ -19,16 +19,15 @@ export interface HomeToggleProps {
  */
 export function HomeToggle({ active, onToggle }: HomeToggleProps) {
   return (
-    <button
-      type="button"
-      className={classNames('focus-history', active && 'focus-history--active')}
+    <RailButton
+      active={active}
       onClick={onToggle}
       aria-pressed={active}
       aria-label={COPY.home}
       title={COPY.home}
     >
       <svg
-        className="focus-home__icon"
+        className="focus-home__icon block"
         viewBox="0 0 24 24"
         width="20"
         height="20"
@@ -44,6 +43,6 @@ export function HomeToggle({ active, onToggle }: HomeToggleProps) {
         <path d="M6 9.8V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.8" />
         <path d="M10 20v-5.5h4V20" />
       </svg>
-    </button>
+    </RailButton>
   );
 }

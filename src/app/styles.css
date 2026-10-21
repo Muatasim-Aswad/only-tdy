@@ -7,6 +7,7 @@
  */
 
 @import 'tailwindcss' source(none);
+@source '../../index.html';
 @source '.';
 @source '../features';
 @source '../shared';
@@ -17,5 +18,4 @@
 @import '../shared/styles/tokens.css';
 @import '../shared/styles/base.css';
 @import '../shared/styles/select.css';
-@import '../shared/styles/help-tip.css';
 @import '../features/tasks/styles.css';

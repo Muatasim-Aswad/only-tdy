@@ -1,4 +1,5 @@
-import { CaptureField } from './CaptureField.tsx';
+import { PageShell } from '../../../shared/PageShell.tsx';
+import { TaskInput } from './TaskInput.tsx';
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
 import type { CaptureFeedback } from '../contracts.ts';
 import { useMemo, type MouseEvent } from 'react';
@@ -9,7 +10,6 @@ import { orderBySelection } from '../backlog-state.ts';
 import { BacklogActions } from './BacklogActions.tsx';
 import { COPY } from './copy.ts';
 import { FocusFooter } from './FocusFooter.tsx';
-import { SearchField } from './SearchField.tsx';
 import { TaskList } from './TaskList.tsx';
 
 const IGNORE = () => undefined;
@@ -100,35 +100,26 @@ export function BacklogScreen({
   );
 
   return (
-    <main className="focus-shell">
-      {inputMode === 'search' ? (
-        <SearchField
-          onToggleMode={onToggleInputMode}
-          value={searchValue}
-          onValueChange={onSearchChange}
-          onSubmit={onSearchSubmit}
-          projects={projects}
-          tags={tags}
-          disabled={disabled}
+    <PageShell>
+      <TaskInput
+        mode={inputMode}
+        onToggleMode={onToggleInputMode}
+        value={inputMode === 'search' ? searchValue : captureValue}
+        onValueChange={
+          inputMode === 'search' ? onSearchChange : onCaptureChange
+        }
+        onSubmit={inputMode === 'search' ? onSearchSubmit : onCaptureSubmit}
+        projects={projects}
+        tags={tags}
+        disabled={disabled}
+      />
+      {inputMode === 'add' ? (
+        <CaptureFeedbackMessage
+          feedback={feedback}
+          onDismiss={onDismissFeedback}
+          onOpenTask={onOpenTask}
         />
-      ) : (
-        <>
-          <CaptureField
-            value={captureValue}
-            onValueChange={onCaptureChange}
-            onSubmit={onCaptureSubmit}
-            onToggleMode={onToggleInputMode}
-            projects={projects}
-            tags={tags}
-            disabled={disabled}
-          />
-          <CaptureFeedbackMessage
-            feedback={feedback}
-            onDismiss={onDismissFeedback}
-            onOpenTask={onOpenTask}
-          />
-        </>
-      )}
+      ) : null}
       <BacklogActions
         selectedCount={selectedUids.size}
         onMove={onMove}
@@ -149,6 +140,6 @@ export function BacklogScreen({
         disabled={disabled}
       />
       <FocusFooter current="backlog" onNavigate={onNavigate} />
-    </main>
+    </PageShell>
   );
 }
