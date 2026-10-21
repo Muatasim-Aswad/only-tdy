@@ -230,6 +230,10 @@ test('enables and stops repeating through the ordinary editor without explanator
     .getByRole('combobox', { name: 'Repeat', exact: true })
     .selectOption('none');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL(/\/only-tdy\/repeating$/);
+  await expect(
+    page.getByRole('link', { name: 'Review the week Repeating', exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole('link', { name: /Choose a desk lamp/ }),
   ).toHaveCount(0);

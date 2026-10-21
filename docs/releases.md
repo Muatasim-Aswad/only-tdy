@@ -28,7 +28,7 @@ Deploy the [published image](deployment.md#published-image), or extract static a
 
 `release/source-files.txt` lists reviewed source files. Static/runtime inventories list logical files, replacing only eight-character Vite digests with `{hash}`; provenance records actual filenames and SHA-256 values. Runtime inventory includes the pinned base filesystem except Docker-injected host records and tmpfs scratch files. `release/release-files.txt` lists public GitHub assets; internal image validation is separate. Review additions before refreshing inventories; generated lists never authorize files.
 
-Provenance schema 3 separates the internal container hash from public checksums, and source filenames from their hashes. Source/artifact scans are mandatory. Failed local rehearsals retain synthetic screenshots/traces and a summary in `release/out/failures/<tag>-<revision>/`, excluded from releases; remove after diagnosis.
+Provenance schema 4 separates the internal container hash from public checksums and stores source/static files as digest/path records, avoiding filename/checksum pairs that resemble credentials. Source/artifact scans are mandatory. Failed local rehearsals retain synthetic screenshots/traces and a summary in `release/out/failures/<tag>-<revision>/`, excluded from releases; remove after diagnosis.
 
 ## Publication and recovery
 

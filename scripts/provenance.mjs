@@ -17,6 +17,10 @@ export function sourceManifest(root, paths) {
   return paths.map((path) => ({ sha256: digest(join(root, path)), path }));
 }
 
+export function staticManifest(checksums) {
+  return Object.entries(checksums).map(([path, sha256]) => ({ sha256, path }));
+}
+
 export function readArtifactManifest(records, names) {
   if (!records || typeof records !== 'object' || Array.isArray(records))
     throw new Error('Invalid artifact provenance');
@@ -34,8 +38,8 @@ export function readArtifactManifest(records, names) {
   return entries;
 }
 
-export function readSourceManifest(records) {
-  if (!Array.isArray(records)) throw new Error('Invalid source provenance');
+export function readFileManifest(records) {
+  if (!Array.isArray(records)) throw new Error('Invalid file provenance');
   const result = Object.create(null);
   for (const record of records) {
     if (
@@ -49,7 +53,7 @@ export function readSourceManifest(records) {
       !/^[a-f0-9]{64}$/.test(record.sha256) ||
       Object.hasOwn(result, record.path)
     )
-      throw new Error('Invalid source provenance record');
+      throw new Error('Invalid file provenance record');
     result[record.path] = record.sha256;
   }
   return result;

@@ -2,7 +2,15 @@
 
 Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. The version in `package.json` is authoritative.
 
+## [0.1.4] - 2026-10-21
+
+### Fixed
+
+- Static provenance uses digest/path records so generated chunk filenames and checksums are not mistaken for API keys; secret scanning remains mandatory.
+
 ## [0.1.3] - 2026-10-21
+
+Source tag only: packaged publication stopped on a generated-provenance scanner false positive.
 
 ### Added
 

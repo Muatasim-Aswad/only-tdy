@@ -10,7 +10,11 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { writeArchive } from './archive.mjs';
 import { identityEnv, readBuildIdentity } from './build-identity.ts';
-import { CONTAINER_EXPORT, sourceManifest } from './provenance.mjs';
+import {
+  CONTAINER_EXPORT,
+  sourceManifest,
+  staticManifest,
+} from './provenance.mjs';
 import {
   digest,
   files,
@@ -90,7 +94,7 @@ try {
   run('tar', ['-xf', join(temp, 'image.tar'), '-C', imageContents]);
   archive(imageContents, CONTAINER_EXPORT);
   const provenance = {
-    schema: 3,
+    schema: 4,
     ...identity,
     tag,
     sourceDateEpoch: Number(env.SOURCE_DATE_EPOCH),
@@ -98,7 +102,7 @@ try {
     image,
     containerExportSha256: digest(join(assets, CONTAINER_EXPORT)),
     source: sourceManifest(source, lines('release/source-files.txt')),
-    static: staticInventory,
+    static: staticManifest(staticInventory),
     artifacts: Object.fromEntries(
       files(assets)
         .filter((path) => path !== CONTAINER_EXPORT)

@@ -5,10 +5,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { digest } from './lib.mjs';
 import {
   readArtifactManifest,
-  readSourceManifest,
+  readFileManifest,
   sourceManifest,
+  staticManifest,
 } from './provenance.mjs';
 
 test('artifact provenance rejects extra or traversing paths before file access', () => {
@@ -29,19 +31,15 @@ test('artifact provenance rejects extra or traversing paths before file access',
     assert.throws(() => readArtifactManifest(records, [name]));
 });
 
-test('source provenance rejects ambiguous paths, duplicate records and invalid hashes', () => {
+test('file provenance rejects ambiguous paths, duplicate records and invalid hashes', () => {
   const record = { path: 'README.md', sha256: 'a'.repeat(64) };
-  assert.deepEqual(Object.entries(readSourceManifest([record])), [
+  assert.deepEqual(Object.entries(readFileManifest([record])), [
     ['README.md', record.sha256],
   ]);
-  assert.throws(() => readSourceManifest([record, record]));
-  assert.throws(() =>
-    readSourceManifest([{ ...record, path: '../README.md' }]),
-  );
-  assert.throws(() => readSourceManifest([{ ...record, sha256: 'invalid' }]));
-  assert.throws(() =>
-    readSourceManifest([{ ...record, secret: 'unexpected' }]),
-  );
+  assert.throws(() => readFileManifest([record, record]));
+  assert.throws(() => readFileManifest([{ ...record, path: '../README.md' }]));
+  assert.throws(() => readFileManifest([{ ...record, sha256: 'invalid' }]));
+  assert.throws(() => readFileManifest([{ ...record, secret: 'unexpected' }]));
 });
 
 test('generated file provenance passes scanning while credential-shaped values fail', () => {
@@ -56,9 +54,24 @@ test('generated file provenance passes scanning while credential-shaped values f
       join(source, name),
       'export type Task = { title: string };\n',
     );
+    const chunk = ['assets', 'TokenChips-ABCDEFGH.js'].join('/');
+    const staticChecksums = Object.fromEntries([
+      [chunk, digest(join(source, name))],
+    ]);
+    assert.deepEqual(
+      Object.entries(readFileManifest(staticManifest(staticChecksums))),
+      Object.entries(staticChecksums),
+    );
     writeFileSync(
       join(assets, 'provenance.json'),
-      JSON.stringify({ source: sourceManifest(source, [name]) }, null, 2),
+      JSON.stringify(
+        {
+          source: sourceManifest(source, [name]),
+          static: staticManifest(staticChecksums),
+        },
+        null,
+        2,
+      ),
     );
     const scan = () =>
       execFileSync('gitleaks', ['dir', assets, '--redact=100', '--no-banner'], {
