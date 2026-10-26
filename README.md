@@ -1,8 +1,8 @@
 # only-tdy
 
-Capture tasks quickly, choose what matters today, and leave the rest in Backlog.
+Less managing. More doing.
 
-only-tdy makes organizing todos approachable through a minimalist, distraction-free daily flow. Pick tasks from Backlog, work through Today, and edit details without leaving that flow.
+only-tdy is a minimalist daily task manager for people overwhelmed by complicated productivity apps. Capture tasks quickly, choose what matters today, and leave the rest in Backlog, without the overhead of managing an entire productivity system.
 
 <p>
   <img width="280" src="docs/images/today-at-rest.png" alt="Today at rest with an unobtrusive capture bar and a completed task">

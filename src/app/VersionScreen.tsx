@@ -58,8 +58,9 @@ export function VersionScreen({
         </h1>
         <p className="focus-about__intro mt-2 mr-0 mb-0 ml-0 text-task">
           Capture tasks quickly, choose what matters today, and leave the rest
-          in Backlog. A minimalist daily flow, with projects, tags, priorities
-          and dates available as you type.
+          in Backlog. A minimalist daily task manager for people overwhelmed by
+          complicated productivity apps, without the overhead of managing an
+          entire productivity system.
         </p>
       </section>
       <dl className="focus-version m-0">

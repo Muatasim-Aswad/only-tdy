@@ -3,7 +3,7 @@
   "version": "0.1.4",
   "private": true,
   "type": "module",
-  "description": "Capture tasks quickly, choose what matters today, and leave the rest in Backlog.",
+  "description": "A minimalist daily task manager for people overwhelmed by productivity apps. Capture tasks quickly, choose what matters today, and leave the rest in Backlog.",
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=24.20.0 <25"
