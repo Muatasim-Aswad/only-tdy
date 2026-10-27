@@ -1,4 +1,4 @@
-FROM node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS build
+FROM node:26.12.0-alpine@sha256:6f08a523443ddedf52941874c203475b0ad503e859ad70cb26ab8be9a517dbd5 AS build
 ENV CI=1 COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 WORKDIR /app
 RUN corepack enable
@@ -14,7 +14,7 @@ ARG APP_BUILD_TIME
 ARG SOURCE_DATE_EPOCH=0
 RUN node scripts/build.mjs
 
-FROM nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:b54ac358b83fc6c965793fd271839b4ea4cdb6e99895bb19618cbc2ca152d972 AS runtime
+FROM nginxinc/nginx-unprivileged:1.31.7-alpine@sha256:b5047b9b76845eac124358373c6852377c52e4b05834a47647e955dd91cb8f1e AS runtime
 LABEL org.opencontainers.image.source="https://github.com/Muatasim-Aswad/only-tdy"
 ARG SOURCE_DATE_EPOCH=0
 USER root
