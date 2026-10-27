@@ -1,6 +1,6 @@
+import { t } from '../messages.ts';
 import type { TaskPriority } from '../contracts.ts';
 import { classNames } from '../../../shared/classNames.ts';
-import { PRIORITY_NAME } from './copy.ts';
 
 const PRIORITY_COLOR: Readonly<Record<TaskPriority, string>> = {
   low: 'text-line',
@@ -13,7 +13,7 @@ export function PriorityIndicator({
 }: {
   readonly priority: TaskPriority;
 }) {
-  const label = `${PRIORITY_NAME[priority]} priority`;
+  const label = t(`priority.label_${priority}`);
   return (
     <span
       className={classNames(

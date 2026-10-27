@@ -102,7 +102,8 @@
   /* The fallback stack is deliberately short: the self-hosted variable face,
      one widely installed humanist sans, then the platform default. */
   --font-placeholder: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-sans: 'Atkinson Hyperlegible Next', 'Segoe UI', sans-serif;
+  --font-sans:
+    'Atkinson Hyperlegible Next', 'Noto Sans Arabic', 'Segoe UI', sans-serif;
 
   /* Type scale. Every role carries its own line height, weight, and tracking so
      components never restate them. */

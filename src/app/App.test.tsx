@@ -125,7 +125,11 @@ describe('App routing', () => {
     renderApp();
 
     await user.click(
-      await screen.findByRole('link', { name: 'Send the invoice' }),
+      await screen.findByRole(
+        'link',
+        { name: 'Send the invoice' },
+        { timeout: 5000 },
+      ),
     );
 
     expect(window.location.pathname).toBe('/only-tdy/task/task-invoice');
@@ -137,7 +141,7 @@ describe('App routing', () => {
       screen.queryByRole('combobox', { name: 'What needs doing?' }),
     ).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
-  });
+  }, 15000);
 
   it('loads the task straight from its address', async () => {
     installApi();

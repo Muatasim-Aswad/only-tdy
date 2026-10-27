@@ -1,3 +1,5 @@
+import { appLocale } from '../../../shared/i18n.ts';
+import { textDirection } from '../../../shared/text-direction.ts';
 import { FieldRow } from '../../../shared/FieldRow.tsx';
 import { PageShell } from '../../../shared/PageShell.tsx';
 import type { FocusDestination } from '../contracts.ts';
@@ -68,21 +70,21 @@ function GuideSection({
       className="focus-guide [.focus-guide_+_&]:mt-7"
       aria-labelledby={id}
     >
-      <h2 id={id} className="focus-guide__heading m-0 pl-rail text-section">
+      <h2 id={id} className="focus-guide__heading m-0 ps-rail text-section">
         {heading}
       </h2>
-      <p className="focus-guide__intro mt-1 mr-0 mb-0 ml-0 pl-rail text-muted text-meta">
+      <p className="focus-guide__intro mt-1 me-0 mb-0 ms-0 ps-rail text-muted text-meta">
         {intro}
       </p>
       {example === undefined ? null : (
         <Typed
-          className="focus-guide__example mt-3 pl-rail"
+          className="focus-guide__example mt-3 ps-rail"
           value={example}
           spans={captureChips(example)}
         />
       )}
       {entries.length === 0 ? null : (
-        <dl className="focus-guide__list mt-2 mr-0 mb-0 ml-0">
+        <dl className="focus-guide__list mt-2 me-0 mb-0 ms-0">
           {entries.map((entry) => (
             <FieldRow key={entry.typed}>
               <dt className="focus-guide__typed flex-none min-[360px]:w-34">
@@ -124,6 +126,7 @@ function Typed({
 }) {
   return (
     <div
+      dir={textDirection(value, appLocale() === 'ar' ? 'rtl' : 'ltr')}
       className={classNames(
         'focus-guide__line [&_>_*]:[grid-area:1_/_1_/_2_/_2] [&_>_*]:whitespace-pre-wrap grid text-task',
         className,

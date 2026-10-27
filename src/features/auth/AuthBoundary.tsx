@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import {
   Activity,
   useCallback,
@@ -76,7 +77,8 @@ export function AuthBoundary({ children }: { readonly children: ReactNode }) {
         setStatus('signed-out');
       }
     } catch {
-      if (run === operation.current) setStatus('failed');
+      if (run === operation.current)
+        setStatus((current) => (current === 'signed-in' ? current : 'failed'));
     }
   }, [accept]);
 
@@ -135,16 +137,16 @@ export function AuthBoundary({ children }: { readonly children: ReactNode }) {
       )}
       {status === 'checking' && (
         <PageShell>
-          <p className="pl-rail text-muted" role="status">
-            Connecting…
+          <p className="ps-rail text-muted" role="status">
+            {t('authBoundary.connecting')}
           </p>
         </PageShell>
       )}
       {status === 'failed' && (
         <PageShell>
-          <div className="pl-rail">
+          <div className="ps-rail">
             <p role="alert">
-              Could not connect. Check your connection and try again.
+              {t('authBoundary.couldNotConnectCheckYourConnection')}
             </p>
             <button
               type="button"
@@ -154,7 +156,7 @@ export function AuthBoundary({ children }: { readonly children: ReactNode }) {
                 void check();
               }}
             >
-              Try again
+              {t('authBoundary.tryAgain')}
             </button>
           </div>
         </PageShell>

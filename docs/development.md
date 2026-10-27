@@ -43,3 +43,5 @@ Dependabot groups npm, Docker and Actions version/security updates separately, w
 `mise run release:rehearse` prepares deterministic assets from clean committed source without publishing. See [releases](releases.md) for artifact verification and publication.
 
 The synthetic server starts signed out. Use `demo@example.com` / `only-tdy-demo`; these credentials exist only in the dev fixture. Its data and sessions disappear when the server stops.
+
+English and Arabic use i18next/react-i18next with typed, contextual catalogs owned by the app, auth and task feature. Keep whole messages, interpolation and plural forms together; do not translate backend strings or user content. Use the selected locale for display formatting, logical CSS for layout, and matching bidi behavior in editable fields and token mirrors. Test both languages, translation arguments, Arabic token aliases/digits, narrow layouts and draft retention.

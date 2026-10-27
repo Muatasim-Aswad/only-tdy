@@ -1,3 +1,6 @@
+import { appLocale } from '../../../shared/i18n.ts';
+import { textDirection } from '../../../shared/text-direction.ts';
+import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import type { Ref } from 'react';
 import { InputAction } from './InputAction.tsx';
@@ -25,8 +28,6 @@ export interface SearchFieldProps {
   readonly disabled?: boolean;
 }
 
-const SUGGESTION_LABEL = 'Suggestions';
-
 /**
  * The field the backlog and the record both carry, and the first thing on each
  * page — the capture field read backwards.
@@ -49,7 +50,7 @@ export function SearchField({
   value,
   formRef,
   onToggleMode,
-  pageName = 'Backlog',
+  pageName = t('searchField.backlog'),
   label = COPY.backlogSearchLabel,
   onValueChange,
   onSubmit,
@@ -94,9 +95,11 @@ export function SearchField({
         <div
           className="focus-tokens focus-tokens--line text-capture"
           data-value={value}
+          dir={textDirection(value, appLocale() === 'ar' ? 'rtl' : 'ltr')}
         >
           <TokenChips value={value} spans={suggestions.spans} />
           <input
+            dir="auto"
             {...suggestions.fieldProps}
             className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none focus-search__input"
             type="search"
@@ -124,7 +127,7 @@ export function SearchField({
             activeIndex={suggestions.activeIndex}
             optionId={suggestions.optionId}
             onPick={suggestions.pick}
-            label={SUGGESTION_LABEL}
+            label={t('searchField.suggestions')}
           />
         ) : null}
       </div>
@@ -137,7 +140,7 @@ export function SearchField({
             event.preventDefault();
           }}
         >
-          {`${COPY.searchSubmit} ${pageName}`}
+          {t('searchField.submitPage', { page: pageName })}
         </SubmitButton>
       ) : null}
     </form>

@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { PageShell } from '../../../shared/PageShell.tsx';
 import type { MouseEvent } from 'react';
 
@@ -113,21 +114,21 @@ export function FocusScreen({
         onSubmit={inputMode === 'search' ? onSearchSubmit : onCaptureSubmit}
         pageName={
           repeating
-            ? 'Repeating'
+            ? t('focusScreen.repeating')
             : all
-              ? 'All'
+              ? t('focusScreen.all')
               : history
-                ? 'Completed'
-                : 'Today'
+                ? t('focusScreen.completed')
+                : t('focusScreen.today')
         }
         label={
           repeating
-            ? 'Search repeating tasks'
+            ? t('focusScreen.searchRepeatingTasks')
             : all
               ? COPY.allSearchLabel
               : history
                 ? COPY.historySearchLabel
-                : 'Search Today'
+                : t('focusScreen.searchToday')
         }
         projects={projectNames}
         tags={tagNames}
@@ -155,8 +156,8 @@ export function FocusScreen({
         emptyMessage={
           repeating
             ? searching
-              ? 'No matching repeating tasks.'
-              : 'No repeating tasks.'
+              ? t('focusScreen.noMatchingRepeatingTasks')
+              : t('focusScreen.noRepeatingTasks')
             : history
               ? all
                 ? searching
@@ -165,7 +166,7 @@ export function FocusScreen({
                 : searching
                   ? COPY.historySearchEmpty
                   : COPY.historyEmpty
-              : 'Nothing on Today matches that.'
+              : t('focusScreen.nothingOnTodayMatchesThat')
         }
         ruled={history}
         disabled={disabled}

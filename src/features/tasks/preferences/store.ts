@@ -1,3 +1,4 @@
+import { applyAccountLocale } from '../../../infra/locale.ts';
 import {
   readBrowserStorage,
   writeBrowserStorage,
@@ -64,6 +65,7 @@ function legacySettings(): Preferences {
 }
 
 function reflectSettings(settings: Preferences): void {
+  if (settings.locale !== null) applyAccountLocale(settings.locale);
   applyTheme(settings.theme);
   if (readDuePromotion() !== settings.autoDuePromotion) {
     setDuePromotion(settings.autoDuePromotion);
@@ -197,7 +199,13 @@ export function createPreferencesStore(
     if (operation !== undefined) return operation;
     const run = generation;
     operation = synchronize(run).finally(() => {
-      if (run === generation) operation = undefined;
+      if (run === generation) {
+        operation = undefined;
+        // An effect can enqueue a preference after the last read resolves,
+        // while this operation is still settling. Drain that late change too.
+        if (state.status === 'saving' && Object.keys(pending).length > 0)
+          void sync();
+      }
     });
     return operation;
   };
@@ -214,8 +222,15 @@ export function createPreferencesStore(
       const account = verifiedAccount ?? readBrowserStorage(LAST_ACCOUNT_KEY);
       const saved = account === null ? undefined : readCache(account);
       pending = saved?.pending ?? {};
+      const owner = readBrowserStorage(LEGACY_OWNER_KEY);
+      const fallback =
+        verifiedAccount !== undefined &&
+        owner !== null &&
+        owner !== verifiedAccount
+          ? DEFAULT_PREFERENCES
+          : legacySettings();
       publish({
-        settings: saved?.settings ?? legacySettings(),
+        settings: saved?.settings ?? fallback,
         account,
         status: 'loading',
         cached: true,

@@ -28,7 +28,7 @@ export function BackLink({
         aria-hidden="true"
       >
         <svg
-          className="focus-home__icon block"
+          className="focus-home__icon block rtl:rotate-180"
           viewBox="0 0 24 24"
           width="20"
           height="20"

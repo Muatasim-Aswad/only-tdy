@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import type { Task } from '../contracts.ts';
 import { currentDate } from '../domain/task-dates.ts';
 
@@ -23,7 +24,9 @@ export async function promoteDueTasks(
     for (const task of page.tasks) {
       if (seen.has(task.uid))
         throw new Error(
-          'Tududi returned overlapping task pages. Refresh to retry.',
+          t(
+            'taskSync.promoteDueTasks.tududiReturnedOverlappingTaskPagesRefresh',
+          ),
         );
       seen.add(task.uid);
       if (
@@ -52,7 +55,7 @@ export async function promoteDueTasks(
     if (failure !== undefined)
       throw failure instanceof Error
         ? failure
-        : new Error('A due task could not be moved to Today.');
+        : new Error(t('taskSync.promoteDueTasks.aDueTaskCouldNotBe'));
   }
   return moved;
 }

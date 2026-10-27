@@ -11,6 +11,7 @@ local/
 .env*
 !.env.example
 src/assets/fonts/OFL.txt
+src/assets/fonts/OFL-NotoSansArabic.txt
 pnpm-lock.yaml
 release/out/
 release/*-files.txt

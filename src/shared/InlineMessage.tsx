@@ -26,7 +26,7 @@ export function InlineMessage({
       {message === undefined || message === '' ? null : (
         <p
           className={classNames(
-            'focus-message mt-2 ml-rail rounded-message pt-2 pr-3 pb-2 pl-3 bg-surface text-muted',
+            'focus-message mt-2 ms-rail rounded-message pt-2 pe-3 pb-2 ps-3 bg-surface text-muted',
             kind === 'hint' &&
               'focus-message--plain [&.focus-message--plain]:rounded-[0] [&.focus-message--plain]:px-0 [&.focus-message--plain]:bg-transparent',
             tone === 'error' &&

@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import { classNames } from '../../../shared/classNames.ts';
 import { COPY } from './copy.ts';
@@ -24,7 +25,9 @@ export function BacklogActions({
   disabled = false,
 }: BacklogActionsProps) {
   const chosen = selectedCount > 0;
-  const said = chosen ? `${String(selectedCount)} selected` : undefined;
+  const said = chosen
+    ? t('actions.selected', { count: selectedCount })
+    : undefined;
 
   return (
     <>
@@ -35,7 +38,7 @@ export function BacklogActions({
       />
       <div
         className={classNames(
-          'focus-backlog__actions flex items-center gap-4 pl-rail',
+          'focus-backlog__actions flex items-center gap-4 ps-rail',
           chosen ? 'min-h-11' : 'focus-backlog__actions--empty min-h-0',
         )}
       >
@@ -57,7 +60,7 @@ export function BacklogActions({
         {chosen ? (
           <SubmitButton
             type="button"
-            className="focus-detail__save ml-auto"
+            className="focus-detail__save ms-auto"
             onClick={onMove}
             disabled={disabled || moving}
           >

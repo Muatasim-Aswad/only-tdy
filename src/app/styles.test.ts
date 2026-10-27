@@ -297,9 +297,9 @@ describe('typography', () => {
     expect(css).not.toContain('fonts.gstatic.com');
   });
 
-  it('falls back through one installed sans before the platform default', () => {
+  it('keeps self-hosted Arabic coverage before installed font fallbacks', () => {
     expect(css).toContain(
-      "--font-sans: 'Atkinson Hyperlegible Next', 'Segoe UI', sans-serif;",
+      "--font-sans: 'Atkinson Hyperlegible Next', 'Noto Sans Arabic', 'Segoe UI', sans-serif;",
     );
   });
 

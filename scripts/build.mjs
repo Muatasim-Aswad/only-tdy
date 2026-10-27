@@ -15,6 +15,11 @@ const runtime = new Set([
   'react',
   'react-dom',
   'scheduler',
+  'i18next',
+  'react-i18next',
+  'html-parse-stringify',
+  'use-sync-external-store',
+  '@babel/runtime',
 ]);
 const packages = Object.values(groups)
   .flat()
@@ -32,6 +37,12 @@ writeFileSync('dist/DEPENDENCY_LICENSES.txt', notices.join('\n\n-----\n\n'));
 for (const [source, target] of [
   ['LICENSE', 'LICENSE'],
   ['THIRD_PARTY_NOTICES.md', 'THIRD_PARTY_NOTICES.md'],
-  ['src/assets/fonts/OFL.txt', 'FONT_LICENSE.txt'],
 ])
   copyFileSync(source, `dist/${target}`);
+
+writeFileSync(
+  'dist/FONT_LICENSE.txt',
+  ['src/assets/fonts/OFL.txt', 'src/assets/fonts/OFL-NotoSansArabic.txt']
+    .map((path) => readFileSync(path, 'utf8'))
+    .join('\n\n-----\n\n'),
+);

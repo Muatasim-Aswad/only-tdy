@@ -1,13 +1,29 @@
+import { t } from './about-messages.ts';
 export const COPY = {
   noValue: '—',
-  versionApp: 'App version',
-  versionReleased: 'Released',
-  versionBuilt: 'Built',
-  versionRevision: 'Revision',
-  versionChecking: 'Checking for updates…',
-  versionCurrent: 'Up to date.',
-  versionAvailable: (label: string) => `Update available: ${label}.`,
-  versionUnknown: 'Couldn’t check for updates.',
-  versionReload: 'Reload',
-  updated: (label: string) => `Updated to ${label}`,
+  get versionApp() {
+    return t('copy.versionApp');
+  },
+  get versionReleased() {
+    return t('copy.versionReleased');
+  },
+  get versionBuilt() {
+    return t('copy.versionBuilt');
+  },
+  get versionRevision() {
+    return t('copy.versionRevision');
+  },
+  get versionChecking() {
+    return t('copy.versionChecking');
+  },
+  get versionCurrent() {
+    return t('copy.versionCurrent');
+  },
+  versionAvailable: (label: string) => t('copy.versionAvailable', { label }),
+  get versionUnknown() {
+    return t('copy.versionUnknown');
+  },
+  get versionReload() {
+    return t('copy.versionReload');
+  },
 };

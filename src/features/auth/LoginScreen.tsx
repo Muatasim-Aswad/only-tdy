@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { useState, type SubmitEvent } from 'react';
 import { PageShell } from '../../shared/PageShell.tsx';
 import { SubmitButton } from '../../shared/SubmitButton.tsx';
@@ -5,12 +6,21 @@ import { TUDUDI_LOGIN_PATH } from '../../config/app.ts';
 import { AuthError, signIn, type AuthFailure } from './api.ts';
 
 const ERRORS: Record<AuthFailure, string> = {
-  credentials: 'The email or password is incorrect.',
-  unverified:
-    'This account needs email verification. Ask your administrator for help.',
-  disabled: 'Password sign-in is unavailable. Continue through Tududi.',
-  limited: 'Too many attempts. Wait a little before trying again.',
-  connection: 'Could not connect. Check your connection and try again.',
+  get credentials() {
+    return t('loginScreen.credentials');
+  },
+  get unverified() {
+    return t('loginScreen.unverified');
+  },
+  get disabled() {
+    return t('loginScreen.disabled');
+  },
+  get limited() {
+    return t('loginScreen.limited');
+  },
+  get connection() {
+    return t('loginScreen.connection');
+  },
 };
 
 export function LoginScreen({
@@ -48,24 +58,24 @@ export function LoginScreen({
   }
   return (
     <PageShell>
-      <div className="pl-rail mb-8">
+      <div className="ps-rail mb-8">
         <p className="text-meta text-muted mb-6">only-tdy</p>
-        <h1 className="text-input">Sign in</h1>
+        <h1 className="text-input">{t('loginScreen.signIn')}</h1>
         {expired && (
           <p className="text-action text-muted mt-3">
-            Your Tududi session expired.
+            {t('loginScreen.yourTududiSessionExpired')}
           </p>
         )}
       </div>
       {enabled && error !== 'disabled' ? (
         <form
-          className="pl-rail flex flex-col gap-5"
+          className="ps-rail flex flex-col gap-5"
           onSubmit={(event) => {
             void submit(event);
           }}
         >
           <label className="flex flex-col gap-2 text-meta text-muted">
-            Email
+            {t('loginScreen.email')}
             <input
               className="min-h-11 w-full border-b border-line bg-transparent text-ink text-task outline-none focus:border-accent"
               name="email"
@@ -78,7 +88,7 @@ export function LoginScreen({
             />
           </label>
           <label className="flex flex-col gap-2 text-meta text-muted">
-            Password
+            {t('loginScreen.password')}
             <input
               className="min-h-11 w-full border-b border-line bg-transparent text-ink text-task outline-none focus:border-accent"
               name="password"
@@ -95,20 +105,20 @@ export function LoginScreen({
           )}
           <div className="flex justify-end">
             <SubmitButton disabled={busy}>
-              {busy ? 'Signing in…' : 'Sign in'}
+              {busy ? t('loginScreen.signingIn') : t('loginScreen.signIn')}
             </SubmitButton>
           </div>
         </form>
       ) : (
-        <div className="pl-rail">
+        <div className="ps-rail">
           <p className="text-action text-muted mb-3">
-            Password sign-in is unavailable on this server.
+            {t('loginScreen.passwordSignInIsUnavailableOn')}
           </p>
           <a
             className="text-accent underline min-h-11 inline-flex items-center"
             href={TUDUDI_LOGIN_PATH}
           >
-            Continue through Tududi
+            {t('loginScreen.continueThroughTududi')}
           </a>
         </div>
       )}

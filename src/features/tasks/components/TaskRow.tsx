@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { t } from '../messages.ts';
 import { memo, useCallback, type MouseEvent } from 'react';
 
 import type { Task } from '../contracts.ts';
@@ -85,6 +87,7 @@ export const TaskRow = memo(function TaskRow({
   motion = 'idle',
   errorMessage,
 }: TaskRowProps) {
+  useTranslation('tasks');
   const handleToggle = useCallback(() => {
     onToggle(task.uid);
   }, [onToggle, task.uid]);
@@ -118,7 +121,7 @@ export const TaskRow = memo(function TaskRow({
       {task.sourceTaskUid ? (
         <span
           className="focus-complete flex-none flex items-center justify-center w-rail h-rail mt-1.5 cursor-default focus-complete--record"
-          aria-label={`Completed “${task.title}”`}
+          aria-label={t('actions.completed', { title: task.title })}
         >
           <span className="focus-complete__box" aria-hidden="true" />
         </span>
@@ -154,11 +157,11 @@ export const TaskRow = memo(function TaskRow({
           href={taskPath(task.sourceTaskUid ?? task.uid)}
           onClick={handleOpen}
         >
-          {task.title}
+          <bdi>{task.title}</bdi>
           {isRepeating(task) ? (
             <span
               className="focus-row__repeat [&_svg]:w-3.5 [&_svg]:h-3.5 inline-flex ms-[0.5em] text-muted align-middle"
-              aria-label="Repeating"
+              aria-label={t('taskRow.repeatingLabel')}
             >
               <RepeatIcon />
             </span>
@@ -177,25 +180,27 @@ export const TaskRow = memo(function TaskRow({
                 <span className="focus-row__badge focus-row__badge--list px-1.75 py-0.5 border-2 border-line rounded-fill text-muted">
                   {task.status === 'not_started'
                     ? isRepeating(task)
-                      ? 'Scheduled'
-                      : 'Backlog'
-                    : 'Today'}
+                      ? t('taskRow.scheduled')
+                      : t('taskRow.backlog')
+                    : t('taskRow.today')}
                 </span>
               ) : null}
               {hiddenUntil !== '' ? (
                 <span className="focus-row__badge px-1.75 py-0.5 border border-line rounded-[5px] text-muted">
-                  Hide until {displayDate(hiddenUntil)}
+                  {t('row.hideUntil', { date: displayDate(hiddenUntil) })}
                 </span>
               ) : null}
               {task.dueDate ? (
                 <span className="focus-row__badge px-1.75 py-0.5 border border-line rounded-[5px] text-muted">
-                  Due {displayDate(task.dueDate.slice(0, 10))}
+                  {t('row.due', {
+                    date: displayDate(task.dueDate.slice(0, 10)),
+                  })}
                 </span>
               ) : null}
             </p>
             {task.note ? (
               <p className="focus-row__note mt-1.5 text-muted whitespace-pre-wrap wrap-anywhere text-meta">
-                {task.note}
+                <bdi>{task.note}</bdi>
               </p>
             ) : null}
           </>

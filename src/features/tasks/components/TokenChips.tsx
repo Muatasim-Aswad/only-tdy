@@ -63,6 +63,7 @@ export function TokenChips({ value, spans }: TokenChipsProps) {
     <div
       className="focus-chips text-transparent select-none"
       aria-hidden="true"
+      dir="auto"
     >
       {parts}
     </div>

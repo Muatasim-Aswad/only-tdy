@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { PageShell } from '../shared/PageShell.tsx';
 import { Component, type ReactNode } from 'react';
 
@@ -21,9 +22,11 @@ export class ErrorBoundary extends Component<
     return (
       <PageShell>
         <section className="focus-listing mt-0 min-h-30" role="alert">
-          <h1 className="text-section">only-tdy couldn’t display this page.</h1>
+          <h1 className="text-section">
+            {t('errorBoundary.onlyTdyCouldnTDisplayThisText')}
+          </h1>
           <p className="text-task">
-            Reload to try again. Unsaved drafts will be lost.
+            {t('errorBoundary.reloadToTryAgainUnsavedDrafts')}
           </p>
           <button
             type="button"
@@ -35,7 +38,7 @@ export class ErrorBoundary extends Component<
               })
             }
           >
-            Reload
+            {t('errorBoundary.reload')}
           </button>
         </section>
       </PageShell>

@@ -64,7 +64,10 @@ export function TaskInput({
       return;
     const target = event.target instanceof Element ? event.target : null;
     const field = root.current?.querySelector('input, textarea');
-    if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      (event.key === '/' || event.code === 'Slash')
+    ) {
       if (!toggle || (target !== field && target?.closest(EDITABLE))) return;
       event.preventDefault();
       if (!event.repeat) toggle();

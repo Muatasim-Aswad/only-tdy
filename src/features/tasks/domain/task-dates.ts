@@ -1,3 +1,6 @@
+import { dateValue } from './token-language.ts';
+import { formattingLocale } from '../../../shared/i18n.ts';
+import { t } from '../messages.ts';
 import { PublicError } from '../../../shared/PublicError.ts';
 import type { TaskEdit, TaskStatus } from '../contracts.ts';
 
@@ -28,6 +31,7 @@ export function resolveDate(
   value: string,
   context: DateContext = {},
 ): string | undefined {
+  value = dateValue(value);
   const today = currentDate(context);
   const relative = /^\+(\d+)(?:d|days)?$/i.exec(value);
   if (value.toLowerCase() === 'today') return today;
@@ -56,13 +60,24 @@ export function resolveDate(
 }
 
 export function displayDate(date: string): string {
-  return date.split('-').reverse().join('-');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  const parts = new Intl.DateTimeFormat(formattingLocale(), {
+    calendar: 'gregory',
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(`${date}T12:00:00Z`));
+  return ['day', 'month', 'year']
+    .map((type) => parts.find((part) => part.type === type)?.value ?? '')
+    .join('-');
 }
 
 export function dateAtMidnight(date: string, timezone: string): string | null {
   if (date === '') return null;
   const target = Date.parse(`${date}T00:00:00Z`);
-  if (!Number.isFinite(target)) throw new PublicError('Choose a valid date.');
+  if (!Number.isFinite(target))
+    throw new PublicError(t('taskDates.dateAtMidnight.chooseAValidDate'));
   const formatter = new Intl.DateTimeFormat('en-GB', {
     timeZone: timezone,
     year: 'numeric',
@@ -136,6 +151,8 @@ export function applyDateRules(
 
 export function validateHideDate(dueDate: string, deferUntil: string): void {
   if (dueDate !== '' && deferUntil !== '' && deferUntil > dueDate) {
-    throw new PublicError('Hide until cannot be after the due date.');
+    throw new PublicError(
+      t('taskDates.validateHideDate.hideUntilCannotBeAfterThe'),
+    );
   }
 }

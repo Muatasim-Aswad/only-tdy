@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
 import { PageFooter } from '../../../shared/PageFooter.tsx';
 import type { FocusDestination } from '../contracts.ts';
@@ -80,8 +81,16 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
 }
 
 const PAGE_LABEL = {
-  repeating: 'Repeating',
-  history: 'Completed tasks',
-  guide: 'Guide',
-  version: COPY.about,
+  get repeating() {
+    return t('focusFooter.repeating');
+  },
+  get history() {
+    return t('focusFooter.history');
+  },
+  get guide() {
+    return t('focusFooter.guide');
+  },
+  get version() {
+    return COPY.about;
+  },
 };

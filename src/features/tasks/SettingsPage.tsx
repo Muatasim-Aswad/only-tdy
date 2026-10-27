@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import { appLocale, t as commonT, type Locale } from '../../shared/i18n.ts';
+import { t } from './messages.ts';
 import { PageShell } from '../../shared/PageShell.tsx';
 import { useState } from 'react';
 import { routePath } from '../../config/routes.ts';
@@ -15,12 +18,10 @@ import {
 } from './preferences/store.ts';
 import { usePreferences } from './preferences/usePreferences.ts';
 
-const PROMOTION_HELP =
-  'Automatically moves due and overdue tasks when the task lists refresh. Due-date rules still apply when adding or saving tasks.';
-const BACKLOG_HELP =
-  'Hidden tasks remain available in All. A task’s Hide until date takes precedence. This setting does not move tasks to Today.';
-
 export function SettingsPage() {
+  useTranslation('tasks');
+  const PROMOTION_HELP = t('settingsPage.automaticallyMovesDueAndOverdueTasks');
+  const BACKLOG_HELP = t('settingsPage.hiddenTasksRemainAvailableInAll');
   const { settings, status, account, cached } = usePreferences();
   const [daysDraft, setDaysDraft] = useState({
     source: settings.daysBeforeDue,
@@ -41,29 +42,29 @@ export function SettingsPage() {
     <PageShell>
       <header className="focus-head flex items-center justify-between gap-4 mb-2">
         <BackLink
-          label="Back"
+          label={t('settingsPage.backLabel')}
           href={backHref}
           onNavigate={(event) => {
             handleLinkNavigation(event, backHref);
           }}
         />
         <span
-          className="focus-head__action flex items-center justify-end min-w-0 -mr-2 focus-settings__save-state mr-0 text-muted text-meta"
+          className="focus-head__action flex items-center justify-end min-w-0 -me-2 focus-settings__save-state me-0 text-muted text-meta"
           role="status"
         >
           {settings.datedBacklog === 'before' && daysError
-            ? 'Not saved'
+            ? t('settingsPage.notSaved')
             : status === 'synced'
-              ? 'Saved'
+              ? t('settingsPage.saved')
               : status === 'saving'
-                ? 'Saving…'
+                ? t('settingsPage.saving')
                 : status === 'loading'
-                  ? 'Loading…'
-                  : 'Not synced'}
+                  ? t('settingsPage.loading')
+                  : t('settingsPage.notSynced')}
         </span>
       </header>
       {status === 'local' || status === 'unavailable' || !cached ? (
-        <div className="focus-settings__sync-error [&_p]:m-0 [&_button]:min-h-11 [&_button]:text-accent [&_button]:cursor-pointer [&_button:focus-visible]:text-accent hover:[&_button]:text-accent ml-rail text-muted text-meta">
+        <div className="focus-settings__sync-error [&_p]:m-0 [&_button]:min-h-11 [&_button]:text-accent [&_button]:cursor-pointer [&_button:focus-visible]:text-accent hover:[&_button]:text-accent ms-rail text-muted text-meta">
           <p>{syncMessage(status, cached)}</p>
           {status === 'local' || status === 'unavailable' ? (
             <button
@@ -73,21 +74,49 @@ export function SettingsPage() {
                 void preferencesStore.sync();
               }}
             >
-              Retry sync
+              {t('settingsPage.retrySync')}
             </button>
           ) : null}
         </div>
       ) : null}
       <section
-        className="focus-settings__section ml-rail mt-7 [&+section]:mt-0"
-        aria-label="Appearance"
+        className="focus-settings__section ms-rail mt-7"
+        aria-label={commonT('language.label')}
+      >
+        <div className="focus-settings__field py-3 flex flex-col gap-1">
+          <label
+            htmlFor="settings-language"
+            className="flex items-center min-h-11 text-muted text-meta"
+          >
+            {commonT('language.label')}
+          </label>
+          <Select
+            id="settings-language"
+            value={settings.locale ?? appLocale()}
+            disabled={disabled}
+            onChange={(value) => {
+              update({ locale: value as Locale });
+            }}
+          >
+            <option value="en" lang="en">
+              English
+            </option>
+            <option value="ar" lang="ar">
+              العربية
+            </option>
+          </Select>
+        </div>
+      </section>
+      <section
+        className="focus-settings__section ms-rail mt-7 [&+section]:mt-0"
+        aria-label={t('settingsPage.appearanceLabel')}
       >
         <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 focus-settings__field--stack flex flex-col items-stretch gap-1">
           <label
             htmlFor="settings-theme"
             className="flex items-center min-h-11 text-muted text-meta"
           >
-            Theme
+            {t('settingsPage.theme')}
           </label>
           <Select
             className="flex-auto"
@@ -99,24 +128,24 @@ export function SettingsPage() {
               update({ theme: value as Preferences['theme'] });
             }}
           >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
+            <option value="system">{t('settingsPage.system')}</option>
+            <option value="light">{t('settingsPage.light')}</option>
+            <option value="dark">{t('settingsPage.dark')}</option>
           </Select>
         </div>
       </section>
       <section
-        className="focus-settings__section ml-rail mt-7 [&+section]:mt-0"
-        aria-label="Planning"
+        className="focus-settings__section ms-rail mt-7 [&+section]:mt-0"
+        aria-label={t('settingsPage.planningLabel')}
       >
         <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 border-t border-line">
           <div className="focus-settings__field--stack flex flex-col items-stretch gap-1">
             <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-promotion" className="text-meta">
-                Move due tasks to Today
+                {t('settingsPage.moveDueTasksToToday')}
               </label>
               <HelpTip
-                label="About moving due tasks to Today"
+                label={t('settingsPage.aboutMovingDueTasksToTodayLabel')}
                 text={PROMOTION_HELP}
               />
             </div>
@@ -131,8 +160,8 @@ export function SettingsPage() {
                 update({ autoDuePromotion: value === 'auto' });
               }}
             >
-              <option value="auto">Automatically</option>
-              <option value="manual">Manually</option>
+              <option value="auto">{t('settingsPage.automatically')}</option>
+              <option value="manual">{t('settingsPage.manually')}</option>
             </Select>
           </div>
         </div>
@@ -140,10 +169,10 @@ export function SettingsPage() {
           <div className="focus-settings__field--stack flex flex-col items-stretch gap-1">
             <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-dated" className="text-meta">
-                Show dated tasks in Backlog
+                {t('settingsPage.showDatedTasksInBacklog')}
               </label>
               <HelpTip
-                label="About dated tasks in Backlog"
+                label={t('settingsPage.aboutDatedTasksInBacklogLabel')}
                 text={BACKLOG_HELP}
               />
             </div>
@@ -157,7 +186,7 @@ export function SettingsPage() {
                   max="365000"
                   step="1"
                   inputMode="numeric"
-                  aria-label="Days before due"
+                  aria-label={t('settingsPage.daysBeforeDueLabel')}
                   disabled={disabled}
                   value={days}
                   style={{
@@ -192,27 +221,27 @@ export function SettingsPage() {
                   });
                 }}
               >
-                <option value="always">Always</option>
+                <option value="always">{t('settingsPage.always')}</option>
                 <option value="before">
                   {settings.datedBacklog === 'before'
-                    ? 'days before due'
-                    : 'N days before due'}
+                    ? t('settingsPage.daysBeforeDueText')
+                    : t('settingsPage.nDaysBeforeDue')}
                 </option>
-                <option value="due">On the due date</option>
+                <option value="due">{t('settingsPage.onTheDueDate')}</option>
               </Select>
             </div>
             {settings.datedBacklog === 'before' && daysError ? (
               <p
                 id="settings-days-error"
-                className="focus-settings__days-error mt-1 mr-0 mb-0 ml-0 text-priority-high text-meta"
+                className="focus-settings__days-error mt-1 me-0 mb-0 ms-0 text-priority-high text-meta"
               >
-                Enter a whole number from 1 to 365000.
+                {t('settingsPage.enterAWholeNumberFrom1')}
               </p>
             ) : null}
           </div>
         </div>
       </section>
-      <div className="focus-settings__reset [&_button]:min-h-11 [&_button]:text-priority-high [&_button]:cursor-pointer [&_button]:transition-[color] [&_button]:duration-120 [&_button]:ease-focus [&_button:focus-visible]:underline [&_button:focus-visible]:underline-offset-[3px] hover:[&_button]:underline hover:[&_button]:underline-offset-[3px] [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 ml-rail mt-7">
+      <div className="focus-settings__reset [&_button]:min-h-11 [&_button]:text-priority-high [&_button]:cursor-pointer [&_button]:transition-[color] [&_button]:duration-120 [&_button]:ease-focus [&_button:focus-visible]:underline [&_button:focus-visible]:underline-offset-[3px] hover:[&_button]:underline hover:[&_button]:underline-offset-[3px] [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 ms-rail mt-7">
         <button
           type="button"
           className="text-action"
@@ -222,10 +251,10 @@ export function SettingsPage() {
               source: DEFAULT_PREFERENCES.daysBeforeDue,
               value: String(DEFAULT_PREFERENCES.daysBeforeDue),
             });
-            update(DEFAULT_PREFERENCES);
+            update({ ...DEFAULT_PREFERENCES, locale: settings.locale });
           }}
         >
-          Reset settings
+          {t('settingsPage.resetSettings')}
         </button>
       </div>
     </PageShell>
@@ -249,17 +278,17 @@ function syncMessage(
   switch (status) {
     case 'synced':
       return cached
-        ? 'Saved.'
-        : 'Saved to your account. Browser storage is unavailable.';
+        ? t('settingsPage.syncMessage.saved')
+        : t('settingsPage.syncMessage.savedToYourAccountBrowserStorage');
     case 'saving':
-      return 'Saving…';
+      return t('settingsPage.syncMessage.saving');
     case 'local':
       return cached
-        ? 'Using browser settings. Changes haven’t synced.'
-        : 'Changes are only available in this session. Sync failed and browser storage is unavailable.';
+        ? t('settingsPage.syncMessage.usingBrowserSettingsChangesHavenT')
+        : t('settingsPage.syncMessage.changesAreOnlyAvailableInThis');
     case 'unavailable':
-      return 'Couldn’t load your settings. Connect to Tududi and try again.';
+      return t('settingsPage.syncMessage.couldnTLoadYourSettingsConnect');
     case 'loading':
-      return 'Loading settings…';
+      return t('settingsPage.syncMessage.loadingSettings');
   }
 }

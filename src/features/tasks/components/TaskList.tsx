@@ -62,7 +62,7 @@ export function TaskList({
   switch (state.kind) {
     case 'loading':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.loading}
         </p>
       );
@@ -70,7 +70,7 @@ export function TaskList({
 
     case 'empty':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {emptyMessage}
         </p>
       );
@@ -78,7 +78,7 @@ export function TaskList({
 
     case 'error':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.loadFailed}{' '}
           <button
             type="button"
@@ -93,7 +93,7 @@ export function TaskList({
 
     case 'session-expired':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.sessionExpired}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"

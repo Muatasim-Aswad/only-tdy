@@ -1,6 +1,41 @@
 import { expect, test } from '@playwright/test';
 import { installApi } from './fixtures.ts';
 
+test('keeps a verified capture editable when a focus check cannot connect', async ({
+  page,
+}) => {
+  await installApi(page);
+  let checks = 0;
+  await page.route('**/api/current_user', (route) => {
+    checks += 1;
+    return checks === 1
+      ? route.fulfill({ json: { user: { uid: 'user-e2e' } } })
+      : route.abort('internetdisconnected');
+  });
+  await page.goto('/only-tdy/');
+  const capture = page.getByRole('combobox', { name: 'What needs doing?' });
+  await capture.fill('Keep this offline draft');
+  const failed = page.waitForEvent(
+    'requestfailed',
+    (request) => new URL(request.url()).pathname === '/api/current_user',
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await failed;
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            resolve();
+          }),
+        ),
+      ),
+  );
+  await expect(capture).toBeVisible();
+  await expect(capture).toHaveValue('Keep this offline draft');
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toHaveCount(0);
+});
+
 test('retains an unfinished capture only when the same account signs back in', async ({
   page,
 }) => {

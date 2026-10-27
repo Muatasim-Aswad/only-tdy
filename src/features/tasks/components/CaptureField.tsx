@@ -1,3 +1,6 @@
+import { appLocale } from '../../../shared/i18n.ts';
+import { textDirection } from '../../../shared/text-direction.ts';
+import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import type { Ref } from 'react';
 import { InputAction } from './InputAction.tsx';
@@ -13,9 +16,7 @@ import { useFocusWithin } from '../../../shared/useFocusWithin.ts';
  * no word. The accessible name still asks the question in words, because
  * neither the marker nor a run of periods reaches a screen reader.
  */
-const CAPTURE_LABEL = 'What needs doing?';
 const CAPTURE_PLACEHOLDER = '.....';
-const SUGGESTION_LABEL = 'Suggestions';
 
 export interface CaptureFieldProps {
   readonly formRef?: Ref<HTMLFormElement>;
@@ -119,9 +120,14 @@ export function CaptureField({
         onToggle={onToggleMode}
       />
       <div className="focus-capture__field relative flex-auto min-w-0">
-        <div className="focus-tokens text-capture" data-value={value}>
+        <div
+          className="focus-tokens text-capture"
+          data-value={value}
+          dir={textDirection(value, appLocale() === 'ar' ? 'rtl' : 'ltr')}
+        >
           <TokenChips value={value} spans={suggestions.spans} />
           <textarea
+            dir="auto"
             {...suggestions.fieldProps}
             className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none"
             value={value}
@@ -132,7 +138,7 @@ export function CaptureField({
               suggestions.noteCaret(event);
             }}
             onKeyDown={handleKeyDown}
-            aria-label={CAPTURE_LABEL}
+            aria-label={t('captureField.whatNeedsDoing')}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="none"
@@ -147,7 +153,7 @@ export function CaptureField({
             activeIndex={suggestions.activeIndex}
             optionId={suggestions.optionId}
             onPick={suggestions.pick}
-            label={SUGGESTION_LABEL}
+            label={t('captureField.suggestions')}
           />
         ) : null}
       </div>
@@ -166,7 +172,7 @@ export function CaptureField({
             event.preventDefault();
           }}
         >
-          Add
+          {t('captureField.add')}
         </SubmitButton>
       ) : null}
     </form>

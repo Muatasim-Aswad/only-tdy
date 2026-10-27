@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import { useCallback, useState, type MouseEvent } from 'react';
 
@@ -169,7 +170,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
                 kind: 'error',
                 message: taskErrorMessage(
                   error,
-                  'Couldn’t skip this occurrence. Try again.',
+                  t('taskDetailPage.couldnTSkipThisOccurrenceTry'),
                 ),
               });
           });

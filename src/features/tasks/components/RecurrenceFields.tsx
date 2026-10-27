@@ -1,6 +1,11 @@
+import { t } from '../messages.ts';
 import { FieldRow } from '../../../shared/FieldRow.tsx';
 import type { Recurrence } from '../contracts.ts';
-import { defaultRecurrence, WEEKDAYS } from '../domain/recurrence.ts';
+import {
+  defaultRecurrence,
+  WEEKDAYS,
+  weekdayName,
+} from '../domain/recurrence.ts';
 import { Select } from '../../../shared/Select.tsx';
 
 interface RecurrenceFieldsProps {
@@ -24,7 +29,7 @@ export function RecurrenceFields({
           className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
           htmlFor="task-repeat"
         >
-          Repeat
+          {t('recurrenceFields.repeat')}
         </label>
         <Select
           id="task-repeat"
@@ -41,12 +46,16 @@ export function RecurrenceFields({
             );
           }}
         >
-          <option value="none">Off</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-          <option value="monthly_weekday">Monthly on a weekday</option>
-          <option value="monthly_last_day">Last day of the month</option>
+          <option value="none">{t('recurrenceFields.off')}</option>
+          <option value="daily">{t('recurrenceFields.daily')}</option>
+          <option value="weekly">{t('recurrenceFields.weekly')}</option>
+          <option value="monthly">{t('recurrenceFields.monthly')}</option>
+          <option value="monthly_weekday">
+            {t('recurrenceFields.monthlyOnAWeekday')}
+          </option>
+          <option value="monthly_last_day">
+            {t('recurrenceFields.lastDayOfTheMonth')}
+          </option>
         </Select>
       </FieldRow>
       {value ? (
@@ -56,7 +65,7 @@ export function RecurrenceFields({
               className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
               htmlFor="task-repeat-interval"
             >
-              Every
+              {t('recurrenceFields.every')}
             </label>
             <div className="focus-repeat-fields__interval [&_input]:flex-none [&_input]:w-[5ch] flex-auto flex items-center gap-3 min-w-0 text-task">
               <input
@@ -73,10 +82,10 @@ export function RecurrenceFields({
               />
               <span>
                 {value.type === 'daily'
-                  ? 'days'
+                  ? t('recurrenceFields.daysText')
                   : value.type === 'weekly'
-                    ? 'weeks'
-                    : 'months'}
+                    ? t('recurrenceFields.weeksText')
+                    : t('recurrenceFields.monthsText')}
               </span>
             </div>
           </FieldRow>
@@ -91,7 +100,7 @@ export function RecurrenceFields({
                 id="task-repeat-days-label"
                 className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
               >
-                On
+                {t('recurrenceFields.on')}
               </span>
               <div className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto">
                 <div className="focus-repeat-fields__days flex flex-wrap gap-1">
@@ -100,7 +109,7 @@ export function RecurrenceFields({
                       type="button"
                       key={day}
                       className="min-h-11 min-w-9.5 py-1 px-0 text-muted text-start border-b border-transparent aria-pressed:text-ink aria-pressed:border-b-current focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] text-action"
-                      aria-label={WEEKDAYS[day]}
+                      aria-label={weekdayName(day)}
                       aria-pressed={value.weekdays.includes(day)}
                       onClick={() => {
                         update({
@@ -110,12 +119,14 @@ export function RecurrenceFields({
                         });
                       }}
                     >
-                      {WEEKDAYS[day]?.slice(0, 3)}
+                      {weekdayName(day, true)}
                     </button>
                   ))}
                 </div>
                 {value.weekdays.length === 0 ? (
-                  <p className="text-meta">Choose at least one day.</p>
+                  <p className="text-meta">
+                    {t('recurrenceFields.chooseAtLeastOneDay')}
+                  </p>
                 ) : null}
               </div>
             </FieldRow>
@@ -126,7 +137,7 @@ export function RecurrenceFields({
                 htmlFor="task-repeat-day"
                 className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
               >
-                Day of month
+                {t('recurrenceFields.dayOfMonth')}
               </label>
               <input
                 id="task-repeat-day"
@@ -149,7 +160,7 @@ export function RecurrenceFields({
                   htmlFor="task-repeat-week"
                   className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
                 >
-                  Week
+                  {t('recurrenceFields.week')}
                 </label>
                 <Select
                   id="task-repeat-week"
@@ -159,12 +170,12 @@ export function RecurrenceFields({
                   }}
                 >
                   {[
-                    [1, 'First'],
-                    [2, 'Second'],
-                    [3, 'Third'],
-                    [4, 'Fourth'],
-                    [5, 'Fifth'],
-                    [-1, 'Last'],
+                    [1, t('recurrenceFields.first')],
+                    [2, t('recurrenceFields.second')],
+                    [3, t('recurrenceFields.third')],
+                    [4, t('recurrenceFields.fourth')],
+                    [5, t('recurrenceFields.fifth')],
+                    [-1, t('recurrenceFields.last')],
                   ].map(([week, label]) => (
                     <option key={week} value={week}>
                       {label}
@@ -177,7 +188,7 @@ export function RecurrenceFields({
                   htmlFor="task-repeat-weekday"
                   className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
                 >
-                  Weekday
+                  {t('recurrenceFields.weekday')}
                 </label>
                 <Select
                   id="task-repeat-weekday"
@@ -188,7 +199,7 @@ export function RecurrenceFields({
                 >
                   {WEEKDAYS.map((day, index) => (
                     <option key={day} value={index}>
-                      {day}
+                      {weekdayName(index)}
                     </option>
                   ))}
                 </Select>
@@ -200,7 +211,7 @@ export function RecurrenceFields({
               htmlFor="task-repeat-based"
               className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
             >
-              Based on
+              {t('recurrenceFields.basedOn')}
             </label>
             <Select
               id="task-repeat-based"
@@ -209,8 +220,12 @@ export function RecurrenceFields({
                 update({ completionBased: basis === 'completion' });
               }}
             >
-              <option value="scheduled">Scheduled date</option>
-              <option value="completion">Completion date</option>
+              <option value="scheduled">
+                {t('recurrenceFields.scheduledDate')}
+              </option>
+              <option value="completion">
+                {t('recurrenceFields.completionDate')}
+              </option>
             </Select>
           </FieldRow>
           <FieldRow className="min-w-0 min-[360px]:justify-start">
@@ -218,7 +233,7 @@ export function RecurrenceFields({
               htmlFor="task-repeat-end"
               className="focus-field__label text-muted min-[360px]:flex-none min-[360px]:w-24 text-meta"
             >
-              Ends on (optional)
+              {t('recurrenceFields.endsOnOptional')}
             </label>
             <input
               id="task-repeat-end"

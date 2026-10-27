@@ -1,3 +1,5 @@
+import { formattingLocale } from '../shared/i18n.ts';
+import { t } from './about-messages.ts';
 import { FieldRow } from '../shared/FieldRow.tsx';
 import { PageShell } from '../shared/PageShell.tsx';
 import {
@@ -28,11 +30,6 @@ export interface VersionScreenProps {
   readonly onReload: () => void;
 }
 
-const TIME_FORMAT = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
-
 /** About the app, its running build, and any available update. */
 export function VersionScreen({
   running,
@@ -47,20 +44,17 @@ export function VersionScreen({
   return (
     <PageShell>
       <section
-        className="focus-about mb-7 pl-rail"
+        className="focus-about mb-7 ps-rail"
         aria-labelledby="about-heading"
       >
         <h1
           id="about-heading"
           className="focus-about__heading m-0 text-section"
         >
-          About only-tdy
+          {t('versionScreen.aboutOnlyTdy')}
         </h1>
-        <p className="focus-about__intro mt-2 mr-0 mb-0 ml-0 text-task">
-          Capture tasks quickly, choose what matters today, and leave the rest
-          in Backlog. A minimalist daily task manager for people overwhelmed by
-          complicated productivity apps, without the overhead of managing an
-          entire productivity system.
+        <p className="focus-about__intro mt-2 me-0 mb-0 ms-0 text-task">
+          {t('versionScreen.captureTasksQuicklyChooseWhatMatters')}
         </p>
       </section>
       <dl className="focus-version m-0">
@@ -131,7 +125,12 @@ function statusMessage(
 function formatTime(iso: string | null): string {
   if (iso === null) return COPY.noValue;
   const time = new Date(iso);
-  return Number.isNaN(time.getTime()) ? iso : TIME_FORMAT.format(time);
+  return Number.isNaN(time.getTime())
+    ? iso
+    : new Intl.DateTimeFormat(formattingLocale(), {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(time);
 }
 
 function navigateFromFooter(destination: FocusDestination) {

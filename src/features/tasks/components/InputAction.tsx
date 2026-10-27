@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 interface InputActionProps {
   readonly value: string;
   readonly mode: 'add' | 'search';
@@ -13,18 +14,16 @@ export function InputAction({
 }: InputActionProps) {
   const filled = value !== '';
   const label = filled
-    ? 'Clear input'
+    ? t('inputAction.clearInput')
     : mode === 'add'
-      ? 'Switch to search'
-      : 'Switch to add';
+      ? t('inputAction.switchToSearch')
+      : t('inputAction.switchToAdd');
   return (
     <button
       type="button"
       className="focus-capture__marker [.focus-capture:focus-within_&]:text-accent [.focus-capture:focus-within_&]:opacity-100 flex items-center justify-center self-stretch border-0 p-0 bg-transparent cursor-pointer text-muted opacity-55 transition-[color,opacity] duration-140 ease-focus focus-visible:[outline:2px_solid_var(--accent)] focus-visible:[outline-offset:2px] focus-rail flex-none w-rail text-capture"
       aria-label={label}
-      title={
-        onToggle ? `${label}. Switch Add/Search: Ctrl+/ (Cmd+/ on Mac)` : label
-      }
+      title={onToggle ? t('inputAction.shortcut', { label }) : label}
       aria-keyshortcuts={!filled && onToggle ? 'Control+/ Meta+/' : undefined}
       onClick={filled ? onClear : onToggle}
       disabled={!filled && onToggle === undefined}

@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import type { UseQueryResult } from '@tanstack/react-query';
 import {
@@ -64,7 +65,7 @@ export function useTaskCapture({
             kind: 'error',
             message: taskErrorMessage(
               result.error,
-              'Could not load projects. Try again.',
+              t('useTaskCapture.couldNotLoadProjectsTryAgain'),
             ),
           });
         return;
@@ -82,7 +83,7 @@ export function useTaskCapture({
           kind: 'error',
           message: taskErrorMessage(
             error,
-            'Could not load the account timezone.',
+            t('useTaskCapture.couldNotLoadTheAccountTimezone'),
           ),
         });
       return;
@@ -124,7 +125,10 @@ export function useTaskCapture({
       if (isUnauthorized(error)) {
         onUnauthorized();
       } else {
-        const message = taskErrorMessage(error, 'The task could not be added.');
+        const message = taskErrorMessage(
+          error,
+          t('useTaskCapture.theTaskCouldNotBeAdded'),
+        );
         setFeedback({ kind: 'error', message });
       }
     }

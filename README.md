@@ -27,6 +27,7 @@ On list pages, start typing to focus the current Add/Search field. Ctrl+/ switch
 
 ## Features
 
+- **English and Arabic.** Confirm the suggested browser language on your first visit, or change it later in Settings.
 - **Quick capture.** Add tasks with projects, tags, priorities, notes and dates, using inline shortcuts and auto-completion.
 - **Today and Backlog.** Choose tasks individually or together for Today. Due and overdue tasks move there automatically during sync unless you disable that setting.
 - **Repeating tasks.** Manage schedules in Repeating, keep them out of Backlog, and work on due occurrences in Today. Add there or use `/repeating` in any Add field to choose a schedule before saving.

@@ -2,6 +2,7 @@ import { isObject } from '../../../infra/tududi-profile.ts';
 import type { ThemeChoice } from '../../../infra/theme.ts';
 
 export interface Preferences {
+  readonly locale: 'en' | 'ar' | null;
   readonly theme: ThemeChoice;
   readonly autoDuePromotion: boolean;
   readonly datedBacklog: 'always' | 'before' | 'due';
@@ -10,6 +11,7 @@ export interface Preferences {
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
+  locale: null,
   theme: 'system',
   autoDuePromotion: true,
   datedBacklog: 'always',
@@ -24,6 +26,9 @@ export const PREFERENCE_KEYS = Object.keys(
 export function preferenceChanges(value: unknown): Partial<Preferences> {
   if (!isObject(value)) return {};
   return {
+    ...(value.locale === 'en' || value.locale === 'ar' || value.locale === null
+      ? { locale: value.locale }
+      : {}),
     ...(value.theme === 'system' ||
     value.theme === 'light' ||
     value.theme === 'dark'

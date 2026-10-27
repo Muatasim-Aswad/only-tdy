@@ -1,3 +1,5 @@
+import { commandValue, tokenDigits } from './token-language.ts';
+import { t } from '../messages.ts';
 import type {
   Project,
   TaskDraft,
@@ -90,44 +92,51 @@ export function parseQuickEntry(
     }
 
     if (token.kind === 'priority') {
-      const priority = Object.hasOwn(PRIORITY_VALUES, token.value)
-        ? PRIORITY_VALUES[token.value as keyof typeof PRIORITY_VALUES]
+      const value = tokenDigits(token.value);
+      const priority = Object.hasOwn(PRIORITY_VALUES, value)
+        ? PRIORITY_VALUES[value as keyof typeof PRIORITY_VALUES]
         : undefined;
       if (token.wrapped || priority === undefined) {
-        return failure('unknown-priority', 'Priority is !1, !2, or !3.');
+        return failure(
+          'unknown-priority',
+          t('quickEntry.parseQuickEntry.priorityIs12Or3'),
+        );
       }
       priorities.add(priority);
       continue;
     }
 
     if (token.kind === 'command') {
-      if (
-        !token.wrapped &&
-        token.value === 'repeating' &&
-        context.allowRepeating
-      ) {
+      const value = commandValue(token.value);
+      if (!token.wrapped && value === 'repeating' && context.allowRepeating) {
         repeating = true;
         continue;
       }
-      if (!token.wrapped && token.value === 'today') {
+      if (!token.wrapped && value === 'today') {
         isToday = true;
         continue;
       }
-      const dateToken = /^(due|hide):(.*)$/i.exec(token.value);
+      const dateToken = /^(due|hide):(.*)$/i.exec(value);
       if (!token.wrapped && dateToken !== null) {
         const date = resolveDate(dateToken[2] ?? '', context);
         if (date === undefined)
           return failure(
             'invalid-date',
-            'Use a valid date: DD-MM-YYYY, tomorrow, or +N.',
+            t('quickEntry.parseQuickEntry.useAValidDateDdMm'),
           );
         if (dateToken[1]?.toLowerCase() === 'due') {
           if (dueDate !== undefined)
-            return failure('multiple-dates', 'Choose one due date.');
+            return failure(
+              'multiple-dates',
+              t('quickEntry.parseQuickEntry.chooseOneDueDate'),
+            );
           dueDate = date;
         } else {
           if (deferUntil !== undefined)
-            return failure('multiple-dates', 'Choose one Hide until date.');
+            return failure(
+              'multiple-dates',
+              t('quickEntry.parseQuickEntry.chooseOneHideUntilDate'),
+            );
           deferUntil = date;
         }
         continue;
@@ -135,8 +144,8 @@ export function parseQuickEntry(
       return failure(
         'unknown-command',
         context.allowRepeating
-          ? 'Commands are /today, /due:date, /hide:date, and /repeating.'
-          : 'Commands are /today, /due:date, and /hide:date.',
+          ? t('quickEntry.parseQuickEntry.commandsAreTodayDueDateHide')
+          : t('quickEntry.parseQuickEntry.commandsAreTodayDueDateAnd'),
       );
     }
 
@@ -160,23 +169,32 @@ export function parseQuickEntry(
   if (priorities.size > 1) {
     return failure(
       'conflicting-priority',
-      'Choose one priority: !1, !2, or !3.',
+      t('quickEntry.parseQuickEntry.chooseOnePriority12Or'),
     );
   }
 
   if (projectTokens.length > 1) {
-    return failure('multiple-projects', 'Choose one project.');
+    return failure(
+      'multiple-projects',
+      t('quickEntry.parseQuickEntry.chooseOneProject'),
+    );
   }
 
   if (noteTokens.length > 1) {
-    return failure('multiple-notes', 'Choose one note.');
+    return failure(
+      'multiple-notes',
+      t('quickEntry.parseQuickEntry.chooseOneNote'),
+    );
   }
 
   const plainTitle = titleTokens.join(' ');
   const title =
     context.capitalize === false ? plainTitle : capitalizeTitle(plainTitle);
   if (title.length === 0 && !repeating) {
-    return failure('empty-title', 'Add a task title.');
+    return failure(
+      'empty-title',
+      t('quickEntry.parseQuickEntry.addATaskTitle'),
+    );
   }
 
   let projectUid: string | undefined;
@@ -190,7 +208,7 @@ export function parseQuickEntry(
     if (match.status === 'ambiguous') {
       return failure(
         'ambiguous-project',
-        `More than one project is named “${projectToken}”.`,
+        t('search.ambiguousProject', { name: projectToken }),
       );
     }
     if (match.status === 'found') projectUid = match.project.uid;

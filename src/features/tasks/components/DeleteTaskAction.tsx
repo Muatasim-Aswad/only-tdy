@@ -70,7 +70,7 @@ export function DeleteTaskAction({
 
   return (
     <span className="focus-delete__confirm flex items-center flex-wrap justify-end gap-1">
-      <span className="focus-delete__question mr-3 text-muted text-action">
+      <span className="focus-delete__question me-3 text-muted text-action">
         {COPY.deleteConfirm}
       </span>
       <button

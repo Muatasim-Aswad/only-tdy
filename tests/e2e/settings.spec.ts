@@ -8,6 +8,7 @@ const DEFAULTS = {
   datedBacklog: 'always',
   daysBeforeDue: 1,
   editorLayout: 'full',
+  locale: 'en',
 };
 
 test.beforeEach(async ({ page }) => {

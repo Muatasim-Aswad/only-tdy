@@ -1,3 +1,6 @@
+import { appLocale } from '../../shared/i18n.ts';
+import { takeLocaleIntent } from '../../infra/locale.ts';
+import { t } from './messages.ts';
 import { PageShell } from '../../shared/PageShell.tsx';
 import { useAuthSession } from '../auth/session.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,6 +19,14 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
   const timezone = useQuery(accountTimezoneQueryOptions());
   const client = useQueryClient();
   const preferences = usePreferences();
+  useEffect(() => {
+    if (preferences.account !== null && preferences.status !== 'loading') {
+      const chosen = takeLocaleIntent();
+      if (chosen !== null || preferences.settings.locale === null) {
+        preferencesStore.update({ locale: chosen ?? appLocale() });
+      }
+    }
+  }, [preferences.account, preferences.status, preferences.settings.locale]);
   const [captureValue, onCaptureChange] = useState('');
   useEffect(() => {
     void preferencesStore.start(account ?? undefined);
@@ -63,7 +74,7 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
         ) : (
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-              Loading…
+              {t('taskProvider.loading')}
             </div>
           </PageShell>
         )}

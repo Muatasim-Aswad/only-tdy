@@ -1,5 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    localStorage.setItem('only-tdy:language:v1', 'en');
+  });
+});
+
 /** No API fixture: the cached shell must offer recovery before exposing tasks. */
 async function expectShellRendered(page: Page) {
   await expect(page.getByRole('main')).toBeVisible();
@@ -49,6 +55,9 @@ test('controls only /only-tdy/ and keeps API requests out of caches', async ({
 }) => {
   if (baseURL === undefined) throw new Error('Test base URL is required.');
   const context = await browser.newContext({ serviceWorkers: 'allow' });
+  await context.addInitScript(() => {
+    localStorage.setItem('only-tdy:language:v1', 'en');
+  });
   const page = await context.newPage();
   await page.goto(`${baseURL}/only-tdy/`);
   await page.evaluate(async () => navigator.serviceWorker.ready);

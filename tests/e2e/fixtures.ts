@@ -1,6 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 
 export interface ApiScenario {
+  readonly confirmLanguage?: boolean;
   readonly today?: readonly RawTask[];
   readonly backlog?: readonly RawTask[];
   readonly history?: readonly RawTask[];
@@ -218,13 +219,17 @@ export async function installApi(page: Page, scenario: ApiScenario = {}) {
       })),
     }),
   );
-  await installProfileApi(page);
+  await installProfileApi(page, scenario.confirmLanguage);
   await page.route('**/api/csrf-token', (route) =>
     json(route, { csrfToken: 'csrf-e2e' }),
   );
 }
 
-export async function installProfileApi(page: Page) {
+export async function installProfileApi(page: Page, confirmLanguage = true) {
+  if (confirmLanguage)
+    await page.addInitScript(() => {
+      localStorage.setItem('only-tdy:language:v1', 'en');
+    });
   await page.route('**/api/current_user', (route) =>
     json(route, { user: { uid: 'user-e2e' } }),
   );

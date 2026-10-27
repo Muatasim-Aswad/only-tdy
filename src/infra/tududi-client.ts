@@ -1,3 +1,4 @@
+import { t } from './tududi-copy.ts';
 import { PublicError } from '../shared/PublicError.ts';
 import { expireSession, sessionGeneration } from './session.ts';
 
@@ -38,26 +39,30 @@ function responseError(status: number): TududiApiError {
     return new TududiApiError(
       status,
       'unauthorized',
-      'Your Tududi session expired.',
+      t('tududiClient.responseError.yourTududiSessionExpired'),
     );
   if (status === 404)
-    return new TududiApiError(status, 'not-found', 'That task is gone.');
+    return new TududiApiError(
+      status,
+      'not-found',
+      t('tududiClient.responseError.thatTaskIsGone'),
+    );
   if (status === 400 || status === 422)
     return new TududiApiError(
       status,
       'validation',
-      'Tududi could not accept this change. Check the fields and try again.',
+      t('tududiClient.responseError.tududiCouldNotAcceptThisChange'),
     );
   if (status === 403)
     return new TududiApiError(
       status,
       'csrf',
-      'Your session could not verify this change. Reload and try again.',
+      t('tududiClient.responseError.yourSessionCouldNotVerifyThis'),
     );
   return new TududiApiError(
     status,
     'http',
-    'Tududi could not complete the request. Try again.',
+    t('tududiClient.responseError.tududiCouldNotCompleteTheRequest'),
   );
 }
 
@@ -103,7 +108,9 @@ export function createTududiClient(
           new TududiApiError(
             0,
             'timeout',
-            'Request timed out. Refresh before retrying a change.',
+            t(
+              'tududiClient.createTududiClient.requestTimedOutRefreshBeforeRetrying',
+            ),
           ),
         );
         controller.abort();
@@ -123,7 +130,7 @@ export function createTududiClient(
         throw new TududiApiError(
           401,
           'unauthorized',
-          'Your Tududi session expired.',
+          t('tududiClient.createTududiClient.yourTududiSessionExpired'),
         );
       if (response.status === 401) expireSession();
       if (!response.ok) throw responseError(response.status);
@@ -132,14 +139,16 @@ export function createTududiClient(
         throw new TududiApiError(
           401,
           'unauthorized',
-          'Your Tududi session expired.',
+          t('tududiClient.createTududiClient.yourTududiSessionExpired'),
         );
       if (text === '') return null;
       try {
         return JSON.parse(text) as unknown;
       } catch {
         throw new PublicError(
-          'Tududi returned an unreadable response. Refresh before retrying a change.',
+          t(
+            'tududiClient.createTududiClient.tududiReturnedAnUnreadableResponseRefresh',
+          ),
         );
       }
     };
@@ -150,7 +159,7 @@ export function createTududiClient(
       throw new TududiApiError(
         0,
         'network',
-        'Could not reach Tududi. Refresh before retrying a change.',
+        t('tududiClient.createTududiClient.couldNotReachTududiRefreshBefore'),
       );
     } finally {
       clearTimeout(timer);
@@ -180,7 +189,7 @@ export function createTududiClient(
           payload.csrfToken === ''
         ) {
           throw new PublicError(
-            'Your session could not verify this change. Reload and try again.',
+            t('tududiClient.createTududiClient.yourSessionCouldNotVerifyThis'),
           );
         }
         if (requestedGeneration === generation) token = payload.csrfToken;
@@ -199,7 +208,7 @@ export function createTududiClient(
       throw new TududiApiError(
         401,
         'unauthorized',
-        'Your Tududi session expired.',
+        t('tududiClient.createTududiClient.yourTududiSessionExpired'),
       );
     const send = async () =>
       request(path, {

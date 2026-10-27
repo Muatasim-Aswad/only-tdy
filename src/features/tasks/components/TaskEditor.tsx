@@ -1,3 +1,6 @@
+import { appLocale } from '../../../shared/i18n.ts';
+import { textDirection } from '../../../shared/text-direction.ts';
+import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
 import { PageFooter } from '../../../shared/PageFooter.tsx';
 import { FieldRow } from '../../../shared/FieldRow.tsx';
@@ -53,11 +56,21 @@ import { useSuggestions } from './useSuggestions.ts';
  * shows neither, so neither is offered here.
  */
 const STATUS_NAME: Readonly<Record<TaskStatus, string>> = {
-  planned: 'Today',
-  not_started: 'Backlog',
-  in_progress: 'In progress',
-  waiting: 'Waiting',
-  done: 'Done',
+  get planned() {
+    return t('taskEditor.planned');
+  },
+  get not_started() {
+    return t('taskEditor.not_started');
+  },
+  get in_progress() {
+    return t('taskEditor.in_progress');
+  },
+  get waiting() {
+    return t('taskEditor.waiting');
+  },
+  get done() {
+    return t('taskEditor.done');
+  },
 };
 
 /**
@@ -450,12 +463,17 @@ export function TaskEditor({
                 <div
                   className="focus-grow min-w-0 min-[360px]:flex-auto focus-detail__title pt-0.5 focus-tokens text-capture"
                   data-value={fields.title}
+                  dir={textDirection(
+                    fields.title,
+                    appLocale() === 'ar' ? 'rtl' : 'ltr',
+                  )}
                 >
                   <TokenChips
                     value={fields.title}
                     spans={titleSuggestions.spans}
                   />
                   <textarea
+                    dir="auto"
                     {...titleSuggestions.fieldProps}
                     id="task-title"
                     className="focus-detail__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder w-full resize-none bg-transparent text-ink"
@@ -476,7 +494,7 @@ export function TaskEditor({
                     activeIndex={titleSuggestions.activeIndex}
                     optionId={titleSuggestions.optionId}
                     onPick={titleSuggestions.pick}
-                    label="Title suggestions"
+                    label={t('taskEditor.titleSuggestionsLabel')}
                   />
                 ) : null}
               </div>
@@ -504,8 +522,13 @@ export function TaskEditor({
                 <div
                   className="focus-grow min-w-0 min-[360px]:flex-auto focus-detail__note group/note pt-0.5 text-task"
                   data-value={fields.note}
+                  dir={textDirection(
+                    fields.note,
+                    appLocale() === 'ar' ? 'rtl' : 'ltr',
+                  )}
                 >
                   <textarea
+                    dir="auto"
                     id="task-note"
                     className="focus-detail__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder w-full resize-none bg-transparent text-muted group-focus-within/note:text-ink"
                     value={fields.note}
@@ -524,17 +547,26 @@ export function TaskEditor({
           {showTags || showProject ? (
             <div className="focus-group [.focus-group_+_&]:mt-7">
               {showTags ? (
-                <Field id="task-tags" label="Tags" compact={compact}>
+                <Field
+                  id="task-tags"
+                  label={t('taskEditor.tagsLabel')}
+                  compact={compact}
+                >
                   <div className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto focus-capture__field relative flex-auto min-w-0">
                     <div
                       className="focus-tokens focus-tokens--compact text-task"
                       data-value={fields.tags}
+                      dir={textDirection(
+                        fields.tags,
+                        appLocale() === 'ar' ? 'rtl' : 'ltr',
+                      )}
                     >
                       <TokenChips
                         value={fields.tags}
                         spans={tagSuggestions.spans}
                       />
                       <textarea
+                        dir="auto"
                         {...tagSuggestions.fieldProps}
                         id="task-tags"
                         className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto"
@@ -571,7 +603,7 @@ export function TaskEditor({
                         activeIndex={tagSuggestions.activeIndex}
                         optionId={tagSuggestions.optionId}
                         onPick={tagSuggestions.pick}
-                        label="Tags already in use"
+                        label={t('taskEditor.tagsAlreadyInUseLabel')}
                       />
                     ) : null}
                   </div>
@@ -579,7 +611,11 @@ export function TaskEditor({
               ) : null}
 
               {showProject ? (
-                <Field id="task-project" label="Project" compact={compact}>
+                <Field
+                  id="task-project"
+                  label={t('taskEditor.projectLabel')}
+                  compact={compact}
+                >
                   <Select
                     id="task-project"
                     value={fields.projectUid}
@@ -604,7 +640,11 @@ export function TaskEditor({
           {/* What it asks of the day. */}
           <div className="focus-group [.focus-group_+_&]:mt-7">
             {!creating ? (
-              <Field id="task-status" label="Status" compact={compact}>
+              <Field
+                id="task-status"
+                label={t('taskEditor.statusLabel')}
+                compact={compact}
+              >
                 <Select
                   id="task-status"
                   value={fields.status}
@@ -615,7 +655,7 @@ export function TaskEditor({
                   {statuses.map((status) => (
                     <option key={status} value={status}>
                       {status === 'not_started' && fields.recurrence
-                        ? 'Scheduled'
+                        ? t('taskEditor.scheduled')
                         : STATUS_NAME[status]}
                     </option>
                   ))}
@@ -623,7 +663,11 @@ export function TaskEditor({
               </Field>
             ) : null}
 
-            <Field id="task-priority" label="Priority" compact={compact}>
+            <Field
+              id="task-priority"
+              label={t('taskEditor.priorityLabel')}
+              compact={compact}
+            >
               <Select
                 id="task-priority"
                 value={fields.priority}
@@ -641,7 +685,7 @@ export function TaskEditor({
               </Select>
             </Field>
 
-            <Field id="task-due" label="Due date">
+            <Field id="task-due" label={t('taskEditor.dueDateLabel')}>
               <DateValue
                 id="task-due"
                 type="date"
@@ -654,7 +698,7 @@ export function TaskEditor({
             </Field>
 
             {fields.status === 'not_started' && !fields.recurrence ? (
-              <Field id="task-defer" label="Hide until">
+              <Field id="task-defer" label={t('taskEditor.hideUntilLabel')}>
                 <DateValue
                   id="task-defer"
                   type="date"
@@ -700,8 +744,12 @@ export function TaskEditor({
       <PageFooter>
         <RailButton
           active={compact}
-          aria-label="Compact form"
-          title={compact ? 'Use full form' : 'Use compact form'}
+          aria-label={t('taskEditor.compactFormLabel')}
+          title={
+            compact
+              ? t('taskEditor.useFullForm')
+              : t('taskEditor.useCompactForm')
+          }
           aria-pressed={compact}
           onClick={() => {
             const next = !compact;
@@ -738,7 +786,9 @@ export function TaskEditor({
             disabled={disabled || busy}
             aria-busy={skipping}
           >
-            {skipping ? 'Skipping…' : 'Skip this occurrence'}
+            {skipping
+              ? t('taskEditor.skipping')
+              : t('taskEditor.skipThisOccurrence')}
           </button>
         ) : null}
       </PageFooter>

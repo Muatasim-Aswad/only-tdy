@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { useMemo, useState } from 'react';
 import { routePath } from '../../config/routes.ts';
 import {
@@ -92,7 +93,10 @@ export function RepeatingCreatePage() {
       onSave={async (edit) => {
         if (!online || expired) return undefined;
         if (!edit.recurrence) {
-          setFeedback({ kind: 'error', message: 'Choose a repeat schedule.' });
+          setFeedback({
+            kind: 'error',
+            message: t('repeatingCreatePage.message'),
+          });
           return undefined;
         }
         try {
@@ -135,7 +139,7 @@ export function RepeatingCreatePage() {
               kind: 'error',
               message: taskErrorMessage(
                 error,
-                'Couldn’t save this repeating task. Try again.',
+                t('repeatingCreatePage.couldnTSaveThisRepeatingTask'),
               ),
             });
           return undefined;

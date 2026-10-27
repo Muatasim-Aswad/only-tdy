@@ -48,7 +48,14 @@ async function request(
 }
 
 export async function currentAccount(): Promise<string | null> {
-  const data = await request('/api/current_user');
+  let data: Record<string, unknown>;
+  try {
+    data = await request('/api/current_user');
+  } catch (error) {
+    if (error instanceof AuthError && error.reason === 'credentials')
+      return null;
+    throw error;
+  }
   if (data.user === null) return null;
   const user = data.user;
   if (

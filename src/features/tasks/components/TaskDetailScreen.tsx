@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import { PageShell } from '../../../shared/PageShell.tsx';
 import { useId, useState, type MouseEvent, type ReactNode } from 'react';
@@ -78,13 +79,13 @@ export function TaskDetailScreen({
       <div className="focus-head flex items-center justify-between gap-4 mb-2">
         <BackLink href={backHref} onNavigate={onBack} />
         {state.kind === 'ready' ? (
-          <div className="focus-head__action flex items-center justify-end min-w-0 -mr-2">
+          <div className="focus-head__action flex items-center justify-end min-w-0 -me-2">
             {dirty || creating ? (
               <SubmitButton
-                title="Save (Ctrl+Enter; Cmd+Enter on Mac)"
+                title={t('taskDetailScreen.saveCtrlEnterCmdEnterOnLabel')}
                 aria-keyshortcuts="Control+Enter Meta+Enter"
                 form={formId}
-                className="focus-detail__save ml-auto"
+                className="focus-detail__save ms-auto"
                 disabled={disabled || saving || deleting || skipping}
               >
                 {COPY.save}
@@ -139,14 +140,14 @@ function renderState(
   switch (state.kind) {
     case 'loading':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.taskLoading}
         </p>
       );
 
     case 'not-found':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.taskMissing}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
@@ -160,7 +161,7 @@ function renderState(
 
     case 'error':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.taskLoadFailed}{' '}
           <button
             type="button"
@@ -174,7 +175,7 @@ function renderState(
 
     case 'session-expired':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {COPY.sessionExpired}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"

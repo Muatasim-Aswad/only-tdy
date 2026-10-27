@@ -16,6 +16,8 @@
   .focus-tokens > .focus-chips,
   .focus-tokens::after {
     grid-area: 1 / 1 / 2 / 2;
+    unicode-bidi: plaintext;
+    text-align: start;
     font: inherit;
     letter-spacing: inherit;
     padding: 16px 0;
@@ -157,6 +159,8 @@
   .focus-grow > textarea,
   .focus-grow::after {
     grid-area: 1 / 1 / 2 / 2;
+    unicode-bidi: plaintext;
+    text-align: start;
     font: inherit;
     letter-spacing: inherit;
     padding: 0;

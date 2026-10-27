@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import type { MouseEvent } from 'react';
 
 import type { CaptureFeedback } from '../contracts.ts';
@@ -40,8 +41,8 @@ export function CaptureFeedbackMessage({
             <a
               className="focus-toast__icon inline-flex items-center justify-center flex-none w-11 h-11 text-muted rounded-[6px] focus-visible:text-accent focus-visible:bg-selection hover:text-accent hover:bg-selection"
               href={taskPath(feedback.uid)}
-              aria-label="Edit task"
-              title="Edit task"
+              aria-label={t('captureFeedbackMessage.editTaskLabel')}
+              title={t('captureFeedbackMessage.editTaskLabel')}
               onClick={(event) => {
                 onOpenTask?.(event, feedback.uid);
                 onDismiss?.();
