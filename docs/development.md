@@ -41,3 +41,5 @@ Dependabot groups npm, Docker and Actions version/security updates separately, w
 [Compose](../compose.yaml) defines the build context, platform and arguments. Ordinary Docker builds report revision `dev`. Deployment tools such as [srvr](deployment.md#deploy-with-srvr) supply `APP_REVISION`, `APP_COMMIT_TIME` and `APP_BUILD_TIME`. Default `SOURCE_DATE_EPOCH=0` allows separate commit/build times; release builds use a nonzero commit epoch and require matching timestamps.
 
 `mise run release:rehearse` prepares deterministic assets from clean committed source without publishing. See [releases](releases.md) for artifact verification and publication.
+
+The synthetic server starts signed out. Use `demo@example.com` / `only-tdy-demo`; these credentials exist only in the dev fixture. Its data and sessions disappear when the server stops.

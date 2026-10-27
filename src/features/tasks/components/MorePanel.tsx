@@ -1,6 +1,8 @@
 import { handleLinkNavigation } from '../../../infra/navigation.ts';
 import { routePath } from '../../../config/routes.ts';
 import { COPY } from './copy.ts';
+import { useState } from 'react';
+import { useAuthSession } from '../../auth/session.ts';
 import {
   AboutIcon,
   GuideIcon,
@@ -37,6 +39,9 @@ export function MorePanel({
   onOpenHistory,
   onClose,
 }: MorePanelProps) {
+  const session = useAuthSession();
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState(false);
   return (
     <div
       className="focus-more__panel absolute z-20 bottom-[calc(100%_+_4px)] left-0 flex flex-col min-w-50 px-0 py-1 bg-surface border border-line rounded-[10px] animate-appear motion-reduce:animate-none"
@@ -68,6 +73,31 @@ export function MorePanel({
           {label}
         </a>
       ))}
+      {session !== null && (
+        <button
+          type="button"
+          disabled={signingOut}
+          className="focus-more__item min-h-11 px-4 py-2 text-left text-action text-muted disabled:opacity-50"
+          onClick={() => {
+            setSigningOut(true);
+            setSignOutError(false);
+            void session.signOut().catch(() => {
+              setSignOutError(true);
+              setSigningOut(false);
+            });
+          }}
+        >
+          {signingOut ? 'Signing out…' : 'Sign out'}
+        </button>
+      )}
+      {signOutError && (
+        <p
+          role="alert"
+          className="px-4 py-2 text-meta text-danger whitespace-normal"
+        >
+          Could not sign out. Try again.
+        </p>
+      )}
     </div>
   );
 }

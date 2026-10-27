@@ -1,5 +1,5 @@
 import { PageShell } from '../shared/PageShell.tsx';
-import { TaskProvider } from '../features/tasks/TaskProvider.tsx';
+import { AuthBoundary } from '../features/auth/AuthBoundary.tsx';
 import { lazy, Suspense, useCallback, useState, type MouseEvent } from 'react';
 
 import { routePath } from '../config/routes.ts';
@@ -7,6 +7,11 @@ import { UpdateToast } from './UpdateToast.tsx';
 
 import { buildLabel, type BuildInfo } from '../infra/build-info.ts';
 import { handleLinkNavigation, useRoute } from '../infra/navigation.ts';
+const TaskProvider = lazy(() =>
+  import('../features/tasks/TaskProvider.tsx').then((module) => ({
+    default: module.TaskProvider,
+  })),
+);
 const TaskListPage = lazy(() =>
   import('../features/tasks/TaskListPage.tsx').then((module) => ({
     default: module.TaskListPage,
@@ -71,15 +76,19 @@ export function App({ updateNotice = null }: AppProps) {
   }, []);
 
   return (
-    <TaskProvider>
-      <Page />
-      <UpdateToast
-        label={notice === null ? undefined : buildLabel(notice)}
-        href={VERSION_PATH}
-        onOpen={openVersion}
-        onDismiss={dismissNotice}
-      />
-    </TaskProvider>
+    <AuthBoundary>
+      <Suspense fallback={null}>
+        <TaskProvider>
+          <Page />
+          <UpdateToast
+            label={notice === null ? undefined : buildLabel(notice)}
+            href={VERSION_PATH}
+            onOpen={openVersion}
+            onDismiss={dismissNotice}
+          />
+        </TaskProvider>
+      </Suspense>
+    </AuthBoundary>
   );
 }
 

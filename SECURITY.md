@@ -8,7 +8,7 @@ Only the latest release receives security fixes; upgrade older versions.
 
 ## Trust boundary
 
-only-tdy is a static frontend sharing Tududi's HTTPS origin, session cookie, CSRF token, authorization and storage. It has no backend or authentication system. The proxy must keep `/api/` and login routes on Tududi, strip `/only-tdy` from forwarded static requests, and reach only-tdy on loopback only.
+only-tdy is a static frontend sharing Tududi's HTTPS origin, session cookie, CSRF token, authorization and storage. Its sign-in form sends credentials directly to Tududi’s same-origin API; it never stores passwords. Tududi remains the authentication authority. The proxy must keep `/api/` and login routes on Tududi, strip `/only-tdy` from forwarded static requests, and reach only-tdy on loopback only.
 
 Trust every application sharing that origin: its scripts can access preferences and authenticated APIs. Do not host untrusted sites there. Public access requires secure HTTPS, correct Tududi authentication/proxy settings and regular updates of both apps. Cross-origin APIs are unsupported. Back up and restore through Tududi; only-tdy's container stores no task data.
 

@@ -50,7 +50,7 @@ Open the printed `/only-tdy/` URL. The seeded demo uses editable synthetic data,
 
 ## Deploy
 
-Requires [Tududi 1.9.4](docs/deployment.md#tududi-backend-pin) as its backend. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in through Tududi, which owns your tasks and provides fuller planning tools. The same Compose file supports the [published image](docs/deployment.md#published-image), [source builds](docs/deployment.md#build-from-source) and optional [srvr management](docs/deployment.md#deploy-with-srvr).
+Requires [Tududi 1.9.4](docs/deployment.md#tududi-backend-pin) as its backend. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in directly in only-tdy with your Tududi account. Tududi owns your tasks and provides fuller planning tools. The same Compose file supports the [published image](docs/deployment.md#published-image), [source builds](docs/deployment.md#build-from-source) and optional [srvr management](docs/deployment.md#deploy-with-srvr).
 
 The current source's core API flow is verified against the pin; your HTTPS deployment still needs smoke checks.
 

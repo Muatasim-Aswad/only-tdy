@@ -22,7 +22,7 @@ export const LEGACY_CACHE_PREFIX = 'td-focused-';
  */
 export const TASK_PAGE_LIMIT = 50;
 
-/** Same-origin Tududi destinations. only-tdy never collects credentials itself. */
+/** Same-origin Tududi destinations; password sign-in is also available in only-tdy. */
 export const TUDUDI_TODAY_PATH = '/today';
 export const TUDUDI_LOGIN_PATH = '/login';
 

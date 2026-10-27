@@ -8,6 +8,12 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { App } from './App.tsx';
 
 const server = setupServer(
+  http.get('/api/current_user', () =>
+    HttpResponse.json({ user: { uid: 'user-app' } }),
+  ),
+  http.get('/api/password-auth-status', () =>
+    HttpResponse.json({ enabled: true }),
+  ),
   http.get('/api/profile', () =>
     HttpResponse.json({
       uid: 'user-app',

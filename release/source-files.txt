@@ -108,6 +108,10 @@ src/config/base-path.test.ts
 src/config/base-path.ts
 src/config/routes.test.ts
 src/config/routes.ts
+src/features/auth/AuthBoundary.tsx
+src/features/auth/LoginScreen.tsx
+src/features/auth/api.ts
+src/features/auth/session.ts
 src/features/tasks/BacklogPage.tsx
 src/features/tasks/GuidePage.tsx
 src/features/tasks/RepeatingCreatePage.tsx
@@ -225,6 +229,7 @@ src/infra/deployed-build.test.ts
 src/infra/deployed-build.ts
 src/infra/navigation.test.tsx
 src/infra/navigation.ts
+src/infra/session.ts
 src/infra/sw.ts
 src/infra/theme.test.ts
 src/infra/theme.ts
@@ -251,6 +256,7 @@ src/shared/styles/select.css
 src/shared/styles/tokens.css
 src/shared/useFocusWithin.ts
 src/test/setup.ts
+tests/e2e/auth.spec.ts
 tests/e2e/dates.spec.ts
 tests/e2e/fixtures.ts
 tests/e2e/keyboard.spec.ts

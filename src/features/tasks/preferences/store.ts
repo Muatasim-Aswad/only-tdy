@@ -210,8 +210,8 @@ export function createPreferencesStore(
         listeners.delete(listener);
       };
     },
-    async start() {
-      const account = readBrowserStorage(LAST_ACCOUNT_KEY);
+    async start(verifiedAccount?: string) {
+      const account = verifiedAccount ?? readBrowserStorage(LAST_ACCOUNT_KEY);
       const saved = account === null ? undefined : readCache(account);
       pending = saved?.pending ?? {};
       publish({

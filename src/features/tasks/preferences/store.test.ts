@@ -55,6 +55,18 @@ afterEach(() => {
 });
 
 describe('account preferences', () => {
+  it('does not restore another account’s cache when the verified account is offline', async () => {
+    cached('user-one', { theme: 'dark', daysBeforeDue: 9 });
+    const { store, storage } = backend();
+    storage.read.mockRejectedValue(new Error('offline'));
+    await store.start('user-two');
+    expect(store.getSnapshot().account).toBe('user-two');
+    expect(store.getSnapshot().settings).toMatchObject({
+      theme: 'system',
+      daysBeforeDue: 1,
+    });
+    expect(storage.write).not.toHaveBeenCalled();
+  });
   it('prefers the server to the browser and refreshes the account cache', async () => {
     cached('user-one', { theme: 'dark', daysBeforeDue: 9 });
     const { store, storage } = backend({ theme: 'light', daysBeforeDue: 3 });

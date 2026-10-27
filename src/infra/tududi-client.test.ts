@@ -1,12 +1,49 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createTududiClient, type Fetch } from './tududi-client.ts';
+import { changeSession } from './session.ts';
 
 afterEach(() => {
   vi.useRealTimers();
 });
 
 describe('Tududi transport safety', () => {
+  it('rejects a previous account’s delayed response, including a stalled body', async () => {
+    let finish!: (text: string) => void;
+    const client = createTududiClient(() =>
+      Promise.resolve({
+        ok: true,
+        text: () =>
+          new Promise<string>((resolve) => {
+            finish = resolve;
+          }),
+      } as Response),
+    );
+    const result = client.request('/api/tasks');
+    await Promise.resolve();
+    changeSession();
+    finish(JSON.stringify({ tasks: [{ name: 'Private previous task' }] }));
+    await expect(result).rejects.toMatchObject({ kind: 'unauthorized' });
+  });
+
+  it('fetches a fresh CSRF token after an account transition', async () => {
+    let tokens = 0;
+    const headers: string[] = [];
+    const client = createTududiClient((path, init) => {
+      if (path === '/api/csrf-token')
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ csrfToken: `token-${String(++tokens)}` }),
+          ),
+        );
+      headers.push(new Headers(init?.headers).get('x-csrf-token') ?? '');
+      return Promise.resolve(new Response('{}'));
+    });
+    await client.mutate('/api/task', 'POST', {});
+    changeSession();
+    await client.mutate('/api/task', 'POST', {});
+    expect(headers).toEqual(['token-1', 'token-2']);
+  });
   it.each(['fetch', 'body'])(
     'bounds a stalled %s and aborts its request',
     async (stall) => {

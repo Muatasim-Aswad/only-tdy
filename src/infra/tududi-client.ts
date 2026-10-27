@@ -1,4 +1,5 @@
 import { PublicError } from '../shared/PublicError.ts';
+import { expireSession, sessionGeneration } from './session.ts';
 
 export type Fetch = (
   input: RequestInfo | URL,
@@ -79,6 +80,7 @@ export function createTududiClient(
   let token: string | null = null;
   let inFlight: Promise<string> | null = null;
   let generation = 0;
+  let session = sessionGeneration();
 
   const request = async (
     path: string,
@@ -91,6 +93,7 @@ export function createTududiClient(
     )
       throw new Error('Tududi requires a same-origin /api/ path.');
     const controller = new AbortController();
+    const requestedSession = sessionGeneration();
     const headers = new Headers(init.headers);
     if (!headers.has('Accept')) headers.set('Accept', 'application/json');
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -116,8 +119,21 @@ export function createTududiClient(
             ? controller.signal
             : AbortSignal.any([init.signal, controller.signal]),
       });
+      if (requestedSession !== sessionGeneration())
+        throw new TududiApiError(
+          401,
+          'unauthorized',
+          'Your Tududi session expired.',
+        );
+      if (response.status === 401) expireSession();
       if (!response.ok) throw responseError(response.status);
       const text = await response.text();
+      if (requestedSession !== sessionGeneration())
+        throw new TududiApiError(
+          401,
+          'unauthorized',
+          'Your Tududi session expired.',
+        );
       if (text === '') return null;
       try {
         return JSON.parse(text) as unknown;
@@ -147,6 +163,10 @@ export function createTududiClient(
     inFlight = null;
   };
   const getToken = (): Promise<string> => {
+    if (session !== sessionGeneration()) {
+      session = sessionGeneration();
+      clearCsrfToken();
+    }
     if (token !== null) return Promise.resolve(token);
     if (inFlight !== null) return inFlight;
     const requestedGeneration = generation;
@@ -173,12 +193,20 @@ export function createTududiClient(
     return pending;
   };
   const mutate: TududiClient['mutate'] = async (path, method, body) => {
+    const requestedSession = sessionGeneration();
+    const csrfToken = await getToken();
+    if (requestedSession !== sessionGeneration())
+      throw new TududiApiError(
+        401,
+        'unauthorized',
+        'Your Tududi session expired.',
+      );
     const send = async () =>
       request(path, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'x-csrf-token': await getToken(),
+          'x-csrf-token': token ?? csrfToken,
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
@@ -188,6 +216,8 @@ export function createTududiClient(
       if (!(error instanceof TududiApiError) || error.kind !== 'csrf')
         throw error;
       clearCsrfToken();
+      await getToken();
+      if (requestedSession !== sessionGeneration()) throw error;
       return send();
     }
   };

@@ -225,6 +225,12 @@ export async function installApi(page: Page, scenario: ApiScenario = {}) {
 }
 
 export async function installProfileApi(page: Page) {
+  await page.route('**/api/current_user', (route) =>
+    json(route, { user: { uid: 'user-e2e' } }),
+  );
+  await page.route('**/api/password-auth-status', (route) =>
+    json(route, { enabled: true }),
+  );
   let uiSettings: Record<string, unknown> = {};
   await page.route('**/api/profile', async (route) => {
     if (route.request().method() === 'PATCH') {

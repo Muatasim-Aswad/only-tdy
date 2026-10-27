@@ -487,9 +487,7 @@ test('disables saves offline and replaces the list for an expired session', asyn
   await installApi(page, { todayStatus: 401 });
   await page.reload();
   await expect(page.getByText('Your Tududi session expired.')).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Open Tududi to sign in' }),
-  ).toHaveAttribute('href', '/login');
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
 });
 
 test('has no serious or critical accessibility violations in primary states', async ({
@@ -927,9 +925,7 @@ test('sends an expired session to sign in rather than to an empty form', async (
   await page.goto('/only-tdy/task/task-invoice');
 
   await expect(page.getByText('Your Tududi session expired.')).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Open Tududi to sign in' }),
-  ).toHaveAttribute('href', '/login');
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
 });
 

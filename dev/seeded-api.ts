@@ -255,6 +255,7 @@ function asNullableString(value: unknown): string | null {
 }
 
 export function seededTududiApi(): Plugin {
+  const sessions = new Set<string>();
   let tasks = seed();
   let projects = PROJECTS;
   let profileSettings: Record<string, unknown> = {};
@@ -277,6 +278,57 @@ export function seededTududiApi(): Plugin {
           response.setHeader('Content-Type', 'application/json');
           response.end(JSON.stringify(body));
         };
+
+        const session = /(?:^|;\s*)only_tdy_demo=([^;]+)/.exec(
+          request.headers.cookie ?? '',
+        )?.[1];
+        const authenticated = session !== undefined && sessions.has(session);
+        if (url.pathname === '/api/current_user') {
+          send(200, { user: authenticated ? { uid: 'seeded-user' } : null });
+          return;
+        }
+        if (url.pathname === '/api/password-auth-status') {
+          send(200, { enabled: true });
+          return;
+        }
+        if (url.pathname === '/api/login' && request.method === 'POST') {
+          void readBody(request).then(
+            (raw) => {
+              const body = asRecord(raw);
+              if (
+                body.email !== 'demo@example.com' ||
+                body.password !== 'only-tdy-demo'
+              ) {
+                send(401, { errors: ['Invalid credentials'] });
+                return;
+              }
+              const token = crypto.randomUUID();
+              sessions.add(token);
+              response.setHeader(
+                'Set-Cookie',
+                `only_tdy_demo=${token}; HttpOnly; SameSite=Lax; Path=/`,
+              );
+              send(200, { user: { uid: 'seeded-user' } });
+            },
+            () => {
+              send(400, {});
+            },
+          );
+          return;
+        }
+        if (url.pathname === '/api/logout') {
+          if (session !== undefined) sessions.delete(session);
+          response.setHeader(
+            'Set-Cookie',
+            'only_tdy_demo=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0',
+          );
+          send(200, { message: 'Logged out successfully' });
+          return;
+        }
+        if (!authenticated) {
+          send(401, { error: 'Authentication required' });
+          return;
+        }
 
         void handle(url, request, send).catch((error: unknown) => {
           send(500, { error: String(error) });
