@@ -67,6 +67,12 @@ const RepeatingCreatePage = lazy(() =>
   })),
 );
 
+const TaskTourPage = lazy(() =>
+  import('../features/tasks/TaskTourPage.tsx').then((module) => ({
+    default: module.TaskTourPage,
+  })),
+);
+
 export interface AppProps {
   /** A build this device has not run before, announced once over any page. */
   readonly updateNotice?: BuildInfo | null;
@@ -114,6 +120,12 @@ export function App({ updateNotice = null }: AppProps) {
 
 function Page() {
   const route = useRoute();
+  if (route.kind === 'task-tour')
+    return (
+      <Suspense fallback={null}>
+        <TaskTourPage />
+      </Suspense>
+    );
   if (route.kind === 'new-repeating')
     return (
       <Suspense fallback={null}>

@@ -7,6 +7,34 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { App } from './App.tsx';
 
+function initialAppSettings(): Record<string, unknown> {
+  return {
+    onlyTdy: {
+      guidance: JSON.stringify({
+        version: 1,
+        done: [
+          'capture',
+          'backlog',
+          'backlog-tools',
+          'today',
+          'editor',
+          'compact',
+          'switch',
+          'tokens',
+          'more',
+          'all',
+          'repeating',
+          'reference',
+        ],
+        used: [],
+        later: {},
+        startedVisit: '',
+      }),
+    },
+  };
+}
+let appSettings = initialAppSettings();
+
 const server = setupServer(
   http.get('/api/current_user', () =>
     HttpResponse.json({ user: { uid: 'user-app' } }),
@@ -18,11 +46,13 @@ const server = setupServer(
     HttpResponse.json({
       uid: 'user-app',
       timezone: 'UTC',
-      ui_settings: { onlyTdy: {} },
+      ui_settings: appSettings,
     }),
   ),
   http.patch('/api/profile', async ({ request }) => {
     const body = await request.json();
+    appSettings = (body as { ui_settings: Record<string, unknown> })
+      .ui_settings;
     return HttpResponse.json({
       uid: 'user-app',
       timezone: 'UTC',
@@ -111,6 +141,7 @@ beforeAll(() => {
 });
 afterEach(() => {
   server.resetHandlers();
+  appSettings = initialAppSettings();
   window.history.replaceState(null, '', '/only-tdy/');
 });
 afterAll(() => {

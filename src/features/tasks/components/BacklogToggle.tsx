@@ -23,6 +23,7 @@ export interface BacklogToggleProps {
 export function BacklogToggle({ active, onToggle }: BacklogToggleProps) {
   return (
     <RailButton
+      data-tour="nav-backlog"
       active={active}
       onClick={onToggle}
       aria-pressed={active}

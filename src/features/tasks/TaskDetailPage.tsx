@@ -1,3 +1,4 @@
+import { useGuidancePage } from './guidance/events.ts';
 import { t } from './messages.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import { useCallback, useState, type MouseEvent } from 'react';
@@ -67,6 +68,9 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     useSkipOccurrenceMutation();
 
   const state = deriveTaskDetailState(sessionExpired, taskQuery);
+  useGuidancePage(
+    state.kind === 'ready' ? { kind: 'task', populated: true } : null,
+  );
   const disabled = !isOnline || state.kind === 'session-expired';
   const visibleFeedback: SaveFeedback = isOnline
     ? feedback

@@ -1,3 +1,5 @@
+import { guidanceFacts } from './guidance/events.ts';
+import { tokenFacts } from './guidance/token-facts.ts';
 import { t } from './messages.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import type { UseQueryResult } from '@tanstack/react-query';
@@ -111,6 +113,13 @@ export function useTaskCapture({
         draft: parsed.draft,
         ...(projectName === undefined ? {} : { projectName }),
       });
+      guidanceFacts(
+        'captured',
+        ...(parsed.draft.status === 'not_started'
+          ? ['captured-backlog' as const]
+          : []),
+        ...tokenFacts(submittedInput),
+      );
       onCaptureChange((current) => (current === submittedInput ? '' : current));
 
       const hiddenBacklog =

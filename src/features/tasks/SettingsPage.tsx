@@ -241,6 +241,51 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
+      <section
+        className="ms-rail mt-4 py-4 border-t border-line"
+        aria-labelledby="settings-tips-label"
+      >
+        <div className="flex items-center justify-between gap-5">
+          <div>
+            <p id="settings-tips-label" className="text-action">
+              {t('settingsPage.tips')}
+            </p>
+            <p id="settings-tips-help" className="text-meta text-muted mt-1">
+              {t('settingsPage.tipsHelp')}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-meta text-muted" aria-hidden="true">
+              {t(
+                settings.guidanceTips
+                  ? 'settingsPage.tipsOn'
+                  : 'settingsPage.tipsOff',
+              )}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={settings.guidanceTips}
+              aria-labelledby="settings-tips-label"
+              aria-describedby="settings-tips-help"
+              disabled={disabled}
+              className="inline-flex items-center justify-center min-h-11 min-w-11 cursor-pointer rounded-[6px] enabled:hover:opacity-85 focus-visible:[outline:2px_solid_var(--accent)] focus-visible:[outline-offset:3px] enabled:active:opacity-70 disabled:opacity-50 disabled:cursor-default"
+              onClick={() => {
+                update({ guidanceTips: !settings.guidanceTips });
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className={`flex items-center w-11 h-6 p-[3px] border rounded-full ${settings.guidanceTips ? 'justify-end bg-accent border-accent' : 'justify-start bg-selection border-line'}`}
+              >
+                <span
+                  className={`block size-4 rounded-full ${settings.guidanceTips ? 'bg-canvas' : 'bg-muted'}`}
+                />
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
       <div className="focus-settings__reset [&_button]:min-h-11 [&_button]:text-priority-high [&_button]:cursor-pointer [&_button]:transition-[color] [&_button]:duration-120 [&_button]:ease-focus [&_button:focus-visible]:underline [&_button:focus-visible]:underline-offset-[3px] hover:[&_button]:underline hover:[&_button]:underline-offset-[3px] [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 ms-rail mt-7">
         <button
           type="button"
@@ -251,7 +296,11 @@ export function SettingsPage() {
               source: DEFAULT_PREFERENCES.daysBeforeDue,
               value: String(DEFAULT_PREFERENCES.daysBeforeDue),
             });
-            update({ ...DEFAULT_PREFERENCES, locale: settings.locale });
+            update({
+              ...DEFAULT_PREFERENCES,
+              locale: settings.locale,
+              guidance: settings.guidance,
+            });
           }}
         >
           {t('settingsPage.resetSettings')}

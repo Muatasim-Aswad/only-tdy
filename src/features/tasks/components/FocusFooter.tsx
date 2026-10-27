@@ -39,6 +39,7 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
         }}
       />
       <RailButton
+        data-tour="nav-all"
         active={current === 'all'}
         aria-label={COPY.allTasks}
         title={COPY.allTasks}

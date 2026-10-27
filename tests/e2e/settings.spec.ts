@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { FIXTURE_NOW, installApi, type RawTask } from './fixtures.ts';
+import {
+  FIXTURE_NOW,
+  GUIDANCE_COMPLETE,
+  installApi,
+  type RawTask,
+} from './fixtures.ts';
 
 const DEFAULTS = {
   theme: 'system',
@@ -8,6 +13,8 @@ const DEFAULTS = {
   datedBacklog: 'always',
   daysBeforeDue: 1,
   editorLayout: 'full',
+  guidance: GUIDANCE_COMPLETE,
+  guidanceTips: true,
   locale: 'en',
 };
 
@@ -333,4 +340,24 @@ test('fits the unlabelled day count before its dropdown and grows with the digit
   await days.fill('0');
   await expect(page.getByRole('status')).toHaveText('Not saved');
   await expect(days).toHaveAttribute('aria-invalid', 'true');
+});
+
+test('enables contextual tips by default and saves the Settings switch', async ({
+  page,
+}) => {
+  await page.goto('/only-tdy/settings');
+  const tips = page.getByRole('switch', {
+    name: 'Tips as you go',
+    exact: true,
+  });
+  await expect(tips).toHaveAttribute('aria-checked', 'true');
+  await tips.click();
+  await expect(tips).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByRole('status')).toHaveText('Saved');
+  await page.reload();
+  await expect(tips).toHaveAttribute('aria-checked', 'false');
+  await tips.click();
+  await expect(page.getByRole('status')).toHaveText('Saved');
+  await page.reload();
+  await expect(tips).toHaveAttribute('aria-checked', 'true');
 });

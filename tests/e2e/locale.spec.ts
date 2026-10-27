@@ -1,3 +1,4 @@
+import { GUIDANCE_COMPLETE } from './fixtures.ts';
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { installApi, installTaskApi, TODAY_TASKS } from './fixtures.ts';
@@ -42,16 +43,18 @@ test('honors a newly confirmed language over an older account preference', async
   const page = await context.newPage();
   await installApi(page, { confirmLanguage: false });
   let saved: unknown;
+  let settings: Record<string, unknown> = {
+    onlyTdy: { locale: 'en', guidance: GUIDANCE_COMPLETE },
+  };
   await page.route('**/api/profile', async (route) => {
-    const settings =
-      route.request().method() === 'PATCH'
-        ? (
-            route.request().postDataJSON() as {
-              ui_settings: Record<string, unknown>;
-            }
-          ).ui_settings
-        : { onlyTdy: { locale: 'en' } };
-    if (route.request().method() === 'PATCH') saved = settings;
+    if (route.request().method() === 'PATCH') {
+      settings = (
+        route.request().postDataJSON() as {
+          ui_settings: Record<string, unknown>;
+        }
+      ).ui_settings;
+      saved = settings;
+    }
     await route.fulfill({
       json: { uid: 'user-e2e', timezone: 'UTC', ui_settings: settings },
     });
@@ -70,7 +73,9 @@ test('honors a newly confirmed language over an older account preference', async
 
 async function arabicAccount(page: Parameters<typeof installApi>[0]) {
   await installApi(page);
-  let settings: Record<string, unknown> = { onlyTdy: { locale: 'ar' } };
+  let settings: Record<string, unknown> = {
+    onlyTdy: { locale: 'ar', guidance: GUIDANCE_COMPLETE },
+  };
   await page.route('**/api/profile', async (route) => {
     if (route.request().method() === 'PATCH')
       settings = (
@@ -194,6 +199,10 @@ test('aligns mixed-direction token mirrors with native editable fields', async (
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto('/only-tdy/');
   const capture = page.getByRole('combobox', { name: 'ما الذي تريد إنجازه؟' });
+  await expect(capture).toHaveCSS('direction', 'rtl');
+  await expect(page.locator('.focus-chips')).toHaveCSS('direction', 'rtl');
+  await capture.fill('123 /');
+  await expect(capture).toHaveCSS('direction', 'rtl');
   for (const [name, value, direction] of [
     ['rtl', 'راجع العرض مع Alex #مشاوير !٣ /due:tomorrow', 'rtl'],
     ['ltr', 'Review المسودة #مشاوير +Home !٣ /استحقاق:غدًا', 'ltr'],
@@ -219,5 +228,29 @@ test('aligns mixed-direction token mirrors with native editable fields', async (
     await expect(page).toHaveScreenshot(`arabic-mixed-${name}.png`, {
       fullPage: true,
     });
+  }
+});
+
+test('starts empty Arabic search and editor fields on the right', async ({
+  page,
+}) => {
+  await arabicAccount(page);
+  await installTaskApi(page);
+  await page.goto('/only-tdy/backlog');
+  const search = page.getByRole('combobox');
+  await expect(search).toHaveCSS('direction', 'rtl');
+  await search.fill('123');
+  await expect(search).toHaveCSS('direction', 'rtl');
+  await page.goto('/only-tdy/task/task-invoice');
+  for (const id of ['task-title', 'task-note', 'task-tags']) {
+    const field = page.locator(`#${id}`);
+    await field.fill('');
+    await expect(field).toHaveCSS('direction', 'rtl');
+    await field.fill('123');
+    await expect(field).toHaveCSS('direction', 'rtl');
+    await field.fill('Review');
+    await expect(field).toHaveCSS('direction', 'ltr');
+    await field.fill('راجع');
+    await expect(field).toHaveCSS('direction', 'rtl');
   }
 });

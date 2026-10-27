@@ -2,10 +2,16 @@ import { i18n } from '../../shared/i18n.ts';
 import type { TOptions } from 'i18next';
 
 export const english = {
+  'taskDetailScreen.tourExample': 'Tour example · changes stay in this example',
   'repeatingCreatePage.message': 'Choose a repeat schedule.',
   'repeatingCreatePage.couldnTSaveThisRepeatingTask':
     'Couldn’t save this repeating task. Try again.',
   'repeatingPage.message': 'Couldn’t load projects. Try again.',
+  'settingsPage.tips': 'Tips as you go',
+  'settingsPage.tipsHelp':
+    'Explain unfamiliar controls when they become useful.',
+  'settingsPage.tipsOn': 'On',
+  'settingsPage.tipsOff': 'Off',
   'settingsPage.automaticallyMovesDueAndOverdueTasks':
     'Automatically moves due and overdue tasks when the task lists refresh. Due-date rules still apply when adding or saving tasks.',
   'settingsPage.hiddenTasksRemainAvailableInAll':
@@ -412,10 +418,15 @@ export const english = {
     'Every {{count, number}} months on {{week}} {{weekday}} after completion',
 } as const;
 export const arabic: Readonly<Record<keyof typeof english, string>> = {
+  'taskDetailScreen.tourExample': 'مثال الجولة · التغييرات تبقى في هذا المثال',
   'repeatingCreatePage.message': 'اختر جدول التكرار.',
   'repeatingCreatePage.couldnTSaveThisRepeatingTask':
     'تعذّر حفظ المهمة المتكرّرة. حاول مجددًا.',
   'repeatingPage.message': 'تعذّر تحميل المشاريع. حاول مجددًا.',
+  'settingsPage.tips': 'إرشادات أثناء الاستخدام',
+  'settingsPage.tipsHelp': 'شرح عناصر التحكم غير المألوفة عندما تحتاج إليها.',
+  'settingsPage.tipsOn': 'مفعّلة',
+  'settingsPage.tipsOff': 'متوقفة',
   'settingsPage.automaticallyMovesDueAndOverdueTasks':
     'ينقل المهام المستحقة والمتأخرة تلقائيًا عند تحديث القوائم. تبقى قواعد تاريخ الاستحقاق سارية عند إضافة المهام أو حفظها.',
   'settingsPage.hiddenTasksRemainAvailableInAll':

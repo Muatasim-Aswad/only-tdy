@@ -1,3 +1,4 @@
+import { useGuidancePage } from './guidance/events.ts';
 import { t } from './messages.ts';
 import { useMemo, useState } from 'react';
 import { routePath, taskPath } from '../../config/routes.ts';
@@ -48,6 +49,12 @@ export function RepeatingPage() {
         : tasks.length
           ? { kind: 'ready', list: 'all', tasks }
           : { kind: 'empty' };
+
+  useGuidancePage(
+    query.isSuccess
+      ? { kind: 'repeating', populated: query.data.length > 0 }
+      : null,
+  );
 
   const add = async () => {
     let available = projects.data ?? [];

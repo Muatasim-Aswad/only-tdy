@@ -1,3 +1,4 @@
+import { ActionButton } from '../../../shared/ActionButton.tsx';
 import { t } from '../messages.ts';
 import { handleLinkNavigation } from '../../../infra/navigation.ts';
 import { routePath } from '../../../config/routes.ts';
@@ -95,10 +96,10 @@ export function MorePanel({
         </a>
       ))}
       {session !== null && (
-        <button
-          type="button"
+        <ActionButton
           disabled={signingOut}
-          className="focus-more__item min-h-11 px-4 py-2 text-start text-action text-muted disabled:opacity-50"
+          aria-busy={signingOut}
+          className="mx-3 my-2"
           onClick={() => {
             setSigningOut(true);
             setSignOutError(false);
@@ -109,7 +110,7 @@ export function MorePanel({
           }}
         >
           {signingOut ? t('morePanel.signingOut') : t('morePanel.signOut')}
-        </button>
+        </ActionButton>
       )}
       {signOutError && (
         <p

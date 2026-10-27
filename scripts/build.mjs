@@ -20,6 +20,19 @@ const runtime = new Set([
   'html-parse-stringify',
   'use-sync-external-store',
   '@babel/runtime',
+  'react-joyride',
+  '@fastify/deepmerge',
+  '@floating-ui/core',
+  '@floating-ui/dom',
+  '@floating-ui/react-dom',
+  '@floating-ui/utils',
+  '@gilbarbara/deep-equal',
+  '@gilbarbara/hooks',
+  '@gilbarbara/types',
+  'is-lite',
+  'react-innertext',
+  'scroll',
+  'scrollparent',
 ]);
 const packages = Object.values(groups)
   .flat()

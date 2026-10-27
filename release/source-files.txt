@@ -126,6 +126,7 @@ src/features/tasks/SettingsPage.tsx
 src/features/tasks/TaskDetailPage.tsx
 src/features/tasks/TaskListPage.tsx
 src/features/tasks/TaskProvider.tsx
+src/features/tasks/TaskTourPage.tsx
 src/features/tasks/api-contract.ts
 src/features/tasks/backlog-state.test.ts
 src/features/tasks/backlog-state.ts
@@ -217,6 +218,15 @@ src/features/tasks/domain/token-suggest.test.ts
 src/features/tasks/domain/token-suggest.ts
 src/features/tasks/due-promotion.test.tsx
 src/features/tasks/due-promotion.ts
+src/features/tasks/guidance/Guidance.tsx
+src/features/tasks/guidance/GuidanceControls.tsx
+src/features/tasks/guidance/events.test.ts
+src/features/tasks/guidance/events.ts
+src/features/tasks/guidance/guidance-copy.ts
+src/features/tasks/guidance/model.test.ts
+src/features/tasks/guidance/model.ts
+src/features/tasks/guidance/styles.css
+src/features/tasks/guidance/token-facts.ts
 src/features/tasks/messages.test.ts
 src/features/tasks/messages.ts
 src/features/tasks/navigation-ui.ts
@@ -251,6 +261,7 @@ src/infra/tududi-copy.ts
 src/infra/tududi-profile.test.ts
 src/infra/tududi-profile.ts
 src/infra/useOnlineStatus.ts
+src/shared/ActionButton.tsx
 src/shared/FeedbackToast.test.tsx
 src/shared/FeedbackToast.tsx
 src/shared/FieldRow.tsx
@@ -275,6 +286,12 @@ src/test/setup.ts
 tests/e2e/auth.spec.ts
 tests/e2e/dates.spec.ts
 tests/e2e/fixtures.ts
+tests/e2e/guidance.spec.ts
+tests/e2e/guidance.spec.ts-snapshots/guidance-compact-ar-chromium-linux.png
+tests/e2e/guidance.spec.ts-snapshots/guidance-compact-en-chromium-linux.png
+tests/e2e/guidance.spec.ts-snapshots/guidance-tokens-ar-chromium-linux.png
+tests/e2e/guidance.spec.ts-snapshots/guidance-tokens-ar-short-dark-chromium-linux.png
+tests/e2e/guidance.spec.ts-snapshots/guidance-tokens-en-chromium-linux.png
 tests/e2e/keyboard.spec.ts
 tests/e2e/locale.spec.ts
 tests/e2e/locale.spec.ts-snapshots/arabic-all-1440-chromium-linux.png

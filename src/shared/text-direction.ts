@@ -1,4 +1,4 @@
-/** Match the native control’s first strong letter in its painted text mirror. */
+/** Share one direction between a field and its mirror; empty text uses the UI language. */
 export function textDirection(
   value: string,
   fallback: 'ltr' | 'rtl',

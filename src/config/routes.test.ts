@@ -71,6 +71,7 @@ describe('routePath', () => {
       { kind: 'version' },
       { kind: 'guide' },
       { kind: 'settings' },
+      { kind: 'task-tour' },
       { kind: 'task', uid: 'abc' },
       { kind: 'task', uid: 'a/b c' },
     ];

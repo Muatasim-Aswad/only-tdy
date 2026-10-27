@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { appLocale } from '../../../shared/i18n.ts';
 import { textDirection } from '../../../shared/text-direction.ts';
 import { FieldRow } from '../../../shared/FieldRow.tsx';
@@ -24,9 +25,10 @@ import { TokenChips, type ChipSpan } from './TokenChips.tsx';
  * Each example wears the chips its field would paint, so the page teaches the
  * marks the way the fields show them.
  */
-export function GuideScreen() {
+export function GuideScreen({ guidance }: { readonly guidance?: ReactNode }) {
   return (
     <PageShell>
+      {guidance}
       <GuideSection
         id="focus-guide-capture"
         heading={GUIDE_COPY.guideCaptureHeading}

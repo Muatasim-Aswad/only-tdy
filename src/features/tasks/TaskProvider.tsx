@@ -1,3 +1,8 @@
+import { lazy, Suspense } from 'react';
+import { clearGuidanceEvents } from './guidance/events.ts';
+const Guidance = lazy(() =>
+  import('./guidance/Guidance.tsx').then((m) => ({ default: m.Guidance })),
+);
 import { appLocale } from '../../shared/i18n.ts';
 import { takeLocaleIntent } from '../../infra/locale.ts';
 import { t } from './messages.ts';
@@ -39,6 +44,7 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
       window.removeEventListener('online', synchronize);
       window.removeEventListener('focus', synchronize);
       preferencesStore.stop();
+      clearGuidanceEvents();
     };
   }, [account]);
   const session = useMemo(
@@ -70,7 +76,12 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
     <TaskSessionContext value={session}>
       <DateTimezoneContext value={timezone.data ?? DEFAULT_TIMEZONE}>
         {preferences.status !== 'loading' ? (
-          children
+          <>
+            {children}
+            <Suspense fallback={null}>
+              <Guidance key={preferences.account ?? 'anonymous'} />
+            </Suspense>
+          </>
         ) : (
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">

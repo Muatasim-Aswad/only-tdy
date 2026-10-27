@@ -110,11 +110,24 @@ test('requires sign-in before task requests, resumes the address, and signs out'
   expect(taskRequests).toBe(0);
   await page.getByLabel('Email', { exact: true }).fill('friend@example.com');
   await page.getByLabel('Password', { exact: true }).fill('synthetic-password');
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const signIn = page.getByRole('button', { name: 'Sign in', exact: true });
+  await signIn.hover();
+  await expect(signIn).toHaveCSS('opacity', '0.85');
+  await page.getByLabel('Password', { exact: true }).press('Tab');
+  await expect(signIn).toBeFocused();
+  await expect(signIn).toHaveCSS('outline-style', 'solid');
+  await signIn.click();
   await expect(page.getByText('Replace the hallway bulb')).toBeVisible();
   await expect(page).toHaveURL(/\/only-tdy\/backlog$/);
   await page.getByRole('button', { name: 'More', exact: true }).click();
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  const signOut = page.getByRole('button', { name: 'Sign out', exact: true });
+  const resting = await signOut.evaluate(
+    (el) => getComputedStyle(el).backgroundColor,
+  );
+  await signOut.hover();
+  await expect(signOut).not.toHaveCSS('background-color', resting);
+  await expect(signOut).toHaveCSS('cursor', 'pointer');
+  await signOut.click();
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   await expect(page.getByText('Replace the hallway bulb')).toHaveCount(0);
 });

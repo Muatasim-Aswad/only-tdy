@@ -127,7 +127,6 @@ export function CaptureField({
         >
           <TokenChips value={value} spans={suggestions.spans} />
           <textarea
-            dir="auto"
             {...suggestions.fieldProps}
             className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none"
             value={value}

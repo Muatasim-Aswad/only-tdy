@@ -1,3 +1,4 @@
+import { guidanceFacts } from '../guidance/events.ts';
 import { t } from '../messages.ts';
 import { appLocale, formattingLocale } from '../../../shared/i18n.ts';
 import { commandValue, tokenDigits } from '../domain/token-language.ts';
@@ -346,6 +347,7 @@ export function useSuggestions<T extends Field = Field>({
       pendingCaret.current = applied.caret;
       setCaret(applied.caret);
       setSteppedIndex(undefined);
+      guidanceFacts('suggestion');
       onValueChange(applied.value);
     },
     [grammar, onValueChange, target, value],

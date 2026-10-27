@@ -1,3 +1,4 @@
+import { guidanceFacts } from '../guidance/events.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
 import {
   lazy,
@@ -53,9 +54,11 @@ export function MoreMenu({ historyActive, onOpenHistory }: MoreMenuProps) {
   return (
     <div className="focus-more relative" ref={root}>
       <RailButton
+        data-tour="more"
         ref={trigger}
         active={open}
         onClick={() => {
+          if (!open) guidanceFacts('more');
           setOpen((value) => !value);
         }}
         aria-expanded={open}

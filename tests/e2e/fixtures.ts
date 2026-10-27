@@ -1,5 +1,27 @@
 import type { Page, Route } from '@playwright/test';
 
+export const GUIDANCE_LESSONS = [
+  'capture',
+  'backlog',
+  'backlog-tools',
+  'today',
+  'editor',
+  'compact',
+  'switch',
+  'tokens',
+  'more',
+  'all',
+  'repeating',
+  'reference',
+] as const;
+export const GUIDANCE_COMPLETE = JSON.stringify({
+  version: 1,
+  done: GUIDANCE_LESSONS,
+  used: [],
+  later: {},
+  startedVisit: 'fixture-complete',
+});
+
 export interface ApiScenario {
   readonly confirmLanguage?: boolean;
   readonly today?: readonly RawTask[];
@@ -236,7 +258,9 @@ export async function installProfileApi(page: Page, confirmLanguage = true) {
   await page.route('**/api/password-auth-status', (route) =>
     json(route, { enabled: true }),
   );
-  let uiSettings: Record<string, unknown> = {};
+  let uiSettings: Record<string, unknown> = {
+    onlyTdy: { guidance: GUIDANCE_COMPLETE },
+  };
   await page.route('**/api/profile', async (route) => {
     if (route.request().method() === 'PATCH') {
       const body = route.request().postDataJSON() as {

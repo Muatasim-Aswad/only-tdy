@@ -1,3 +1,4 @@
+import { guidanceFacts, useGuidancePage } from './guidance/events.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import { useTaskSession } from './task-session.ts';
 import { useCallback, useMemo, useState, type MouseEvent } from 'react';
@@ -121,6 +122,14 @@ export function BacklogPage() {
     { timezone },
   );
   const listState = narrowListState(state, keep);
+  useGuidancePage(
+    listState.kind === 'loading'
+      ? null
+      : {
+          kind: 'backlog',
+          populated: listState.kind === 'ready' && listState.tasks.length > 0,
+        },
+  );
   const disabled = !isOnline || listState.kind === 'session-expired';
   const visibleTasks = listState.kind === 'ready' ? listState.tasks : NO_TASKS;
 
@@ -145,11 +154,13 @@ export function BacklogPage() {
   const handleSearchSubmit = useCallback(() => {
     setMoveFeedback(undefined);
     setSubmitted(searchValue.trim());
+    if (searchValue.trim()) guidanceFacts('searched');
   }, [searchValue]);
 
   const handleToggleSelection = useCallback(
     (uid: string) => {
       if (disabled) return;
+      guidanceFacts('selected');
       setMoveFeedback(undefined);
       setChosen((current) => {
         const next = new Set(current);
@@ -170,6 +181,7 @@ export function BacklogPage() {
 
     void moveTasks({ tasks })
       .then(({ moved, failed }) => {
+        if (moved.length > 0) guidanceFacts('moved');
         if (failed.length === 0) return;
         if (failed.some((entry) => isUnauthorized(entry.error))) {
           setSessionExpired(true);

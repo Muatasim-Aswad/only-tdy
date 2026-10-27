@@ -18,12 +18,14 @@ import { DeleteTaskAction } from './DeleteTaskAction.tsx';
 import { TaskEditor } from './TaskEditor.tsx';
 
 export interface TaskDetailScreenProps {
+  readonly preview?: boolean;
   readonly state: TaskDetailState;
   readonly projects: readonly Project[];
   /** Tag names the tag field completes against. */
   readonly tags?: readonly string[] | undefined;
   /** The source page, or the status-based fallback for a direct link. */
   readonly backHref: string;
+  readonly backLabel?: string;
   readonly onBack?:
     ((event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
   readonly onSave: (edit: TaskEdit) => Promise<TaskDetail | undefined>;
@@ -54,10 +56,12 @@ export interface TaskDetailScreenProps {
  * directly opened links. The editor footer switches its layout.
  */
 export function TaskDetailScreen({
+  preview = false,
   state,
   projects,
   tags,
   backHref,
+  backLabel = COPY.backToList,
   onBack,
   onSave,
   onDelete,
@@ -76,8 +80,13 @@ export function TaskDetailScreen({
 
   return (
     <PageShell>
+      {preview && (
+        <p className="ps-rail mb-3 text-meta text-muted">
+          {t('taskDetailScreen.tourExample')}
+        </p>
+      )}
       <div className="focus-head flex items-center justify-between gap-4 mb-2">
-        <BackLink href={backHref} onNavigate={onBack} />
+        <BackLink href={backHref} label={backLabel} onNavigate={onBack} />
         {state.kind === 'ready' ? (
           <div className="focus-head__action flex items-center justify-end min-w-0 -me-2">
             {dirty || creating ? (
@@ -104,6 +113,7 @@ export function TaskDetailScreen({
         <TaskEditor
           key={state.task.uid}
           task={state.task}
+          preview={preview}
           projects={projects}
           tags={tags}
           onSave={onSave}

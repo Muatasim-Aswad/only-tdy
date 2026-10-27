@@ -12,6 +12,7 @@ const FEATURE_API = new Set([
   'features/tasks/TaskListPage.tsx',
   'features/tasks/BacklogPage.tsx',
   'features/tasks/TaskDetailPage.tsx',
+  'features/tasks/TaskTourPage.tsx',
   'features/tasks/GuidePage.tsx',
   'features/tasks/SettingsPage.tsx',
   'features/tasks/RepeatingPage.tsx',

@@ -1,7 +1,7 @@
 import { t } from './messages.ts';
 import { useState, type SubmitEvent } from 'react';
 import { PageShell } from '../../shared/PageShell.tsx';
-import { SubmitButton } from '../../shared/SubmitButton.tsx';
+import { ActionButton } from '../../shared/ActionButton.tsx';
 import { TUDUDI_LOGIN_PATH } from '../../config/app.ts';
 import { AuthError, signIn, type AuthFailure } from './api.ts';
 
@@ -104,9 +104,14 @@ export function LoginScreen({
             </p>
           )}
           <div className="flex justify-end">
-            <SubmitButton disabled={busy}>
+            <ActionButton
+              primary
+              type="submit"
+              disabled={busy}
+              aria-busy={busy}
+            >
               {busy ? t('loginScreen.signingIn') : t('loginScreen.signIn')}
-            </SubmitButton>
+            </ActionButton>
           </div>
         </form>
       ) : (

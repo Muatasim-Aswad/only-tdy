@@ -99,7 +99,6 @@ export function SearchField({
         >
           <TokenChips value={value} spans={suggestions.spans} />
           <input
-            dir="auto"
             {...suggestions.fieldProps}
             className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none focus-search__input"
             type="search"

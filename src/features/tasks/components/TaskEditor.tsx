@@ -1,3 +1,5 @@
+import { guidanceFacts } from '../guidance/events.ts';
+import { tokenFacts } from '../guidance/token-facts.ts';
 import { appLocale } from '../../../shared/i18n.ts';
 import { textDirection } from '../../../shared/text-direction.ts';
 import { t } from '../messages.ts';
@@ -150,6 +152,7 @@ function sameEdit(a: TaskEdit, b: TaskEdit): boolean {
 }
 
 export interface TaskEditorProps {
+  readonly preview?: boolean;
   readonly task: TaskDetail;
   /** Every project the account can file a task under. */
   readonly projects: readonly Project[];
@@ -191,6 +194,7 @@ export interface TaskEditorProps {
  * it is safe not to be optimistic.
  */
 export function TaskEditor({
+  preview = false,
   task,
   projects,
   tags,
@@ -222,7 +226,8 @@ export function TaskEditor({
   }, [onDismissFeedback]);
   const [baseline, setBaseline] = useState(task);
   const [compact, setCompact] = useState(
-    () => readBrowserStorage('only-tdy:editor-layout:v1') === 'compact',
+    () =>
+      !preview && readBrowserStorage('only-tdy:editor-layout:v1') === 'compact',
   );
   const [fields, setFields] = useState(() => ({
     ...toFields(task),
@@ -352,6 +357,10 @@ export function TaskEditor({
     }
     const saved = await onSave(resolved);
     if (saved === undefined) return;
+    guidanceFacts(
+      ...(!compact ? ['saved-full' as const] : []),
+      ...tokenFacts(fields.title),
+    );
     setBaseline(saved);
     setFields({
       ...toFields(saved),
@@ -421,6 +430,9 @@ export function TaskEditor({
   return (
     <>
       <form
+        data-tour-editor
+        data-dirty={dirty}
+        data-busy={busy}
         id={formId}
         onKeyDownCapture={(event) => {
           if (
@@ -473,7 +485,6 @@ export function TaskEditor({
                     spans={titleSuggestions.spans}
                   />
                   <textarea
-                    dir="auto"
                     {...titleSuggestions.fieldProps}
                     id="task-title"
                     className="focus-detail__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder w-full resize-none bg-transparent text-ink"
@@ -528,7 +539,6 @@ export function TaskEditor({
                   )}
                 >
                   <textarea
-                    dir="auto"
                     id="task-note"
                     className="focus-detail__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder w-full resize-none bg-transparent text-muted group-focus-within/note:text-ink"
                     value={fields.note}
@@ -566,7 +576,6 @@ export function TaskEditor({
                         spans={tagSuggestions.spans}
                       />
                       <textarea
-                        dir="auto"
                         {...tagSuggestions.fieldProps}
                         id="task-tags"
                         className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto"
@@ -743,6 +752,7 @@ export function TaskEditor({
       </form>
       <PageFooter>
         <RailButton
+          data-tour="compact"
           active={compact}
           aria-label={t('taskEditor.compactFormLabel')}
           title={
@@ -752,11 +762,13 @@ export function TaskEditor({
           }
           aria-pressed={compact}
           onClick={() => {
+            guidanceFacts('compact');
             const next = !compact;
             setCompact(next);
-            preferencesStore.update({
-              editorLayout: next ? 'compact' : 'full',
-            });
+            if (!preview)
+              preferencesStore.update({
+                editorLayout: next ? 'compact' : 'full',
+              });
             update(
               'tags',
               next
