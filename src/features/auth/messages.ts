@@ -16,6 +16,7 @@ export const english = {
   'loginScreen.connection':
     'Could not connect. Check your connection and try again.',
   'loginScreen.signIn': 'Sign in',
+  'loginScreen.motto': 'Less managing. More doing.',
   'loginScreen.yourTududiSessionExpired': 'Your Tududi session expired.',
   'loginScreen.email': 'Email',
   'loginScreen.password': 'Password',
@@ -40,6 +41,7 @@ export const arabic: Readonly<Record<keyof typeof english, string>> = {
   'loginScreen.connection':
     'تعذّر الاتصال. تحقّق من اتصالك بالشبكة وحاول مجددًا.',
   'loginScreen.signIn': 'تسجيل الدخول',
+  'loginScreen.motto': 'تنظيم أقل. إنجاز أكثر.',
   'loginScreen.yourTududiSessionExpired':
     'انتهت جلسة Tududi. سجّل الدخول مجددًا.',
   'loginScreen.email': 'البريد الإلكتروني',

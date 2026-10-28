@@ -2,7 +2,6 @@ DEPENDENCY_LICENSES.txt
 FONT_LICENSE.txt
 LICENSE
 THIRD_PARTY_NOTICES.md
-assets/ActionButton-{hash}.js
 assets/AtkinsonHyperlegibleNext-Variable-{hash}.woff2
 assets/AuthBoundary-{hash}.js
 assets/BackLink-{hash}.js

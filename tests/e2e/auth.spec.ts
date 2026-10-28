@@ -33,7 +33,9 @@ test('keeps a verified capture editable when a focus check cannot connect', asyn
   );
   await expect(capture).toBeVisible();
   await expect(capture).toHaveValue('Keep this offline draft');
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Sign in', exact: true }),
+  ).toHaveCount(0);
 });
 
 test('retains an unfinished capture only when the same account signs back in', async ({
@@ -59,7 +61,9 @@ test('retains an unfinished capture only when the same account signs back in', a
   await page
     .getByRole('button', { name: 'Complete “Send the invoice”' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Sign in', exact: true }),
+  ).toBeVisible();
   await page.getByLabel('Email', { exact: true }).fill('friend@example.com');
   await page.getByLabel('Password', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -67,7 +71,9 @@ test('retains an unfinished capture only when the same account signs back in', a
   await page
     .getByRole('button', { name: 'Complete “Send the invoice”' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Sign in', exact: true }),
+  ).toBeVisible();
   uid = 'another-user';
   await page.getByLabel('Email', { exact: true }).fill('another@example.com');
   await page.getByLabel('Password', { exact: true }).fill('synthetic-password');
@@ -106,7 +112,9 @@ test('requires sign-in before task requests, resumes the address, and signs out'
     await route.fulfill({ json: { message: 'Logged out successfully' } });
   });
   await page.goto('/only-tdy/backlog');
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Sign in', exact: true }),
+  ).toBeVisible();
   expect(taskRequests).toBe(0);
   await page.getByLabel('Email', { exact: true }).fill('friend@example.com');
   await page.getByLabel('Password', { exact: true }).fill('synthetic-password');
@@ -128,7 +136,9 @@ test('requires sign-in before task requests, resumes the address, and signs out'
   await expect(signOut).not.toHaveCSS('background-color', resting);
   await expect(signOut).toHaveCSS('cursor', 'pointer');
   await signOut.click();
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Sign in', exact: true }),
+  ).toBeVisible();
   await expect(page.getByText('Replace the hallway bulb')).toHaveCount(0);
 });
 

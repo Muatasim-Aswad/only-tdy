@@ -3,6 +3,7 @@ import { useState, type SubmitEvent } from 'react';
 import { PageShell } from '../../shared/PageShell.tsx';
 import { ActionButton } from '../../shared/ActionButton.tsx';
 import { TUDUDI_LOGIN_PATH } from '../../config/app.ts';
+import { APP_BASE_PATH } from '../../config/base-path.ts';
 import { AuthError, signIn, type AuthFailure } from './api.ts';
 
 const ERRORS: Record<AuthFailure, string> = {
@@ -59,8 +60,21 @@ export function LoginScreen({
   return (
     <PageShell>
       <div className="ps-rail mb-8">
-        <p className="text-meta text-muted mb-6">only-tdy</p>
-        <h1 className="text-input">{t('loginScreen.signIn')}</h1>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex items-center gap-3">
+            <img
+              src={`${APP_BASE_PATH}icons/favicon.svg`}
+              alt=""
+              width="40"
+              height="40"
+              className="flex-none"
+            />
+            <p className="text-product" dir="ltr">
+              only-tdy
+            </p>
+          </div>
+          <p className="text-meta text-muted">{t('loginScreen.motto')}</p>
+        </div>
         {expired && (
           <p className="text-action text-muted mt-3">
             {t('loginScreen.yourTududiSessionExpired')}

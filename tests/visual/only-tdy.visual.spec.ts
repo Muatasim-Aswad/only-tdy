@@ -161,7 +161,7 @@ test('matches the reviewed visual acceptance matrix', async ({
 
         if (nextScenario === 'expired') {
           await expect(
-            page.getByRole('heading', { name: 'Sign in' }),
+            page.getByRole('button', { name: 'Sign in', exact: true }),
           ).toBeVisible();
           await page.evaluate(async () => document.fonts.ready);
           await expect(page).toHaveScreenshot(
