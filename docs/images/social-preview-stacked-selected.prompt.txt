@@ -1,4 +1,4 @@
-Create a 1280×640 PNG social preview for only-tdy, under 1 MB, with two overlapping app cards. Use the existing project icon and bundled Atkinson Hyperlegible Next font, with a solid teal background (#315E65), pale text (#F4F6F5) and softer supporting text (#D9E7E8).
+Create a 1280×640 PNG social preview for only-tdy, under 1 MB, with two overlapping app cards. Use the full project mark with its vertical focus-rail segments and the bundled Atkinson Hyperlegible Next font, with a solid teal background (#315E65), pale text (#F4F6F5) and softer supporting text (#D9E7E8). Reserve the simplified circle-and-stroke mark for icons and small spaces.
 
 For copy-only revisions, replace the text directly in the existing PNG using the bundled font. Preserve every pixel outside the headline and supporting-copy areas; do not regenerate the screenshots.
 

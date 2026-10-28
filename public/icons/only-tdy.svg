@@ -1,6 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="only-tdy">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="only-tdy">
   <title>only-tdy</title>
-  <rect width="64" height="64" rx="14" fill="#315E65"/>
-  <circle cx="23" cy="32" r="9" fill="none" stroke="#F4F6F5" stroke-width="5"/>
-  <rect x="38" y="29.5" width="17" height="5" rx="2.5" fill="#F4F6F5"/>
+  <!--
+    One task row, magnified: a completion circle sitting on the focus rail, and
+    the task beside it. The rail breaks around the circle exactly as it does in
+    the interface, where it is an alignment axis rather than a drawn line — and
+    the two remaining segments say the list continues above and below.
+  -->
+  <rect width="512" height="512" rx="112" fill="#315E65"/>
+  <g transform="translate(-6 0)">
+    <g fill="#F4F6F5" opacity="0.4">
+      <rect x="171" y="92" width="10" height="87" rx="5"/>
+      <rect x="171" y="333" width="10" height="87" rx="5"/>
+    </g>
+    <circle cx="176" cy="256" r="52" fill="none" stroke="#F4F6F5" stroke-width="18"/>
+    <rect x="272" y="247" width="150" height="18" rx="9" fill="#F4F6F5"/>
+  </g>
 </svg>
