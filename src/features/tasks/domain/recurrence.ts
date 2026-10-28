@@ -1,3 +1,5 @@
+import { t } from '../messages.ts';
+import { appLocale } from '../../../shared/i18n.ts';
 import type { Recurrence, Task } from '../contracts.ts';
 import { currentDate } from './task-dates.ts';
 
@@ -31,22 +33,37 @@ export function defaultRecurrence(
   };
 }
 
+export function weekdayName(day: number, short = false): string {
+  return new Intl.DateTimeFormat(appLocale(), {
+    weekday: short ? 'short' : 'long',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(2000, 0, 2 + day)));
+}
+
 export function recurrenceLabel(recurrence: Recurrence): string {
   const { type, interval } = recurrence;
-  const unit = type === 'daily' ? 'day' : type === 'weekly' ? 'week' : 'month';
-  const every =
-    interval === 1 ? `Every ${unit}` : `Every ${String(interval)} ${unit}s`;
-  const when =
-    type === 'weekly'
-      ? recurrence.weekdays.map((day) => WEEKDAYS[day]).join(', ')
-      : type === 'monthly'
-        ? `day ${String(recurrence.monthDay)}`
-        : type === 'monthly_last_day'
-          ? 'the last day'
-          : type === 'monthly_weekday'
-            ? `${['', 'first', 'second', 'third', 'fourth', 'fifth'][recurrence.weekOfMonth] ?? 'last'} ${WEEKDAYS[recurrence.weekdays[0] ?? 0] ?? 'Monday'}`
-            : '';
-  return `${every}${when ? ` on ${when}` : ''}${recurrence.completionBased ? ' after completion' : ''}`;
+  const names = recurrence.weekdays.map((day) => weekdayName(day));
+  const days =
+    appLocale() === 'en'
+      ? names.join(', ')
+      : new Intl.ListFormat(appLocale(), { type: 'conjunction' }).format(names);
+  const ordinals = [
+    'last',
+    'first',
+    'second',
+    'third',
+    'fourth',
+    'fifth',
+  ] as const;
+  const ordinal = ordinals[recurrence.weekOfMonth] ?? 'last';
+  return t(`recurrence.${type}`, {
+    count: interval,
+    context: recurrence.completionBased ? 'completion' : undefined,
+    days,
+    day: recurrence.monthDay,
+    week: t(`recurrence.ordinal.${ordinal}`),
+    weekday: weekdayName(recurrence.weekdays[0] ?? 1),
+  });
 }
 
 export function recurringCompletion(

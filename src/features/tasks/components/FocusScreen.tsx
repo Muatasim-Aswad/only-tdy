@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { PageShell } from '../../../shared/PageShell.tsx';
 import type { MouseEvent } from 'react';
 
@@ -10,7 +11,6 @@ import type {
 
 import { TaskInput } from './TaskInput.tsx';
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
-import { COPY } from './copy.ts';
 import { FocusFooter } from './FocusFooter.tsx';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
 import { TaskList } from './TaskList.tsx';
@@ -113,21 +113,21 @@ export function FocusScreen({
         onSubmit={inputMode === 'search' ? onSearchSubmit : onCaptureSubmit}
         pageName={
           repeating
-            ? 'Repeating'
+            ? t('focusScreen.repeating')
             : all
-              ? 'All'
+              ? t('focusScreen.all')
               : history
-                ? 'Completed'
-                : 'Today'
+                ? t('focusScreen.completed')
+                : t('focusScreen.today')
         }
         label={
           repeating
-            ? 'Search repeating tasks'
+            ? t('focusScreen.searchRepeatingTasks')
             : all
-              ? COPY.allSearchLabel
+              ? t('copy.allSearchLabel')
               : history
-                ? COPY.historySearchLabel
-                : 'Search Today'
+                ? t('copy.historySearchLabel')
+                : t('focusScreen.searchToday')
         }
         projects={projectNames}
         tags={tagNames}
@@ -155,17 +155,17 @@ export function FocusScreen({
         emptyMessage={
           repeating
             ? searching
-              ? 'No matching repeating tasks.'
-              : 'No repeating tasks.'
+              ? t('focusScreen.noMatchingRepeatingTasks')
+              : t('focusScreen.noRepeatingTasks')
             : history
               ? all
                 ? searching
-                  ? COPY.allSearchEmpty
-                  : COPY.allEmpty
+                  ? t('copy.allSearchEmpty')
+                  : t('copy.allEmpty')
                 : searching
-                  ? COPY.historySearchEmpty
-                  : COPY.historyEmpty
-              : 'Nothing on Today matches that.'
+                  ? t('copy.historySearchEmpty')
+                  : t('copy.historyEmpty')
+              : t('focusScreen.nothingOnTodayMatchesThat')
         }
         ruled={history}
         disabled={disabled}

@@ -1,10 +1,10 @@
+import { t } from '../messages.ts';
 import type { MouseEvent, ReactNode } from 'react';
 
 import type { TaskListState } from '../contracts.ts';
 import { TUDUDI_LOGIN_PATH } from '../../../config/app.ts';
 
 import { classNames } from '../../../shared/classNames.ts';
-import { COPY } from './copy.ts';
 import { TaskRow, type TaskRowMode, type TaskRowMotion } from './TaskRow.tsx';
 
 export interface TaskListProps {
@@ -51,7 +51,7 @@ export function TaskList({
   onToggle,
   onOpenTask,
   onRetry,
-  emptyMessage = COPY.empty,
+  emptyMessage = t('copy.empty'),
   ruled = false,
   disabled = false,
   rowMotion,
@@ -62,15 +62,15 @@ export function TaskList({
   switch (state.kind) {
     case 'loading':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.loading}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.loading')}
         </p>
       );
       break;
 
     case 'empty':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
+        <p className="focus-state ps-rail py-4 text-muted text-task">
           {emptyMessage}
         </p>
       );
@@ -78,14 +78,14 @@ export function TaskList({
 
     case 'error':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.loadFailed}{' '}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.loadFailed')}{' '}
           <button
             type="button"
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             onClick={onRetry}
           >
-            {COPY.retry}
+            {t('copy.retry')}
           </button>
         </p>
       );
@@ -93,13 +93,13 @@ export function TaskList({
 
     case 'session-expired':
       content = (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.sessionExpired}{' '}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.sessionExpired')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             href={TUDUDI_LOGIN_PATH}
           >
-            {COPY.signIn}
+            {t('copy.signIn')}
           </a>
         </p>
       );

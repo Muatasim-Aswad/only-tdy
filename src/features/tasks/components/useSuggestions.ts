@@ -1,3 +1,7 @@
+import { guidanceFacts } from '../guidance/events.ts';
+import { t } from '../messages.ts';
+import { appLocale, formattingLocale } from '../../../shared/i18n.ts';
+import { commandValue, tokenDigits } from '../domain/token-language.ts';
 import {
   useCallback,
   useEffect,
@@ -37,7 +41,6 @@ import {
 
 import { useDateTimezone } from '../date-timezone.ts';
 import { currentDate, displayDate, resolveDate } from '../domain/task-dates.ts';
-import { COPY, PRIORITY_NAME } from './copy.ts';
 import type { ChipSpan } from './TokenChips.tsx';
 
 const PRIORITY_NAMES: readonly string[] = Object.keys(PRIORITY_VALUES);
@@ -45,8 +48,10 @@ const PRIORITY_NAMES: readonly string[] = Object.keys(PRIORITY_VALUES);
 /** What each priority digit means, said beside it in the list. */
 function describe(kind: SuggestionKind, name: string): string | undefined {
   if (kind !== 'priority') return undefined;
-  const priority = PRIORITY_VALUES[name as keyof typeof PRIORITY_VALUES];
-  return PRIORITY_NAME[priority];
+  const value = tokenDigits(name);
+  if (!Object.hasOwn(PRIORITY_VALUES, value)) return undefined;
+  const priority = PRIORITY_VALUES[value as keyof typeof PRIORITY_VALUES];
+  return t(`copy.${priority}`);
 }
 
 /**
@@ -245,7 +250,8 @@ export function useSuggestions<T extends Field = Field>({
   const known =
     target === undefined
       ? NO_ITEMS
-      : (target.kind === 'command' && /^(due|hide):/i.test(target.query)
+      : (target.kind === 'command' &&
+        /^(due|hide):/i.test(commandValue(target.query))
           ? dateSuggestions(target.query, timezone)
           : rankSuggestions(namesFor(target.kind), target.query, {
               sayable: SAYABLE[grammar],
@@ -275,13 +281,19 @@ export function useSuggestions<T extends Field = Field>({
       case 'tag':
         return tags;
       case 'priority':
-        return PRIORITY_NAMES;
+        return appLocale() === 'ar' && !/^[1-3]/.test(target?.query ?? '')
+          ? ['١', '٢', '٣']
+          : PRIORITY_NAMES;
       case 'command':
         /* Search has no commands: `/` is only quick entry's. */
         return grammar === 'entry'
-          ? allowRepeating
-            ? CAPTURE_COMMANDS
-            : COMMANDS
+          ? appLocale() === 'ar' && !/^[a-z]/i.test(target?.query ?? '')
+            ? allowRepeating
+              ? ['اليوم', 'استحقاق:', 'إخفاء:', 'تكرار']
+              : ['اليوم', 'استحقاق:', 'إخفاء:']
+            : allowRepeating
+              ? CAPTURE_COMMANDS
+              : COMMANDS
           : NO_NAMES;
     }
   }
@@ -335,6 +347,7 @@ export function useSuggestions<T extends Field = Field>({
       pendingCaret.current = applied.caret;
       setCaret(applied.caret);
       setSteppedIndex(undefined);
+      guidanceFacts('suggestion');
       onValueChange(applied.value);
     },
     [grammar, onValueChange, target, value],
@@ -374,7 +387,7 @@ export function useSuggestions<T extends Field = Field>({
       if (
         event.key === 'Enter' &&
         target?.kind === 'command' &&
-        /^(due|hide):/i.test(target.query) &&
+        /^(due|hide):/i.test(commandValue(target.query)) &&
         steppedIndex === undefined
       )
         return;
@@ -441,7 +454,7 @@ function withNewProject(
       matchStart: 0,
       matchEnd: target.query.length,
       mark: tokenMark('project'),
-      detail: COPY.newProject,
+      detail: t('copy.newProjectText'),
     },
   ];
 }
@@ -478,11 +491,11 @@ function dateSuggestions(
   );
   const detail =
     days === 0
-      ? 'today'
+      ? t('suggestions.today')
       : days === 1
-        ? 'tomorrow'
-        : days > 0
-          ? `in ${String(days)} days`
-          : `${String(-days)} days ago`;
+        ? t('suggestions.tomorrow')
+        : new Intl.RelativeTimeFormat(formattingLocale(), {
+            numeric: 'always',
+          }).format(days, 'day');
   return [{ name, matchStart: 0, matchEnd: 0, detail }];
 }

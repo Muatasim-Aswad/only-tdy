@@ -6,6 +6,8 @@
 
 only-tdy unofficially integrates Tududi's same-origin session, `/api/csrf-token`, `/api/profile`, task lists/CRUD, projects, tags and search. It has no backend and covers only part of Tududi's planning model. API shape, status, search or pagination changes can break it. Use the exact [Tududi 1.9.4 pin](deployment.md#tududi-backend-pin); other versions are unverified.
 
+Opening or reloading requires an online session check. The installed shell opens offline with a reconnect/retry screen; it does not cache credentials or authenticated API responses. An already open task screen keeps drafts editable offline.
+
 On 2026-10-20, the API adapter was checked against that image on Linux/amd64 with disposable SQLite and synthetic data. Coverage: session/CSRF, account timezone, task CRUD, Today/Backlog, dates/Hide until, projects, tags, search and All pagination over 51 matches, completion/history/reopening, promotion and due-time preservation across Amsterdam's daylight-saving transition. A separate profile API check verified `ui_settings.onlyTdy` read/write and preservation through profile and dedicated UI-settings saves. This verifies API behavior in that source revision, not previously published images. Existing-database upgrades, live browser/proxy integration and advanced Tududi features remain unverified. Seeded/mocked tests alone do not establish backend compatibility.
 
 Set times and reminders in Tududi; only-tdy's editor is date-only. Unchanged dates keep their server value. A changed nonempty date carries the freshly read due time to the new day; clearing it also clears its time. Reminders stay unchanged, including after date changes. Concurrent edits can race between the read and PATCH.

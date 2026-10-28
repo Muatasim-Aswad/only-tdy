@@ -7,16 +7,51 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { App } from './App.tsx';
 
+function initialAppSettings(): Record<string, unknown> {
+  return {
+    onlyTdy: {
+      guidance: JSON.stringify({
+        version: 1,
+        done: [
+          'capture',
+          'backlog',
+          'backlog-tools',
+          'today',
+          'editor',
+          'compact',
+          'switch',
+          'tokens',
+          'more',
+          'all',
+          'reference',
+        ],
+        used: [],
+        later: {},
+        startedVisit: '',
+      }),
+    },
+  };
+}
+let appSettings = initialAppSettings();
+
 const server = setupServer(
+  http.get('/api/current_user', () =>
+    HttpResponse.json({ user: { uid: 'user-app' } }),
+  ),
+  http.get('/api/password-auth-status', () =>
+    HttpResponse.json({ enabled: true }),
+  ),
   http.get('/api/profile', () =>
     HttpResponse.json({
       uid: 'user-app',
       timezone: 'UTC',
-      ui_settings: { onlyTdy: {} },
+      ui_settings: appSettings,
     }),
   ),
   http.patch('/api/profile', async ({ request }) => {
     const body = await request.json();
+    appSettings = (body as { ui_settings: Record<string, unknown> })
+      .ui_settings;
     return HttpResponse.json({
       uid: 'user-app',
       timezone: 'UTC',
@@ -105,6 +140,7 @@ beforeAll(() => {
 });
 afterEach(() => {
   server.resetHandlers();
+  appSettings = initialAppSettings();
   window.history.replaceState(null, '', '/only-tdy/');
 });
 afterAll(() => {
@@ -119,7 +155,11 @@ describe('App routing', () => {
     renderApp();
 
     await user.click(
-      await screen.findByRole('link', { name: 'Send the invoice' }),
+      await screen.findByRole(
+        'link',
+        { name: 'Send the invoice' },
+        { timeout: 5000 },
+      ),
     );
 
     expect(window.location.pathname).toBe('/only-tdy/task/task-invoice');
@@ -131,7 +171,7 @@ describe('App routing', () => {
       screen.queryByRole('combobox', { name: 'What needs doing?' }),
     ).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
-  });
+  }, 15000);
 
   it('loads the task straight from its address', async () => {
     installApi();

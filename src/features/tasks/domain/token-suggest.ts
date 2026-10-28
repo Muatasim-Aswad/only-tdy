@@ -96,7 +96,8 @@ export function applyEntrySuggestion(
   /* One space after the token, so the next word is typed rather than run into
      the name and the caret lands outside the token — which is what closes the
      list. Not added when the line already provides one. */
-  const datePrefix = target.kind === 'command' && /^(due|hide):$/.test(name);
+  const datePrefix =
+    target.kind === 'command' && /^(due|hide|استحقاق|إخفاء):$/.test(name);
   const separator = datePrefix || rest.startsWith(' ') ? '' : ' ';
   const head = `${input.slice(0, target.start)}${written}${separator}`;
   return {

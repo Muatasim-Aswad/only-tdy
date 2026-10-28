@@ -2,6 +2,25 @@
 
 Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. The version in `package.json` is authoritative.
 
+## [0.2.0] - Unreleased
+
+### Added
+
+- Direct sign-in through Tududi, with same-account draft recovery and isolation between authenticated accounts.
+- English and Arabic language selection, localized dates and task-entry commands, and right-to-left layouts.
+- Contextual tips enabled by default, an optional guided tour, and account-synced progress and controls.
+- An empty-account development mode for first-use walkthroughs.
+
+### Changed
+
+- Arabic copy uses natural phrasing, and translated messages live in focused catalogs with direct typed access.
+- Settings group general and planning preferences; navigation and task actions provide clearer labels and feedback.
+- Guided lessons distinguish commands, keyboard keys, and interface names, with visible spotlight outlines and arrows in both themes.
+
+### Fixed
+
+- Empty Arabic capture, search, and editor fields place the cursor on the right.
+
 ## [0.1.4] - 2026-10-21
 
 ### Fixed

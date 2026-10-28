@@ -1,17 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/*
- * only-tdy has no heading: the chrome above the capture field was removed
- * deliberately, so the product name is no longer on the page. What says the
- * shell booted is the first thing on it — the capture field, inside the one
- * `main` landmark — and both are asserted by their accessible names rather
- * than by a class, so a rename that breaks a screen reader breaks this too.
- */
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    localStorage.setItem('only-tdy:language:v1', 'en');
+  });
+});
+
+/** No API fixture: the cached shell must offer recovery before exposing tasks. */
 async function expectShellRendered(page: Page) {
   await expect(page.getByRole('main')).toBeVisible();
-  await expect(
-    page.getByRole('combobox', { name: 'What needs doing?' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveText(
+    'Could not connect. Check your connection and try again.',
+  );
+  await expect(page.getByRole('combobox')).toHaveCount(0);
 }
 
 test('canonicalizes /only-tdy once and emits working base-path assets and manifest identity', async ({
@@ -53,6 +55,9 @@ test('controls only /only-tdy/ and keeps API requests out of caches', async ({
 }) => {
   if (baseURL === undefined) throw new Error('Test base URL is required.');
   const context = await browser.newContext({ serviceWorkers: 'allow' });
+  await context.addInitScript(() => {
+    localStorage.setItem('only-tdy:language:v1', 'en');
+  });
   const page = await context.newPage();
   await page.goto(`${baseURL}/only-tdy/`);
   await page.evaluate(async () => navigator.serviceWorker.ready);
@@ -102,9 +107,6 @@ test('controls only /only-tdy/ and keeps API requests out of caches', async ({
   await context.setOffline(true);
   await page.reload();
   await expectShellRendered(page);
-  await expect(
-    page.getByText('You’re offline. Reconnect to load and save tasks.'),
-  ).toBeVisible();
 
   /*
    * A task's own page is a navigation to a path the cache has never seen.

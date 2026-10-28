@@ -1,3 +1,5 @@
+import { tokenDigits } from './token-language.ts';
+import { t } from '../messages.ts';
 /**
  * What a search field means, and what Tududi can be asked for it.
  *
@@ -47,7 +49,9 @@ export function parseSearch(input: string): SearchTerm {
 
   if (trimmed.startsWith('!')) {
     const value = trimmed.slice(1).trim();
-    return value === '' ? { kind: 'none' } : { kind: 'priority', value };
+    return value === ''
+      ? { kind: 'none' }
+      : { kind: 'priority', value: tokenDigits(value) };
   }
 
   return { kind: 'text', query: trimmed };
@@ -69,7 +73,10 @@ export function resolveSearch(
 ): SearchRequest {
   if (term.kind === 'priority') {
     if (!Object.hasOwn(PRIORITY_VALUES, term.value)) {
-      return { kind: 'refused', message: 'Priority is !1, !2, or !3.' };
+      return {
+        kind: 'refused',
+        message: t('taskSearch.resolveSearch.message'),
+      };
     }
     return {
       kind: 'priority',
@@ -83,12 +90,15 @@ export function resolveSearch(
 
   const match = matchProjectByName(projects, term.name);
   if (match.status === 'unknown') {
-    return { kind: 'refused', message: `No project named “${term.name}”.` };
+    return {
+      kind: 'refused',
+      message: t('search.unknownProject', { name: term.name }),
+    };
   }
   if (match.status === 'ambiguous') {
     return {
       kind: 'refused',
-      message: `More than one project is named “${term.name}”.`,
+      message: t('search.ambiguousProject', { name: term.name }),
     };
   }
   return { kind: 'project', projectUid: match.project.uid };

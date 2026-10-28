@@ -159,12 +159,19 @@ test('matches the reviewed visual acceptance matrix', async ({
           continue;
         }
 
+        if (nextScenario === 'expired') {
+          await expect(
+            page.getByRole('heading', { name: 'Sign in' }),
+          ).toBeVisible();
+          await page.evaluate(async () => document.fonts.ready);
+          await expect(page).toHaveScreenshot(
+            `${nextScenario}-${String(width)}-${scheme}.png`,
+            { fullPage: true },
+          );
+          continue;
+        }
         await expect(capture).toBeVisible();
-        if (
-          nextScenario !== 'loading' &&
-          nextScenario !== 'expired' &&
-          nextScenario !== 'history-empty'
-        ) {
+        if (nextScenario !== 'loading' && nextScenario !== 'history-empty') {
           await expect(
             page
               .getByRole('listitem')
@@ -238,11 +245,6 @@ test('matches the reviewed visual acceptance matrix', async ({
         }
         if (nextScenario === 'loading') {
           await expect(page.getByText('Loading tasks…')).toBeVisible();
-        }
-        if (nextScenario === 'expired') {
-          await expect(
-            page.getByText('Your Tududi session expired.'),
-          ).toBeVisible();
         }
 
         await page.evaluate(async () => document.fonts.ready);
@@ -324,6 +326,7 @@ test('keeps the navigation at the foot of the phone screen', async ({
 test('keeps the token guide readable on phones and desktop', async ({
   page,
 }) => {
+  await installProfileApi(page);
   for (const scheme of SCHEMES) {
     for (const width of [320, 390, 1440]) {
       await page.setViewportSize({ width, height: 900 });

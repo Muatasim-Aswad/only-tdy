@@ -1,5 +1,5 @@
+import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
-import { COPY } from './copy.ts';
 
 export interface HomeToggleProps {
   /** True while Today is showing. */
@@ -23,8 +23,8 @@ export function HomeToggle({ active, onToggle }: HomeToggleProps) {
       active={active}
       onClick={onToggle}
       aria-pressed={active}
-      aria-label={COPY.home}
-      title={COPY.home}
+      aria-label={t('copy.home')}
+      title={t('copy.home')}
     >
       <svg
         className="focus-home__icon block"

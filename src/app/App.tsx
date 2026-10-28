@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
+import { LocaleBoundary } from './LocaleBoundary.tsx';
+import { t } from './messages.ts';
 import { PageShell } from '../shared/PageShell.tsx';
-import { TaskProvider } from '../features/tasks/TaskProvider.tsx';
 import { lazy, Suspense, useCallback, useState, type MouseEvent } from 'react';
 
 import { routePath } from '../config/routes.ts';
@@ -7,6 +9,16 @@ import { UpdateToast } from './UpdateToast.tsx';
 
 import { buildLabel, type BuildInfo } from '../infra/build-info.ts';
 import { handleLinkNavigation, useRoute } from '../infra/navigation.ts';
+const AuthBoundary = lazy(() =>
+  import('../features/auth/AuthBoundary.tsx').then((module) => ({
+    default: module.AuthBoundary,
+  })),
+);
+const TaskProvider = lazy(() =>
+  import('../features/tasks/TaskProvider.tsx').then((module) => ({
+    default: module.TaskProvider,
+  })),
+);
 const TaskListPage = lazy(() =>
   import('../features/tasks/TaskListPage.tsx').then((module) => ({
     default: module.TaskListPage,
@@ -55,6 +67,12 @@ const RepeatingCreatePage = lazy(() =>
   })),
 );
 
+const TaskTourPage = lazy(() =>
+  import('../features/tasks/TaskTourPage.tsx').then((module) => ({
+    default: module.TaskTourPage,
+  })),
+);
+
 export interface AppProps {
   /** A build this device has not run before, announced once over any page. */
   readonly updateNotice?: BuildInfo | null;
@@ -62,6 +80,7 @@ export interface AppProps {
 
 /** The page the address is on, with the once-per-build update notice above it. */
 export function App({ updateNotice = null }: AppProps) {
+  useTranslation('app');
   const [notice, setNotice] = useState(updateNotice);
   const dismissNotice = useCallback(() => {
     setNotice(null);
@@ -71,20 +90,42 @@ export function App({ updateNotice = null }: AppProps) {
   }, []);
 
   return (
-    <TaskProvider>
-      <Page />
-      <UpdateToast
-        label={notice === null ? undefined : buildLabel(notice)}
-        href={VERSION_PATH}
-        onOpen={openVersion}
-        onDismiss={dismissNotice}
-      />
-    </TaskProvider>
+    <LocaleBoundary>
+      <Suspense
+        fallback={
+          <PageShell>
+            <p className="ps-rail text-muted" role="status">
+              {t('app.Page.loading')}
+            </p>
+          </PageShell>
+        }
+      >
+        <AuthBoundary>
+          <Suspense fallback={null}>
+            <TaskProvider>
+              <Page />
+              <UpdateToast
+                label={notice === null ? undefined : buildLabel(notice)}
+                href={VERSION_PATH}
+                onOpen={openVersion}
+                onDismiss={dismissNotice}
+              />
+            </TaskProvider>
+          </Suspense>
+        </AuthBoundary>
+      </Suspense>
+    </LocaleBoundary>
   );
 }
 
 function Page() {
   const route = useRoute();
+  if (route.kind === 'task-tour')
+    return (
+      <Suspense fallback={null}>
+        <TaskTourPage />
+      </Suspense>
+    );
   if (route.kind === 'new-repeating')
     return (
       <Suspense fallback={null}>
@@ -112,7 +153,7 @@ function Page() {
         fallback={
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-              Loading task…
+              {t('app.Page.loadingTask')}
             </div>
           </PageShell>
         }
@@ -128,7 +169,7 @@ function Page() {
         fallback={
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-              Loading tasks…
+              {t('app.Page.loadingTasks')}
             </div>
           </PageShell>
         }
@@ -144,7 +185,7 @@ function Page() {
         fallback={
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-              Loading…
+              {t('app.Page.loading')}
             </div>
           </PageShell>
         }
@@ -160,7 +201,7 @@ function Page() {
         fallback={
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-              Loading…
+              {t('app.Page.loading')}
             </div>
           </PageShell>
         }
@@ -175,7 +216,7 @@ function Page() {
       fallback={
         <PageShell>
           <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-            Loading tasks…
+            {t('app.Page.loadingTasks')}
           </div>
         </PageShell>
       }

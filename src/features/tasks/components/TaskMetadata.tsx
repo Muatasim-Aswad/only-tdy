@@ -1,3 +1,4 @@
+import { formattingLocale } from '../../../shared/i18n.ts';
 /** How many tags fit before the row starts counting instead of listing. */
 const VISIBLE_TAGS = 2;
 
@@ -21,11 +22,13 @@ export function TaskMetadata({ projectName, tags }: TaskMetadataProps) {
 
   return (
     <p className="focus-row__meta flex flex-wrap gap-3 mt-0.5 text-muted text-meta">
-      {hasProject ? <span>{projectName}</span> : null}
+      {hasProject ? <bdi>{projectName}</bdi> : null}
       {shown.map((tag) => (
-        <span key={tag}>#{tag}</span>
+        <bdi key={tag}>#{tag}</bdi>
       ))}
-      {remaining > 0 ? <span>{`+${String(remaining)}`}</span> : null}
+      {remaining > 0 ? (
+        <span>{`+${new Intl.NumberFormat(formattingLocale()).format(remaining)}`}</span>
+      ) : null}
     </p>
   );
 }

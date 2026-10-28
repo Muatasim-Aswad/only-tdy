@@ -21,6 +21,12 @@ Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors. The unmodifi
 sha256sum src/assets/fonts/AtkinsonHyperlegibleNext-Variable.woff2
 ```
 
+## Noto Sans Arabic
+
+`src/assets/fonts/NotoSansArabic-Variable.woff2` is the unmodified Arabic weight-variable subset from [Fontsource’s Noto Sans Arabic 5.3.0 package](https://registry.npmjs.org/@fontsource-variable/noto-sans-arabic/-/noto-sans-arabic-5.3.0.tgz), file `files/noto-sans-arabic-arabic-wght-normal.woff2`. Upstream: [Noto Arabic](https://github.com/notofonts/arabic). SHA-256: `ce85091f020920b65762b387b194ef59457ea5b25b760f2dcc35240a94bb8669`. Copyright 2022 The Noto Project Authors; SIL Open Font License 1.1, preserved in [OFL-NotoSansArabic.txt](src/assets/fonts/OFL-NotoSansArabic.txt) and combined into distributed `FONT_LICENSE.txt`. Atkinson continues to supply Latin glyphs; no external font service is used.
+
+React Joyride and its runtime dependencies use MIT or ISC licenses, preserved in distributed `DEPENDENCY_LICENSES.txt`. The tour renderer loads after sign-in.
+
 ## Original artwork and screenshots
 
 `public/icons/` contains original artwork under the repository license; see [icon notes](public/icons/README.md). Images in `docs/images/` use synthetic data, including visual-test baselines; none contain live account data.

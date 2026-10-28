@@ -16,6 +16,8 @@
   .focus-tokens > .focus-chips,
   .focus-tokens::after {
     grid-area: 1 / 1 / 2 / 2;
+    unicode-bidi: plaintext;
+    text-align: start;
     font: inherit;
     letter-spacing: inherit;
     padding: 16px 0;
@@ -157,12 +159,20 @@
   .focus-grow > textarea,
   .focus-grow::after {
     grid-area: 1 / 1 / 2 / 2;
+    unicode-bidi: plaintext;
+    text-align: start;
     font: inherit;
     letter-spacing: inherit;
     padding: 0;
     border: 0;
     overflow: hidden;
     overflow-wrap: anywhere;
+  }
+  /* Empty paragraphs have no text direction to infer; keep the UI-language fallback. */
+  :is(.focus-tokens, .focus-grow)[data-value='']
+    > :is(textarea, input, .focus-chips),
+  :is(.focus-tokens, .focus-grow)[data-value='']::after {
+    unicode-bidi: isolate;
   }
   .focus-detail__title > .focus-chips {
     padding: 0;

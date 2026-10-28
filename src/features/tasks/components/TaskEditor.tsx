@@ -1,3 +1,8 @@
+import { guidanceFacts } from '../guidance/events.ts';
+import { tokenFacts } from '../guidance/token-facts.ts';
+import { appLocale, t as commonT } from '../../../shared/i18n.ts';
+import { textDirection } from '../../../shared/text-direction.ts';
+import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
 import { PageFooter } from '../../../shared/PageFooter.tsx';
 import { FieldRow } from '../../../shared/FieldRow.tsx';
@@ -35,7 +40,6 @@ import {
 import { RecurrenceFields } from './RecurrenceFields.tsx';
 import { formatTagList, parseTagList } from '../domain/tag-list.ts';
 
-import { COPY, PRIORITY_NAME } from './copy.ts';
 import { classNames } from '../../../shared/classNames.ts';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
 import { SuggestionList } from './SuggestionList.tsx';
@@ -53,11 +57,21 @@ import { useSuggestions } from './useSuggestions.ts';
  * shows neither, so neither is offered here.
  */
 const STATUS_NAME: Readonly<Record<TaskStatus, string>> = {
-  planned: 'Today',
-  not_started: 'Backlog',
-  in_progress: 'In progress',
-  waiting: 'Waiting',
-  done: 'Done',
+  get planned() {
+    return t('taskEditor.planned');
+  },
+  get not_started() {
+    return t('taskEditor.not_started');
+  },
+  get in_progress() {
+    return t('taskEditor.in_progress');
+  },
+  get waiting() {
+    return t('taskEditor.waiting');
+  },
+  get done() {
+    return t('taskEditor.done');
+  },
 };
 
 /**
@@ -137,6 +151,7 @@ function sameEdit(a: TaskEdit, b: TaskEdit): boolean {
 }
 
 export interface TaskEditorProps {
+  readonly preview?: boolean;
   readonly task: TaskDetail;
   /** Every project the account can file a task under. */
   readonly projects: readonly Project[];
@@ -178,6 +193,7 @@ export interface TaskEditorProps {
  * it is safe not to be optimistic.
  */
 export function TaskEditor({
+  preview = false,
   task,
   projects,
   tags,
@@ -209,7 +225,8 @@ export function TaskEditor({
   }, [onDismissFeedback]);
   const [baseline, setBaseline] = useState(task);
   const [compact, setCompact] = useState(
-    () => readBrowserStorage('only-tdy:editor-layout:v1') === 'compact',
+    () =>
+      !preview && readBrowserStorage('only-tdy:editor-layout:v1') === 'compact',
   );
   const [fields, setFields] = useState(() => ({
     ...toFields(task),
@@ -286,7 +303,7 @@ export function TaskEditor({
       if (!parsed.ok) {
         setLocalError(
           parsed.error.kind === 'empty-title'
-            ? COPY.titleRequired
+            ? t('copy.titleRequired')
             : parsed.error.message,
         );
         return;
@@ -322,7 +339,7 @@ export function TaskEditor({
       };
     }
     if (resolved.title === '') {
-      setLocalError(COPY.titleRequired);
+      setLocalError(t('copy.titleRequired'));
       return;
     }
     resolved = applyDateRules(
@@ -334,11 +351,15 @@ export function TaskEditor({
     try {
       validateHideDate(resolved.dueDate, resolved.deferUntil);
     } catch (error) {
-      setLocalError(taskErrorMessage(error, COPY.saveFailed));
+      setLocalError(taskErrorMessage(error, t('copy.saveFailed')));
       return;
     }
     const saved = await onSave(resolved);
     if (saved === undefined) return;
+    guidanceFacts(
+      ...(!compact ? ['saved-full' as const] : []),
+      ...tokenFacts(fields.title),
+    );
     setBaseline(saved);
     setFields({
       ...toFields(saved),
@@ -408,6 +429,9 @@ export function TaskEditor({
   return (
     <>
       <form
+        data-tour-editor
+        data-dirty={dirty}
+        data-busy={busy}
         id={formId}
         onKeyDownCapture={(event) => {
           if (
@@ -444,12 +468,16 @@ export function TaskEditor({
                 }
                 htmlFor="task-title"
               >
-                {COPY.titleLabel}
+                {t('copy.titleLabel')}
               </label>
               <div className="focus-capture__field relative flex-auto min-w-0">
                 <div
                   className="focus-grow min-w-0 min-[360px]:flex-auto focus-detail__title pt-0.5 focus-tokens text-capture"
                   data-value={fields.title}
+                  dir={textDirection(
+                    fields.title,
+                    appLocale() === 'ar' ? 'rtl' : 'ltr',
+                  )}
                 >
                   <TokenChips
                     value={fields.title}
@@ -476,7 +504,7 @@ export function TaskEditor({
                     activeIndex={titleSuggestions.activeIndex}
                     optionId={titleSuggestions.optionId}
                     onPick={titleSuggestions.pick}
-                    label="Title suggestions"
+                    label={t('taskEditor.titleSuggestionsLabel')}
                   />
                 ) : null}
               </div>
@@ -495,15 +523,19 @@ export function TaskEditor({
                   {compact ? (
                     <>
                       <span aria-hidden="true">!</span>
-                      <span className="sr-only">{COPY.noteLabel}</span>
+                      <span className="sr-only">{t('copy.noteLabel')}</span>
                     </>
                   ) : (
-                    COPY.noteLabel
+                    t('copy.noteLabel')
                   )}
                 </label>
                 <div
                   className="focus-grow min-w-0 min-[360px]:flex-auto focus-detail__note group/note pt-0.5 text-task"
                   data-value={fields.note}
+                  dir={textDirection(
+                    fields.note,
+                    appLocale() === 'ar' ? 'rtl' : 'ltr',
+                  )}
                 >
                   <textarea
                     id="task-note"
@@ -512,7 +544,7 @@ export function TaskEditor({
                     onChange={(event) => {
                       update('note', event.target.value);
                     }}
-                    placeholder={COPY.placeholder}
+                    placeholder={t('taskEditor.emptyPlaceholder')}
                     rows={1}
                   />
                 </div>
@@ -524,11 +556,19 @@ export function TaskEditor({
           {showTags || showProject ? (
             <div className="focus-group [.focus-group_+_&]:mt-7">
               {showTags ? (
-                <Field id="task-tags" label="Tags" compact={compact}>
+                <Field
+                  id="task-tags"
+                  label={t('taskEditor.tagsLabel')}
+                  compact={compact}
+                >
                   <div className="focus-detail__value placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder min-w-0 max-w-full border-0 p-0 bg-transparent text-ink resize-none min-[360px]:flex-auto focus-capture__field relative flex-auto min-w-0">
                     <div
                       className="focus-tokens focus-tokens--compact text-task"
                       data-value={fields.tags}
+                      dir={textDirection(
+                        fields.tags,
+                        appLocale() === 'ar' ? 'rtl' : 'ltr',
+                      )}
                     >
                       <TokenChips
                         value={fields.tags}
@@ -558,7 +598,7 @@ export function TaskEditor({
                           event.preventDefault();
                           event.currentTarget.form?.requestSubmit();
                         }}
-                        placeholder={COPY.placeholder}
+                        placeholder={t('taskEditor.emptyPlaceholder')}
                         autoCorrect="off"
                         autoCapitalize="none"
                         spellCheck={false}
@@ -571,7 +611,7 @@ export function TaskEditor({
                         activeIndex={tagSuggestions.activeIndex}
                         optionId={tagSuggestions.optionId}
                         onPick={tagSuggestions.pick}
-                        label="Tags already in use"
+                        label={t('taskEditor.tagsAlreadyInUseLabel')}
                       />
                     ) : null}
                   </div>
@@ -579,7 +619,11 @@ export function TaskEditor({
               ) : null}
 
               {showProject ? (
-                <Field id="task-project" label="Project" compact={compact}>
+                <Field
+                  id="task-project"
+                  label={t('taskEditor.projectLabel')}
+                  compact={compact}
+                >
                   <Select
                     id="task-project"
                     value={fields.projectUid}
@@ -587,8 +631,8 @@ export function TaskEditor({
                       update('projectUid', value);
                     }}
                   >
-                    <option value="" aria-label={COPY.noValueName}>
-                      {COPY.noValue}
+                    <option value="" aria-label={t('copy.noValueName')}>
+                      {commonT('display.noValue')}
                     </option>
                     {options.map((project) => (
                       <option key={project.uid} value={project.uid}>
@@ -604,7 +648,11 @@ export function TaskEditor({
           {/* What it asks of the day. */}
           <div className="focus-group [.focus-group_+_&]:mt-7">
             {!creating ? (
-              <Field id="task-status" label="Status" compact={compact}>
+              <Field
+                id="task-status"
+                label={t('taskEditor.statusLabel')}
+                compact={compact}
+              >
                 <Select
                   id="task-status"
                   value={fields.status}
@@ -615,7 +663,7 @@ export function TaskEditor({
                   {statuses.map((status) => (
                     <option key={status} value={status}>
                       {status === 'not_started' && fields.recurrence
-                        ? 'Scheduled'
+                        ? t('taskEditor.scheduled')
                         : STATUS_NAME[status]}
                     </option>
                   ))}
@@ -623,7 +671,11 @@ export function TaskEditor({
               </Field>
             ) : null}
 
-            <Field id="task-priority" label="Priority" compact={compact}>
+            <Field
+              id="task-priority"
+              label={t('taskEditor.priorityLabel')}
+              compact={compact}
+            >
               <Select
                 id="task-priority"
                 value={fields.priority}
@@ -633,20 +685,19 @@ export function TaskEditor({
               >
                 {PRIORITY_ORDER.map((priority) => (
                   <option key={priority} value={priority}>
-                    {compact
-                      ? `!${PRIORITY_NAME[priority]}`
-                      : PRIORITY_NAME[priority]}
+                    {compact ? '!' : ''}
+                    {t(`copy.${priority}`)}
                   </option>
                 ))}
               </Select>
             </Field>
 
-            <Field id="task-due" label="Due date">
+            <Field id="task-due" label={t('taskEditor.dueDateLabel')}>
               <DateValue
                 id="task-due"
                 type="date"
                 value={fields.dueDate}
-                placeholder={COPY.datePlaceholder}
+                placeholder={t('copy.datePlaceholder')}
                 onChange={(value) => {
                   update('dueDate', value);
                 }}
@@ -654,12 +705,12 @@ export function TaskEditor({
             </Field>
 
             {fields.status === 'not_started' && !fields.recurrence ? (
-              <Field id="task-defer" label="Hide until">
+              <Field id="task-defer" label={t('taskEditor.hideUntilLabel')}>
                 <DateValue
                   id="task-defer"
                   type="date"
                   value={fields.deferUntil}
-                  placeholder={COPY.datePlaceholder}
+                  placeholder={t('copy.datePlaceholder')}
                   onChange={(value) => {
                     update('deferUntil', value);
                   }}
@@ -699,16 +750,23 @@ export function TaskEditor({
       </form>
       <PageFooter>
         <RailButton
+          data-tour="compact"
           active={compact}
-          aria-label="Compact form"
-          title={compact ? 'Use full form' : 'Use compact form'}
+          aria-label={t('taskEditor.compactFormLabel')}
+          title={
+            compact
+              ? t('taskEditor.useFullForm')
+              : t('taskEditor.useCompactForm')
+          }
           aria-pressed={compact}
           onClick={() => {
+            guidanceFacts('compact');
             const next = !compact;
             setCompact(next);
-            preferencesStore.update({
-              editorLayout: next ? 'compact' : 'full',
-            });
+            if (!preview)
+              preferencesStore.update({
+                editorLayout: next ? 'compact' : 'full',
+              });
             update(
               'tags',
               next
@@ -738,7 +796,9 @@ export function TaskEditor({
             disabled={disabled || busy}
             aria-busy={skipping}
           >
-            {skipping ? 'Skipping…' : 'Skip this occurrence'}
+            {skipping
+              ? t('taskEditor.skipping')
+              : t('taskEditor.skipThisOccurrence')}
           </button>
         ) : null}
       </PageFooter>
@@ -751,7 +811,7 @@ function feedbackMessage(feedback: SaveFeedback): string | undefined {
     case 'none':
       return undefined;
     case 'offline':
-      return COPY.saveOffline;
+      return t('copy.saveOffline');
     case 'error':
       return feedback.message;
   }

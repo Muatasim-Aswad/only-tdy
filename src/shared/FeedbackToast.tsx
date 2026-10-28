@@ -1,3 +1,4 @@
+import { t } from './i18n.ts';
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -54,7 +55,7 @@ function ToastContent({
 
   return (
     <div
-      className="focus-toast flex items-center gap-2 pt-1 pr-1.5 pb-1 pl-4 text-ink bg-surface border border-line rounded-[10px] pointer-events-auto animate-appear motion-reduce:animate-none text-action"
+      className="focus-toast flex items-center gap-2 pt-1 pe-1.5 pb-1 ps-4 text-ink bg-surface border border-line rounded-[10px] pointer-events-auto animate-appear motion-reduce:animate-none text-action"
       onMouseEnter={() => {
         setHovered(true);
       }}
@@ -82,8 +83,8 @@ function ToastContent({
       <button
         type="button"
         className="focus-toast__icon inline-flex items-center justify-center flex-none w-11 h-11 text-muted rounded-[6px] focus-visible:text-accent focus-visible:bg-selection hover:text-accent hover:bg-selection"
-        aria-label="Dismiss notification"
-        title="Dismiss"
+        aria-label={t('feedbackToast.ToastContent.dismissNotificationLabel')}
+        title={t('feedbackToast.ToastContent.dismissLabel')}
         onClick={() => {
           setDismissed(true);
           onDismiss?.();

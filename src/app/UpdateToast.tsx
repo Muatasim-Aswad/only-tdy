@@ -1,6 +1,6 @@
+import { t } from './messages.ts';
 import type { MouseEvent } from 'react';
 
-import { COPY } from './copy.ts';
 import { FeedbackToast } from '../shared/FeedbackToast.tsx';
 
 export interface UpdateToastProps {
@@ -19,18 +19,18 @@ export function UpdateToast({
   return (
     <FeedbackToast
       className="focus-update-feedback"
-      message={label === undefined ? undefined : COPY.updated(label)}
+      message={label === undefined ? undefined : t('copy.updated', { label })}
       onDismiss={onDismiss}
       action={
         <a
-          className="focus-toast__action flex-none pt-3 pr-2 pb-3 pl-2 text-accent focus-visible:underline focus-visible:underline-offset-[3px]"
+          className="focus-toast__action flex-none pt-3 pe-2 pb-3 ps-2 text-accent focus-visible:underline focus-visible:underline-offset-[3px]"
           href={href}
           onClick={(event) => {
             onDismiss();
             onOpen(event);
           }}
         >
-          Details
+          {t('updateToast.details')}
         </a>
       }
     />

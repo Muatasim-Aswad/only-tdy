@@ -1,3 +1,5 @@
+import { beforeEach } from 'vitest';
+import { applyLocale } from '../shared/i18n.ts';
 import '@testing-library/jest-dom/vitest';
 
 import { afterEach } from 'vitest';
@@ -55,4 +57,9 @@ window.scrollTo = () => undefined;
 afterEach(() => {
   mediaQueryMatches.clear();
   preferencesStore.stop();
+});
+
+beforeEach(() => {
+  localStorage.setItem('only-tdy:language:v1', 'en');
+  applyLocale('en');
 });

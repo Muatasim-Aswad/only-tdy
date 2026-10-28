@@ -46,6 +46,17 @@ export function SettingsIcon() {
   );
 }
 
+export function SignOutIcon() {
+  return (
+    <Icon>
+      <g className="origin-center rtl:-scale-x-100">
+        <path d="M9 4H4v16h5" />
+        <path d="M9 12h11m-4-4 4 4-4 4" />
+      </g>
+    </Icon>
+  );
+}
+
 export function HistoryIcon() {
   return (
     <Icon>

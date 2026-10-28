@@ -16,6 +16,7 @@ import { APP_BASE_PATH } from './base-path.ts';
 /** Where only-tdy is. `unknown` is any other path below the base. */
 export type Route =
   | { readonly kind: 'tasks' }
+  | { readonly kind: 'task-tour' }
   | { readonly kind: 'backlog' }
   | { readonly kind: 'history' }
   | { readonly kind: 'all' }
@@ -61,6 +62,8 @@ export function routePath(route: Route): string {
       return `${APP_BASE_PATH}repeating`;
     case 'new-repeating':
       return `${APP_BASE_PATH}repeating/new`;
+    case 'task-tour':
+      return `${APP_BASE_PATH}tour/task`;
     case 'tasks':
     case 'unknown':
       return APP_BASE_PATH;
@@ -81,6 +84,7 @@ export function parseRoute(pathname: string): Route {
   if (!pathname.startsWith(APP_BASE_PATH)) return { kind: 'tasks' };
 
   const rest = pathname.slice(APP_BASE_PATH.length).replace(/\/$/, '');
+  if (rest === 'tour/task') return { kind: 'task-tour' };
   if (rest === '') return { kind: 'tasks' };
   if (rest === BACKLOG_SEGMENT) return { kind: 'backlog' };
   if (rest === HISTORY_SEGMENT) return { kind: 'history' };

@@ -1,8 +1,7 @@
+import { t } from '../messages.ts';
 import type { MouseEvent } from 'react';
 
 import { APP_BASE_PATH } from '../../../config/base-path.ts';
-
-import { COPY } from './copy.ts';
 
 export interface BackLinkProps {
   /** The source list, with a fallback for directly opened forms. */
@@ -14,7 +13,7 @@ export interface BackLinkProps {
 
 export function BackLink({
   href = APP_BASE_PATH,
-  label = COPY.backToList,
+  label = t('copy.backToList'),
   onNavigate,
 }: BackLinkProps) {
   return (
@@ -28,7 +27,7 @@ export function BackLink({
         aria-hidden="true"
       >
         <svg
-          className="focus-home__icon block"
+          className="focus-home__icon block rtl:rotate-180"
           viewBox="0 0 24 24"
           width="20"
           height="20"

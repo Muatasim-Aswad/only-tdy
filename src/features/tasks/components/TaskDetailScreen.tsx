@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import { PageShell } from '../../../shared/PageShell.tsx';
 import { useId, useState, type MouseEvent, type ReactNode } from 'react';
@@ -12,17 +13,18 @@ import type {
 import { TUDUDI_LOGIN_PATH } from '../../../config/app.ts';
 
 import { BackLink } from './BackLink.tsx';
-import { COPY } from './copy.ts';
 import { DeleteTaskAction } from './DeleteTaskAction.tsx';
 import { TaskEditor } from './TaskEditor.tsx';
 
 export interface TaskDetailScreenProps {
+  readonly preview?: boolean;
   readonly state: TaskDetailState;
   readonly projects: readonly Project[];
   /** Tag names the tag field completes against. */
   readonly tags?: readonly string[] | undefined;
   /** The source page, or the status-based fallback for a direct link. */
   readonly backHref: string;
+  readonly backLabel?: string;
   readonly onBack?:
     ((event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
   readonly onSave: (edit: TaskEdit) => Promise<TaskDetail | undefined>;
@@ -53,10 +55,12 @@ export interface TaskDetailScreenProps {
  * directly opened links. The editor footer switches its layout.
  */
 export function TaskDetailScreen({
+  preview = false,
   state,
   projects,
   tags,
   backHref,
+  backLabel = t('copy.backToList'),
   onBack,
   onSave,
   onDelete,
@@ -75,19 +79,24 @@ export function TaskDetailScreen({
 
   return (
     <PageShell>
+      {preview && (
+        <p className="ps-rail mb-3 text-meta text-muted">
+          {t('taskDetailScreen.tourExample')}
+        </p>
+      )}
       <div className="focus-head flex items-center justify-between gap-4 mb-2">
-        <BackLink href={backHref} onNavigate={onBack} />
+        <BackLink href={backHref} label={backLabel} onNavigate={onBack} />
         {state.kind === 'ready' ? (
-          <div className="focus-head__action flex items-center justify-end min-w-0 -mr-2">
+          <div className="focus-head__action flex items-center justify-end min-w-0 -me-2">
             {dirty || creating ? (
               <SubmitButton
-                title="Save (Ctrl+Enter; Cmd+Enter on Mac)"
+                title={t('taskDetailScreen.saveCtrlEnterCmdEnterOnLabel')}
                 aria-keyshortcuts="Control+Enter Meta+Enter"
                 form={formId}
-                className="focus-detail__save ml-auto"
+                className="focus-detail__save ms-auto"
                 disabled={disabled || saving || deleting || skipping}
               >
-                {COPY.save}
+                {t('copy.save')}
               </SubmitButton>
             ) : (
               <DeleteTaskAction
@@ -103,6 +112,7 @@ export function TaskDetailScreen({
         <TaskEditor
           key={state.task.uid}
           task={state.task}
+          preview={preview}
           projects={projects}
           tags={tags}
           onSave={onSave}
@@ -139,48 +149,48 @@ function renderState(
   switch (state.kind) {
     case 'loading':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.taskLoading}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.taskLoading')}
         </p>
       );
 
     case 'not-found':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.taskMissing}{' '}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.taskMissing')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             href={backHref}
             onClick={onBack}
           >
-            {COPY.backToList}
+            {t('copy.backToList')}
           </a>
         </p>
       );
 
     case 'error':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.taskLoadFailed}{' '}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.taskLoadFailed')}{' '}
           <button
             type="button"
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             onClick={onRetry}
           >
-            {COPY.retry}
+            {t('copy.retry')}
           </button>
         </p>
       );
 
     case 'session-expired':
       return (
-        <p className="focus-state pl-rail py-4 text-muted text-task">
-          {COPY.sessionExpired}{' '}
+        <p className="focus-state ps-rail py-4 text-muted text-task">
+          {t('copy.sessionExpired')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             href={TUDUDI_LOGIN_PATH}
           >
-            {COPY.signIn}
+            {t('copy.signIn')}
           </a>
         </p>
       );

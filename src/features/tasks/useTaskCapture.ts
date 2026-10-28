@@ -1,3 +1,6 @@
+import { guidanceFacts } from './guidance/events.ts';
+import { tokenFacts } from './guidance/token-facts.ts';
+import { t } from './messages.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import type { UseQueryResult } from '@tanstack/react-query';
 import {
@@ -64,7 +67,7 @@ export function useTaskCapture({
             kind: 'error',
             message: taskErrorMessage(
               result.error,
-              'Could not load projects. Try again.',
+              t('useTaskCapture.couldNotLoadProjectsTryAgain'),
             ),
           });
         return;
@@ -82,7 +85,7 @@ export function useTaskCapture({
           kind: 'error',
           message: taskErrorMessage(
             error,
-            'Could not load the account timezone.',
+            t('useTaskCapture.couldNotLoadTheAccountTimezone'),
           ),
         });
       return;
@@ -96,6 +99,7 @@ export function useTaskCapture({
       return;
     }
     if (parsed.repeating) {
+      guidanceFacts('token-repeating');
       navigate(routePath({ kind: 'new-repeating' }));
       return;
     }
@@ -110,6 +114,13 @@ export function useTaskCapture({
         draft: parsed.draft,
         ...(projectName === undefined ? {} : { projectName }),
       });
+      guidanceFacts(
+        'captured',
+        ...(parsed.draft.status === 'not_started'
+          ? ['captured-backlog' as const]
+          : []),
+        ...tokenFacts(submittedInput),
+      );
       onCaptureChange((current) => (current === submittedInput ? '' : current));
 
       const hiddenBacklog =
@@ -124,7 +135,10 @@ export function useTaskCapture({
       if (isUnauthorized(error)) {
         onUnauthorized();
       } else {
-        const message = taskErrorMessage(error, 'The task could not be added.');
+        const message = taskErrorMessage(
+          error,
+          t('useTaskCapture.theTaskCouldNotBeAdded'),
+        );
         setFeedback({ kind: 'error', message });
       }
     }

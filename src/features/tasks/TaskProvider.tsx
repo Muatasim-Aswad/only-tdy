@@ -1,4 +1,13 @@
+import { lazy, Suspense } from 'react';
+import { clearGuidanceEvents } from './guidance/events.ts';
+const Guidance = lazy(() =>
+  import('./guidance/Guidance.tsx').then((m) => ({ default: m.Guidance })),
+);
+import { appLocale } from '../../shared/i18n.ts';
+import { takeLocaleIntent } from '../../infra/locale.ts';
+import { t } from './messages.ts';
 import { PageShell } from '../../shared/PageShell.tsx';
+import { useAuthSession } from '../auth/session.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -11,12 +20,21 @@ import { preferencesStore } from './preferences/store.ts';
 import { usePreferences } from './preferences/usePreferences.ts';
 
 export function TaskProvider({ children }: { readonly children: ReactNode }) {
+  const account = useAuthSession()?.uid;
   const timezone = useQuery(accountTimezoneQueryOptions());
   const client = useQueryClient();
   const preferences = usePreferences();
+  useEffect(() => {
+    if (preferences.account !== null && preferences.status !== 'loading') {
+      const chosen = takeLocaleIntent();
+      if (chosen !== null || preferences.settings.locale === null) {
+        preferencesStore.update({ locale: chosen ?? appLocale() });
+      }
+    }
+  }, [preferences.account, preferences.status, preferences.settings.locale]);
   const [captureValue, onCaptureChange] = useState('');
   useEffect(() => {
-    void preferencesStore.start();
+    void preferencesStore.start(account ?? undefined);
     const synchronize = () => {
       void preferencesStore.sync();
     };
@@ -26,8 +44,9 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
       window.removeEventListener('online', synchronize);
       window.removeEventListener('focus', synchronize);
       preferencesStore.stop();
+      clearGuidanceEvents();
     };
-  }, []);
+  }, [account]);
   const session = useMemo(
     () => ({ captureValue, onCaptureChange }),
     [captureValue],
@@ -57,11 +76,16 @@ export function TaskProvider({ children }: { readonly children: ReactNode }) {
     <TaskSessionContext value={session}>
       <DateTimezoneContext value={timezone.data ?? DEFAULT_TIMEZONE}>
         {preferences.status !== 'loading' ? (
-          children
+          <>
+            {children}
+            <Suspense fallback={null}>
+              <Guidance key={preferences.account ?? 'anonymous'} />
+            </Suspense>
+          </>
         ) : (
           <PageShell>
             <div className="focus-listing mt-0 min-h-30" aria-live="polite">
-              Loading…
+              {t('taskProvider.loading')}
             </div>
           </PageShell>
         )}

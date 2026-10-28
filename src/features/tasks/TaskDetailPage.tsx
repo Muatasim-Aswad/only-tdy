@@ -1,3 +1,5 @@
+import { useGuidancePage } from './guidance/events.ts';
+import { t } from './messages.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import { useCallback, useState, type MouseEvent } from 'react';
 
@@ -26,7 +28,6 @@ import {
   useTaskQuery,
 } from './data/queries.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
-import { COPY } from './components/copy.ts';
 import { TaskDetailScreen } from './components/TaskDetailScreen.tsx';
 
 const NO_PROJECTS: readonly Project[] = [];
@@ -66,6 +67,9 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     useSkipOccurrenceMutation();
 
   const state = deriveTaskDetailState(sessionExpired, taskQuery);
+  useGuidancePage(
+    state.kind === 'ready' ? { kind: 'task', populated: true } : null,
+  );
   const disabled = !isOnline || state.kind === 'session-expired';
   const visibleFeedback: SaveFeedback = isOnline
     ? feedback
@@ -93,7 +97,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     async (edit: TaskEdit): Promise<TaskDetail | undefined> => {
       if (disabled || edit.title === '') {
         if (!disabled)
-          setFeedback({ kind: 'error', message: COPY.titleRequired });
+          setFeedback({ kind: 'error', message: t('copy.titleRequired') });
         return undefined;
       }
 
@@ -115,7 +119,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
         }
         setFeedback({
           kind: 'error',
-          message: taskErrorMessage(error, COPY.saveFailed),
+          message: taskErrorMessage(error, t('copy.saveFailed')),
         });
         return undefined;
       }
@@ -138,7 +142,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
         }
         setFeedback({
           kind: 'error',
-          message: taskErrorMessage(error, COPY.deleteFailed),
+          message: taskErrorMessage(error, t('copy.deleteFailed')),
         });
       });
   }, [backHref, deleteTask, disabled, uid]);
@@ -169,7 +173,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
                 kind: 'error',
                 message: taskErrorMessage(
                   error,
-                  'Couldn’t skip this occurrence. Try again.',
+                  t('taskDetailPage.couldnTSkipThisOccurrenceTry'),
                 ),
               });
           });

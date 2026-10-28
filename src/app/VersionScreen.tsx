@@ -1,3 +1,5 @@
+import { formattingLocale, t as commonT } from '../shared/i18n.ts';
+import { t } from './messages-about.ts';
 import { FieldRow } from '../shared/FieldRow.tsx';
 import { PageShell } from '../shared/PageShell.tsx';
 import {
@@ -13,7 +15,6 @@ import {
   type BuildInfo,
 } from '../infra/build-info.ts';
 
-import { COPY } from './copy.ts';
 import { InlineMessage } from '../shared/InlineMessage.tsx';
 
 /** What the server answered about the deployed build. */
@@ -27,11 +28,6 @@ export interface VersionScreenProps {
   readonly deployed: DeployedState;
   readonly onReload: () => void;
 }
-
-const TIME_FORMAT = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
 
 /** About the app, its running build, and any available update. */
 export function VersionScreen({
@@ -47,32 +43,33 @@ export function VersionScreen({
   return (
     <PageShell>
       <section
-        className="focus-about mb-7 pl-rail"
+        className="focus-about mb-7 ps-rail"
         aria-labelledby="about-heading"
       >
         <h1
           id="about-heading"
           className="focus-about__heading m-0 text-section"
         >
-          About only-tdy
+          {t('versionScreen.aboutOnlyTdy')}
         </h1>
-        <p className="focus-about__intro mt-2 mr-0 mb-0 ml-0 text-task">
-          Capture tasks quickly, choose what matters today, and leave the rest
-          in Backlog. A minimalist daily flow, with projects, tags, priorities
-          and dates available as you type.
+        <p className="focus-about__intro mt-2 me-0 mb-0 ms-0 text-task">
+          {t('versionScreen.captureTasksQuicklyChooseWhatMatters')}
         </p>
       </section>
       <dl className="focus-version m-0">
         {running.version === null ? null : (
-          <Fact label={COPY.versionApp} value={running.version} />
+          <Fact label={t('copy.versionApp')} value={running.version} />
         )}
         <Fact
-          label={COPY.versionReleased}
+          label={t('copy.versionReleased')}
           value={formatTime(running.committedAt)}
         />
-        <Fact label={COPY.versionBuilt} value={formatTime(running.builtAt)} />
         <Fact
-          label={COPY.versionRevision}
+          label={t('copy.versionBuilt')}
+          value={formatTime(running.builtAt)}
+        />
+        <Fact
+          label={t('copy.versionRevision')}
           value={shortRevision(running.revision)}
         />
       </dl>
@@ -84,7 +81,7 @@ export function VersionScreen({
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer text-action"
             onClick={onReload}
           >
-            {COPY.versionReload}
+            {t('copy.versionReload')}
           </button>
         )}
       </div>
@@ -116,21 +113,27 @@ function statusMessage(
   deployed: DeployedState,
   update: BuildInfo | null,
 ): string {
-  if (update !== null) return COPY.versionAvailable(buildLabel(update));
+  if (update !== null)
+    return t('copy.versionAvailable', { label: buildLabel(update) });
   switch (deployed.kind) {
     case 'checking':
-      return COPY.versionChecking;
+      return t('copy.versionChecking');
     case 'unknown':
-      return COPY.versionUnknown;
+      return t('copy.versionUnknown');
     case 'known':
-      return COPY.versionCurrent;
+      return t('copy.versionCurrent');
   }
 }
 
 function formatTime(iso: string | null): string {
-  if (iso === null) return COPY.noValue;
+  if (iso === null) return commonT('display.noValue');
   const time = new Date(iso);
-  return Number.isNaN(time.getTime()) ? iso : TIME_FORMAT.format(time);
+  return Number.isNaN(time.getTime())
+    ? iso
+    : new Intl.DateTimeFormat(formattingLocale(), {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(time);
 }
 
 function navigateFromFooter(destination: FocusDestination) {

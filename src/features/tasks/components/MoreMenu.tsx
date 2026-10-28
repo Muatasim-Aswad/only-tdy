@@ -1,3 +1,5 @@
+import { t } from '../messages.ts';
+import { guidanceFacts } from '../guidance/events.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
 import {
   lazy,
@@ -8,8 +10,6 @@ import {
   useRef,
   useState,
 } from 'react';
-
-import { COPY } from './copy.ts';
 
 const MorePanel = lazy(() =>
   import('./MorePanel.tsx').then((module) => ({ default: module.MorePanel })),
@@ -53,15 +53,17 @@ export function MoreMenu({ historyActive, onOpenHistory }: MoreMenuProps) {
   return (
     <div className="focus-more relative" ref={root}>
       <RailButton
+        data-tour="more"
         ref={trigger}
         active={open}
         onClick={() => {
+          if (!open) guidanceFacts('more');
           setOpen((value) => !value);
         }}
         aria-expanded={open}
         aria-controls={menuId}
-        aria-label={COPY.more}
-        title={COPY.more}
+        aria-label={t('copy.more')}
+        title={t('copy.more')}
       >
         <svg
           className="focus-home__icon block"

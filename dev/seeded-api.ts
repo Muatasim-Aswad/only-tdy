@@ -14,7 +14,7 @@ import type { Connect, Plugin } from 'vite';
  * store so a save, a tick and a capture all behave, and everything is
  * forgotten when the server stops.
  *
- * It is mounted only by `vite --mode seeded`, never by a build and never by
+ * It is mounted only by `dev/vite.seeded.config.ts`, never by a build and never by
  * the preview server, so nothing here can reach a deployed only-tdy. The tests
  * keep their own fixtures in `tests/e2e/fixtures.ts`: a suite that asserts on
  * a list has to state that list itself, and sharing one seed between the two
@@ -254,9 +254,15 @@ function asNullableString(value: unknown): string | null {
   return typeof value === 'string' && value !== '' ? value : null;
 }
 
-export function seededTududiApi(): Plugin {
-  let tasks = seed();
-  let projects = PROJECTS;
+export function seededTududiApi({
+  freshAccount = false,
+}: { readonly freshAccount?: boolean } = {}): Plugin {
+  const accountUid = freshAccount
+    ? `seeded-user-${crypto.randomUUID()}`
+    : 'seeded-user';
+  const sessions = new Set<string>();
+  let tasks = freshAccount ? [] : seed();
+  let projects = freshAccount ? [] : PROJECTS;
   let profileSettings: Record<string, unknown> = {};
   let created = 0;
   const occurrenceRecords: SeedTask[] = [];
@@ -277,6 +283,57 @@ export function seededTududiApi(): Plugin {
           response.setHeader('Content-Type', 'application/json');
           response.end(JSON.stringify(body));
         };
+
+        const session = /(?:^|;\s*)only_tdy_demo=([^;]+)/.exec(
+          request.headers.cookie ?? '',
+        )?.[1];
+        const authenticated = session !== undefined && sessions.has(session);
+        if (url.pathname === '/api/current_user') {
+          send(200, { user: authenticated ? { uid: accountUid } : null });
+          return;
+        }
+        if (url.pathname === '/api/password-auth-status') {
+          send(200, { enabled: true });
+          return;
+        }
+        if (url.pathname === '/api/login' && request.method === 'POST') {
+          void readBody(request).then(
+            (raw) => {
+              const body = asRecord(raw);
+              if (
+                body.email !== 'demo@example.com' ||
+                body.password !== 'only-tdy-demo'
+              ) {
+                send(401, { errors: ['Invalid credentials'] });
+                return;
+              }
+              const token = crypto.randomUUID();
+              sessions.add(token);
+              response.setHeader(
+                'Set-Cookie',
+                `only_tdy_demo=${token}; HttpOnly; SameSite=Lax; Path=/`,
+              );
+              send(200, { user: { uid: accountUid } });
+            },
+            () => {
+              send(400, {});
+            },
+          );
+          return;
+        }
+        if (url.pathname === '/api/logout') {
+          if (session !== undefined) sessions.delete(session);
+          response.setHeader(
+            'Set-Cookie',
+            'only_tdy_demo=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0',
+          );
+          send(200, { message: 'Logged out successfully' });
+          return;
+        }
+        if (!authenticated) {
+          send(401, { error: 'Authentication required' });
+          return;
+        }
 
         void handle(url, request, send).catch((error: unknown) => {
           send(500, { error: String(error) });
@@ -301,7 +358,7 @@ export function seededTududiApi(): Plugin {
             profileSettings = asRecord(body.ui_settings);
           }
           send(200, {
-            uid: 'seeded-user',
+            uid: accountUid,
             timezone: 'Europe/Amsterdam',
             ui_settings: profileSettings,
           });
@@ -335,8 +392,10 @@ export function seededTududiApi(): Plugin {
           const used = new Set(
             tasks.flatMap((entry) => entry.tags.map((tag) => tag.name)),
           );
-          for (const spare of ['repairs', 'next week', 'reading'])
-            used.add(spare);
+          if (!freshAccount) {
+            for (const spare of ['repairs', 'next week', 'reading'])
+              used.add(spare);
+          }
           send(200, { tags: [...used].sort().map((name) => ({ name })) });
           return;
         }

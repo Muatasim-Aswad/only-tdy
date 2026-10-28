@@ -1,8 +1,8 @@
+import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
 import { PageFooter } from '../../../shared/PageFooter.tsx';
 import type { FocusDestination } from '../contracts.ts';
 
-import { COPY } from './copy.ts';
 import { BacklogToggle } from './BacklogToggle.tsx';
 import { HomeToggle } from './HomeToggle.tsx';
 import { MoreMenu } from './MoreMenu.tsx';
@@ -38,9 +38,10 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
         }}
       />
       <RailButton
+        data-tour="nav-all"
         active={current === 'all'}
-        aria-label={COPY.allTasks}
-        title={COPY.allTasks}
+        aria-label={t('copy.allTasks')}
+        title={t('copy.allTasks')}
         aria-pressed={current === 'all'}
         onClick={() => {
           onNavigate('all');
@@ -80,8 +81,16 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
 }
 
 const PAGE_LABEL = {
-  repeating: 'Repeating',
-  history: 'Completed tasks',
-  guide: 'Guide',
-  version: COPY.about,
+  get repeating() {
+    return t('focusFooter.repeating');
+  },
+  get history() {
+    return t('focusFooter.history');
+  },
+  get guide() {
+    return t('focusFooter.guide');
+  },
+  get version() {
+    return t('copy.about');
+  },
 };

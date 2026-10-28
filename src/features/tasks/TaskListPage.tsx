@@ -1,3 +1,6 @@
+import { t } from './messages.ts';
+import { guidanceFacts, useGuidancePage } from './guidance/events.ts';
+import { startOfDay } from './domain/done-today.ts';
 import { useTaskSession } from './task-session.ts';
 import {
   useCallback,
@@ -41,7 +44,6 @@ import {
   useTaskListQueries,
 } from './data/queries.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
-import { COPY } from './components/copy.ts';
 import { FocusScreen } from './components/FocusScreen.tsx';
 import type { TaskRowMotion } from './components/TaskRow.tsx';
 import { usePreferences } from './preferences/usePreferences.ts';
@@ -176,6 +178,20 @@ export function TaskListPage({ view }: TaskListPageProps) {
             (task) =>
               matchesTask(task, inputMode === 'search' ? typed : NO_TERM),
           );
+  useGuidancePage(
+    listState.kind === 'loading'
+      ? null
+      : {
+          kind: view,
+          populated: listState.kind === 'ready' && listState.tasks.length > 0,
+          olderCompleted: (historyQuery.data ?? []).some(
+            (task) =>
+              task.status === 'done' &&
+              task.completedAt !== undefined &&
+              Date.parse(task.completedAt) < startOfDay(new Date()),
+          ),
+        },
+  );
   const disabled = !isOnline || listState.kind === 'session-expired';
   const visibleTasks = listState.kind === 'ready' ? listState.tasks : NO_TASKS;
   const tasksByUid = useMemo(
@@ -250,17 +266,21 @@ export function TaskListPage({ view }: TaskListPageProps) {
         rowTimers.current.delete(uid);
       }
 
-      void setTaskStatus({ task, status }).catch((error: unknown) => {
-        if (isUnauthorized(error)) {
-          setSessionExpired(true);
-          return;
-        }
-        setRowErrors((current) => ({
-          ...current,
-          [uid]: done ? COPY.reopenFailed : COPY.completionFailed,
-        }));
-        scheduleRowMotion(uid, 'restoring', RESTORE_MOTION_MS);
-      });
+      void setTaskStatus({ task, status })
+        .then(() => {
+          if (status === 'done') guidanceFacts('completed');
+        })
+        .catch((error: unknown) => {
+          if (isUnauthorized(error)) {
+            setSessionExpired(true);
+            return;
+          }
+          setRowErrors((current) => ({
+            ...current,
+            [uid]: done ? t('copy.reopenFailed') : t('copy.completionFailed'),
+          }));
+          scheduleRowMotion(uid, 'restoring', RESTORE_MOTION_MS);
+        });
     },
     [disabled, reopenStatus, scheduleRowMotion, setTaskStatus, tasksByUid],
   );
@@ -273,6 +293,7 @@ export function TaskListPage({ view }: TaskListPageProps) {
 
   const handleSearchSubmit = useCallback(() => {
     setTerm(parseSearch(searchValue));
+    if (searchValue.trim()) guidanceFacts('searched');
   }, [searchValue]);
 
   /*

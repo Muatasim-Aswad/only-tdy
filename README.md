@@ -1,8 +1,8 @@
 # only-tdy
 
-Capture tasks quickly, choose what matters today, and leave the rest in Backlog.
+Less managing. More doing.
 
-only-tdy makes organizing todos approachable through a minimalist, distraction-free daily flow. Pick tasks from Backlog, work through Today, and edit details without leaving that flow.
+only-tdy is a minimalist daily task manager for people overwhelmed by complicated productivity apps. Capture tasks quickly, choose what matters today, and leave the rest in Backlog, without the overhead of managing an entire productivity system.
 
 <p>
   <img width="280" src="docs/images/today-at-rest.png" alt="Today at rest with an unobtrusive capture bar and a completed task">
@@ -27,6 +27,8 @@ On list pages, start typing to focus the current Add/Search field. Ctrl+/ switch
 
 ## Features
 
+- **English and Arabic.** Confirm the suggested browser language on your first visit, or change it later in Settings.
+- **Guidance when useful.** Discover controls as you go, start the full tour from Guide, or turn tips off in Settings.
 - **Quick capture.** Add tasks with projects, tags, priorities, notes and dates, using inline shortcuts and auto-completion.
 - **Today and Backlog.** Choose tasks individually or together for Today. Due and overdue tasks move there automatically during sync unless you disable that setting.
 - **Repeating tasks.** Manage schedules in Repeating, keep them out of Backlog, and work on due occurrences in Today. Add there or use `/repeating` in any Add field to choose a schedule before saving.
@@ -50,7 +52,7 @@ Open the printed `/only-tdy/` URL. The seeded demo uses editable synthetic data,
 
 ## Deploy
 
-Requires [Tududi 1.9.4](docs/deployment.md#tududi-backend-pin) as its backend. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in through Tududi, which owns your tasks and provides fuller planning tools. The same Compose file supports the [published image](docs/deployment.md#published-image), [source builds](docs/deployment.md#build-from-source) and optional [srvr management](docs/deployment.md#deploy-with-srvr).
+Requires [Tududi 1.9.4](docs/deployment.md#tududi-backend-pin) as its backend. Serve only-tdy at `/only-tdy/` on the **same HTTPS origin** as Tududi and sign in directly in only-tdy with your Tududi account. Tududi owns your tasks and provides fuller planning tools. The same Compose file supports the [published image](docs/deployment.md#published-image), [source builds](docs/deployment.md#build-from-source) and optional [srvr management](docs/deployment.md#deploy-with-srvr).
 
 The current source's core API flow is verified against the pin; your HTTPS deployment still needs smoke checks.
 

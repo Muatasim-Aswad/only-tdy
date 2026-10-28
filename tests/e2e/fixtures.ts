@@ -1,6 +1,28 @@
 import type { Page, Route } from '@playwright/test';
 
+export const GUIDANCE_LESSONS = [
+  'capture',
+  'backlog',
+  'backlog-tools',
+  'today',
+  'editor',
+  'compact',
+  'switch',
+  'tokens',
+  'more',
+  'all',
+  'reference',
+] as const;
+export const GUIDANCE_COMPLETE = JSON.stringify({
+  version: 1,
+  done: GUIDANCE_LESSONS,
+  used: [],
+  later: {},
+  startedVisit: 'fixture-complete',
+});
+
 export interface ApiScenario {
+  readonly confirmLanguage?: boolean;
   readonly today?: readonly RawTask[];
   readonly backlog?: readonly RawTask[];
   readonly history?: readonly RawTask[];
@@ -218,14 +240,26 @@ export async function installApi(page: Page, scenario: ApiScenario = {}) {
       })),
     }),
   );
-  await installProfileApi(page);
+  await installProfileApi(page, scenario.confirmLanguage);
   await page.route('**/api/csrf-token', (route) =>
     json(route, { csrfToken: 'csrf-e2e' }),
   );
 }
 
-export async function installProfileApi(page: Page) {
-  let uiSettings: Record<string, unknown> = {};
+export async function installProfileApi(page: Page, confirmLanguage = true) {
+  if (confirmLanguage)
+    await page.addInitScript(() => {
+      localStorage.setItem('only-tdy:language:v1', 'en');
+    });
+  await page.route('**/api/current_user', (route) =>
+    json(route, { user: { uid: 'user-e2e' } }),
+  );
+  await page.route('**/api/password-auth-status', (route) =>
+    json(route, { enabled: true }),
+  );
+  let uiSettings: Record<string, unknown> = {
+    onlyTdy: { guidance: GUIDANCE_COMPLETE },
+  };
   await page.route('**/api/profile', async (route) => {
     if (route.request().method() === 'PATCH') {
       const body = route.request().postDataJSON() as {

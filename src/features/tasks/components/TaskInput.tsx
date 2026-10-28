@@ -1,3 +1,4 @@
+import { guidanceFacts, reportGuidance } from '../guidance/events.ts';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 
 import { CaptureField } from './CaptureField.tsx';
@@ -50,6 +51,7 @@ export function TaskInput({
     onToggleMode === undefined
       ? undefined
       : () => {
+          guidanceFacts('switch');
           focusPending.current = true;
           onToggleMode();
         };
@@ -64,7 +66,10 @@ export function TaskInput({
       return;
     const target = event.target instanceof Element ? event.target : null;
     const field = root.current?.querySelector('input, textarea');
-    if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      (event.key === '/' || event.code === 'Slash')
+    ) {
       if (!toggle || (target !== field && target?.closest(EDITABLE))) return;
       event.preventDefault();
       if (!event.repeat) toggle();
@@ -84,6 +89,23 @@ export function TaskInput({
   });
 
   useEffect(() => {
+    const fieldEvent = (event: Event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.matches('input, textarea')
+      )
+        reportGuidance({ kind: 'field', mode });
+    };
+    const element = root.current;
+    element?.addEventListener('focusin', fieldEvent);
+    element?.addEventListener('pointerdown', fieldEvent);
+    return () => {
+      element?.removeEventListener('focusin', fieldEvent);
+      element?.removeEventListener('pointerdown', fieldEvent);
+    };
+  }, [mode]);
+
+  useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -94,7 +116,10 @@ export function TaskInput({
     formRef: root,
     value,
     onValueChange,
-    onSubmit,
+    onSubmit: () => {
+      if (mode === 'search' && value.trim()) guidanceFacts('searched');
+      onSubmit();
+    },
     onToggleMode: toggle,
     projects,
     tags,

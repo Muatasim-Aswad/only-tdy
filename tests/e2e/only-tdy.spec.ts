@@ -362,7 +362,10 @@ test('sinks a completed task instead of removing it, and restores a failed one',
   await page.goto('/only-tdy/');
 
   const titles = () => page.locator('.focus-row__title').allTextContents();
-  const invoice = page.getByText('Send the invoice');
+  const invoice = page.getByRole('link', {
+    name: 'Send the invoice',
+    exact: true,
+  });
   await expect.poll(async () => (await titles())[0]).toBe('Send the invoice');
 
   await page
@@ -381,7 +384,10 @@ test('sinks a completed task instead of removing it, and restores a failed one',
   ).toBeEnabled();
 
   shouldFail = true;
-  const appointment = page.getByText('Book the appointment');
+  const appointment = page.getByRole('link', {
+    name: 'Book the appointment',
+    exact: true,
+  });
   await page
     .getByRole('button', { name: 'Complete “Book the appointment”' })
     .click();
@@ -433,7 +439,10 @@ test('keeps what was finished today under the open list, across a reload', async
   await page.goto('/only-tdy/');
 
   const titles = () => page.locator('.focus-row__title').allTextContents();
-  const standup = page.getByText('Run the stand-up');
+  const standup = page.getByRole('link', {
+    name: 'Run the stand-up',
+    exact: true,
+  });
 
   // Ticked this morning, before this page existed, and still at the foot of
   // the open list — where a tick in this session would also have left it.
@@ -487,9 +496,7 @@ test('disables saves offline and replaces the list for an expired session', asyn
   await installApi(page, { todayStatus: 401 });
   await page.reload();
   await expect(page.getByText('Your Tududi session expired.')).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Open Tududi to sign in' }),
-  ).toHaveAttribute('href', '/login');
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
 });
 
 test('has no serious or critical accessibility violations in primary states', async ({
@@ -529,7 +536,10 @@ test('unticks a done task from the same box and puts it back where it was', asyn
   await page.goto('/only-tdy/');
 
   const titles = () => page.locator('.focus-row__title').allTextContents();
-  const invoice = page.getByText('Send the invoice');
+  const invoice = page.getByRole('link', {
+    name: 'Send the invoice',
+    exact: true,
+  });
 
   await page
     .getByRole('button', { name: 'Complete “Send the invoice”' })
@@ -927,9 +937,7 @@ test('sends an expired session to sign in rather than to an empty form', async (
   await page.goto('/only-tdy/task/task-invoice');
 
   await expect(page.getByText('Your Tududi session expired.')).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Open Tududi to sign in' }),
-  ).toHaveAttribute('href', '/login');
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
 });
 

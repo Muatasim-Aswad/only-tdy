@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import type { TaskPriority } from '../contracts.ts';
 
 import { classNames } from '../../../shared/classNames.ts';
@@ -42,8 +43,8 @@ export function SelectionButton({
       aria-pressed={selected}
       aria-label={
         selected
-          ? `Leave “${taskTitle}” in Backlog`
-          : `Add “${taskTitle}” to Today`
+          ? t('actions.leaveBacklog', { title: taskTitle })
+          : t('actions.addToday', { title: taskTitle })
       }
     >
       <span

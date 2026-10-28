@@ -1,5 +1,5 @@
+import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
-import { COPY } from './copy.ts';
 
 export interface BacklogToggleProps {
   /** True while the backlog is the page on screen. */
@@ -23,11 +23,12 @@ export interface BacklogToggleProps {
 export function BacklogToggle({ active, onToggle }: BacklogToggleProps) {
   return (
     <RailButton
+      data-tour="nav-backlog"
       active={active}
       onClick={onToggle}
       aria-pressed={active}
-      aria-label={COPY.backlog}
-      title={COPY.backlog}
+      aria-label={t('copy.backlog')}
+      title={t('copy.backlog')}
     >
       <svg
         className="focus-home__icon block"

@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import type { TaskPriority } from '../contracts.ts';
 
 import { classNames } from '../../../shared/classNames.ts';
@@ -38,7 +39,11 @@ export function CompletionButton({
       onClick={onToggle}
       disabled={disabled}
       aria-pressed={done}
-      aria-label={done ? `Reopen “${taskTitle}”` : `Complete “${taskTitle}”`}
+      aria-label={
+        done
+          ? t('actions.reopen', { title: taskTitle })
+          : t('actions.complete', { title: taskTitle })
+      }
     >
       <span
         className={classNames(

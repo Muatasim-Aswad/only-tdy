@@ -6,10 +6,13 @@ import { expect, it } from 'vitest';
 
 const ROOT = resolve('src');
 const FEATURE_API = new Set([
+  'features/auth/AuthBoundary.tsx',
+  'features/auth/session.ts',
   'features/tasks/TaskProvider.tsx',
   'features/tasks/TaskListPage.tsx',
   'features/tasks/BacklogPage.tsx',
   'features/tasks/TaskDetailPage.tsx',
+  'features/tasks/TaskTourPage.tsx',
   'features/tasks/GuidePage.tsx',
   'features/tasks/SettingsPage.tsx',
   'features/tasks/RepeatingPage.tsx',

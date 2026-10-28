@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import type { TaskPriority } from '../contracts.ts';
 
 /**
@@ -7,8 +8,12 @@ import type { TaskPriority } from '../contracts.ts';
  * Neither ever prints the token the user typed.
  */
 const PRIORITY_LABEL: Readonly<Record<'high' | 'medium', string>> = {
-  high: 'High priority',
-  medium: 'Medium priority',
+  get high() {
+    return t('priorityMarker.high');
+  },
+  get medium() {
+    return t('priorityMarker.medium');
+  },
 };
 
 export interface PriorityMarkerProps {

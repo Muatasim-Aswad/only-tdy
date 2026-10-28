@@ -1,6 +1,5 @@
+import { t } from '../messages.ts';
 import { useCallback, useRef, useState } from 'react';
-
-import { COPY } from './copy.ts';
 
 export interface DeleteTaskActionProps {
   readonly onDelete: () => void;
@@ -63,15 +62,15 @@ export function DeleteTaskAction({
         onClick={handleAsk}
         disabled={disabled || pending}
       >
-        {COPY.delete}
+        {t('copy.delete')}
       </button>
     );
   }
 
   return (
     <span className="focus-delete__confirm flex items-center flex-wrap justify-end gap-1">
-      <span className="focus-delete__question mr-3 text-muted text-action">
-        {COPY.deleteConfirm}
+      <span className="focus-delete__question me-3 text-muted text-action">
+        {t('copy.deleteConfirm')}
       </span>
       <button
         type="button"
@@ -80,7 +79,7 @@ export function DeleteTaskAction({
         onClick={onDelete}
         disabled={disabled || pending}
       >
-        {COPY.deleteYes}
+        {t('copy.deleteYes')}
       </button>
       <button
         type="button"
@@ -88,7 +87,7 @@ export function DeleteTaskAction({
         onClick={handleKeep}
         disabled={pending}
       >
-        {COPY.deleteKeep}
+        {t('copy.deleteKeep')}
       </button>
     </span>
   );
