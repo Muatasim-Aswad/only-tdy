@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '../shared/PageShell.tsx';
 import { Select } from '../shared/Select.tsx';
-import { SubmitButton } from '../shared/SubmitButton.tsx';
+import { ActionButton } from '../shared/ActionButton.tsx';
 import { appLocale, applyLocale, t, type Locale } from '../shared/i18n.ts';
 import {
   confirmedLocale,
@@ -20,23 +20,20 @@ export function LocaleBoundary({ children }: { readonly children: ReactNode }) {
   return (
     <PageShell>
       <form
-        className="ps-rail flex flex-col gap-5"
+        className="ps-rail flex flex-col items-start gap-5"
         onSubmit={(event) => {
           event.preventDefault();
           confirmLocale(appLocale());
           setConfirmed(true);
         }}
       >
-        <p className="text-meta text-muted mb-2" dir="ltr">
-          only-tdy
-        </p>
-        <h1 className="text-input">{t('language.question')}</h1>
-        <p className="text-action text-muted">{t('language.suggestion')}</p>
         <label htmlFor="welcome-language" className="text-meta text-muted">
           {t('language.label')}
         </label>
         <Select
           id="welcome-language"
+          className="w-fit"
+          controlClassName="min-h-11"
           value={appLocale()}
           onChange={(value) => {
             applyLocale(value as Locale);
@@ -49,9 +46,7 @@ export function LocaleBoundary({ children }: { readonly children: ReactNode }) {
             العربية
           </option>
         </Select>
-        <div className="flex justify-end">
-          <SubmitButton>{t('language.continue')}</SubmitButton>
-        </div>
+        <ActionButton type="submit">{t('language.continue')}</ActionButton>
       </form>
     </PageShell>
   );

@@ -1282,7 +1282,6 @@ usr/share/nginx/html/DEPENDENCY_LICENSES.txt
 usr/share/nginx/html/FONT_LICENSE.txt
 usr/share/nginx/html/LICENSE
 usr/share/nginx/html/THIRD_PARTY_NOTICES.md
-usr/share/nginx/html/assets/ActionButton-{hash}.js
 usr/share/nginx/html/assets/AtkinsonHyperlegibleNext-Variable-{hash}.woff2
 usr/share/nginx/html/assets/AuthBoundary-{hash}.js
 usr/share/nginx/html/assets/BackLink-{hash}.js

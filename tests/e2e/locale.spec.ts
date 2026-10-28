@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { installApi, installTaskApi, TODAY_TASKS } from './fixtures.ts';
 
-for (const [locale, heading] of [
-  ['ar-EG', 'هل نتابع بالعربية؟'],
-  ['fr-FR', 'Continue in this language?'],
+for (const [locale, label] of [
+  ['ar-EG', 'اللغة'],
+  ['fr-FR', 'Language'],
 ] as const) {
   test(`confirms a supported language before sign-in for ${locale}`, async ({
     browser,
@@ -20,15 +20,15 @@ for (const [locale, heading] of [
       route.fulfill({ json: { enabled: true } }),
     );
     await page.goto(`${baseURL ?? ''}/only-tdy/`);
-    await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: label })).toBeVisible();
     await page.locator('#welcome-language').selectOption('en');
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await expect(
-      page.getByRole('heading', { name: 'Sign in', exact: true }),
+      page.getByRole('button', { name: 'Sign in', exact: true }),
     ).toBeVisible();
     await page.reload();
     await expect(
-      page.getByRole('heading', { name: 'Sign in', exact: true }),
+      page.getByRole('button', { name: 'Sign in', exact: true }),
     ).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     await context.close();
@@ -61,7 +61,7 @@ test('honors a newly confirmed language over an older account preference', async
   });
   await page.goto(`${baseURL ?? ''}/only-tdy/`);
   await expect(
-    page.getByRole('heading', { name: 'هل نتابع بالعربية؟' }),
+    page.getByRole('combobox', { name: 'اللغة', exact: true }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'متابعة', exact: true }).click();
   await expect(
