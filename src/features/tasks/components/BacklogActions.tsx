@@ -1,7 +1,6 @@
 import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import { classNames } from '../../../shared/classNames.ts';
-import { COPY } from './copy.ts';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
 
 export interface BacklogActionsProps {
@@ -64,7 +63,7 @@ export function BacklogActions({
             onClick={onMove}
             disabled={disabled || moving}
           >
-            {COPY.moveToToday}
+            {t('copy.moveToToday')}
           </SubmitButton>
         ) : null}
       </div>

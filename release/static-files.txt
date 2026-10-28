@@ -14,6 +14,7 @@ assets/Guidance-{hash}.css
 assets/Guidance-{hash}.js
 assets/GuidePage-{hash}.js
 assets/MorePanel-{hash}.js
+assets/NavigationIcons-{hash}.js
 assets/NotoSansArabic-Variable-{hash}.woff2
 assets/PageFooter-{hash}.js
 assets/PublicError-{hash}.js
@@ -29,14 +30,13 @@ assets/TaskTourPage-{hash}.js
 assets/TokenChips-{hash}.js
 assets/VersionPage-{hash}.js
 assets/app-{hash}.js
-assets/copy-{hash}.js
 assets/date-timezone-{hash}.js
 assets/entry-tokens-{hash}.js
 assets/events-{hash}.js
-assets/guidance-copy-{hash}.js
 assets/index-{hash}.css
 assets/index-{hash}.js
 assets/jsx-runtime-{hash}.js
+assets/messages-guidance-{hash}.js
 assets/messages-{hash}.js
 assets/mutations-{hash}.js
 assets/queries-{hash}.js

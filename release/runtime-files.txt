@@ -1294,6 +1294,7 @@ usr/share/nginx/html/assets/Guidance-{hash}.css
 usr/share/nginx/html/assets/Guidance-{hash}.js
 usr/share/nginx/html/assets/GuidePage-{hash}.js
 usr/share/nginx/html/assets/MorePanel-{hash}.js
+usr/share/nginx/html/assets/NavigationIcons-{hash}.js
 usr/share/nginx/html/assets/NotoSansArabic-Variable-{hash}.woff2
 usr/share/nginx/html/assets/PageFooter-{hash}.js
 usr/share/nginx/html/assets/PublicError-{hash}.js
@@ -1309,14 +1310,13 @@ usr/share/nginx/html/assets/TaskTourPage-{hash}.js
 usr/share/nginx/html/assets/TokenChips-{hash}.js
 usr/share/nginx/html/assets/VersionPage-{hash}.js
 usr/share/nginx/html/assets/app-{hash}.js
-usr/share/nginx/html/assets/copy-{hash}.js
 usr/share/nginx/html/assets/date-timezone-{hash}.js
 usr/share/nginx/html/assets/entry-tokens-{hash}.js
 usr/share/nginx/html/assets/events-{hash}.js
-usr/share/nginx/html/assets/guidance-copy-{hash}.js
 usr/share/nginx/html/assets/index-{hash}.css
 usr/share/nginx/html/assets/index-{hash}.js
 usr/share/nginx/html/assets/jsx-runtime-{hash}.js
+usr/share/nginx/html/assets/messages-guidance-{hash}.js
 usr/share/nginx/html/assets/messages-{hash}.js
 usr/share/nginx/html/assets/mutations-{hash}.js
 usr/share/nginx/html/assets/queries-{hash}.js

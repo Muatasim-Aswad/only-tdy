@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { guidanceFacts, useGuidancePage } from './guidance/events.ts';
 import { startOfDay } from './domain/done-today.ts';
 import { useTaskSession } from './task-session.ts';
@@ -43,7 +44,6 @@ import {
   useTaskListQueries,
 } from './data/queries.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
-import { COPY } from './components/copy.ts';
 import { FocusScreen } from './components/FocusScreen.tsx';
 import type { TaskRowMotion } from './components/TaskRow.tsx';
 import { usePreferences } from './preferences/usePreferences.ts';
@@ -277,7 +277,7 @@ export function TaskListPage({ view }: TaskListPageProps) {
           }
           setRowErrors((current) => ({
             ...current,
-            [uid]: done ? COPY.reopenFailed : COPY.completionFailed,
+            [uid]: done ? t('copy.reopenFailed') : t('copy.completionFailed'),
           }));
           scheduleRowMotion(uid, 'restoring', RESTORE_MOTION_MS);
         });

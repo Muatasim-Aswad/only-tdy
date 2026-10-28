@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionButton } from '../../../shared/ActionButton.tsx';
 import { requestTour } from './events.ts';
-import { t } from './guidance-copy.ts';
+import { t } from './messages-guidance.ts';
 
 export function GuidanceControls() {
   useTranslation('guidance');

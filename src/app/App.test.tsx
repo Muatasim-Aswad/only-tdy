@@ -23,7 +23,6 @@ function initialAppSettings(): Record<string, unknown> {
           'tokens',
           'more',
           'all',
-          'repeating',
           'reference',
         ],
         used: [],

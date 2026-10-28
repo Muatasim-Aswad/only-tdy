@@ -90,7 +90,7 @@ for (const locale of ['en', 'ar']) {
         exact: true,
       })
       .click();
-    for (let index = 0; index < 12; index++) {
+    for (let index = 0; index < GUIDANCE_LESSONS.length; index++) {
       await expect(tip(page)).toBeVisible();
       await expect(tip(page)).toHaveAttribute(
         'aria-labelledby',
@@ -126,10 +126,10 @@ for (const locale of ['en', 'ar']) {
         .getByRole('button', {
           name:
             locale === 'ar'
-              ? index === 11
+              ? index === GUIDANCE_LESSONS.length - 1
                 ? 'إنهاء'
                 : 'التالي'
-              : index === 11
+              : index === GUIDANCE_LESSONS.length - 1
                 ? 'Finish'
                 : 'Next',
           exact: true,
@@ -137,7 +137,7 @@ for (const locale of ['en', 'ar']) {
         .click();
     }
     await expect(tip(page)).toHaveCount(0);
-    expect(saved().done).toHaveLength(12);
+    expect(saved().done).toHaveLength(GUIDANCE_LESSONS.length);
     expect(writes).toEqual([]);
   });
 }
@@ -327,6 +327,9 @@ test('keeps Arabic guidance usable in a short dark viewport and traps keyboard s
       await tip(page).evaluate((el) => el.contains(document.activeElement)),
     ).toBe(true);
   }
+  await expect(tip(page)).toBeInViewport({ ratio: 1 });
+  for (const action of await tip(page).getByRole('button').all())
+    await expect(action).toBeInViewport({ ratio: 1 });
   const result = await new AxeBuilder({ page }).analyze();
   expect(
     result.violations.filter((v) =>

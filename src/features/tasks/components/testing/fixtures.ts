@@ -1,3 +1,4 @@
+import { t } from '../../messages.ts';
 /**
  * Stable fixtures for the visual acceptance matrix.
  *
@@ -12,7 +13,6 @@
 
 import type { CaptureFeedback, Task, TaskListState } from '../../contracts.ts';
 
-import { COPY } from '../copy.ts';
 import type { FocusScreenProps } from '../FocusScreen.tsx';
 import type { TaskRowMotion } from '../TaskRow.tsx';
 
@@ -205,7 +205,7 @@ export const SCENARIOS = {
     feedback: FEEDBACK.none,
     listState: LIST_STATES.today,
     rowMotion: RESTORING,
-    rowErrors: { [PROJECT_TASK.uid]: COPY.completionFailed },
+    rowErrors: { [PROJECT_TASK.uid]: t('copy.completionFailed') },
   },
   history: {
     view: 'history',

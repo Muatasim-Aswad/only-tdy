@@ -9,7 +9,6 @@ export const LESSONS = [
   'tokens',
   'more',
   'all',
-  'repeating',
   'reference',
 ] as const;
 export type Lesson = (typeof LESSONS)[number];
@@ -30,11 +29,11 @@ export const FACTS = [
   'token-tag',
   'token-priority',
   'token-due',
+  'token-repeating',
+  'token-note',
   'suggestion',
   'more',
   'all-populated',
-  'repeating-populated',
-  'repeating-created',
   'guide',
 ] as const;
 export type Fact = (typeof FACTS)[number];
@@ -97,6 +96,8 @@ export const TOKEN_FACTS: readonly Fact[] = [
   'token-tag',
   'token-priority',
   'token-due',
+  'token-repeating',
+  'token-note',
 ];
 const SATISFIED: Record<Lesson, readonly Fact[]> = {
   capture: ['captured'],
@@ -109,13 +110,11 @@ const SATISFIED: Record<Lesson, readonly Fact[]> = {
   tokens: [...TOKEN_FACTS, 'suggestion'],
   more: ['more'],
   all: ['all-populated'],
-  repeating: ['repeating-populated'],
   reference: ['guide'],
 };
 export function satisfied(p: Progress, lesson: Lesson): boolean {
   return (
     p.done.includes(lesson) ||
-    (lesson === 'repeating' && p.used.includes('repeating-created')) ||
     SATISFIED[lesson].every((f) => p.used.includes(f))
   );
 }
@@ -145,7 +144,6 @@ export function observe(p: Progress, signal: Signal): Progress {
   const facts: Fact[] = [];
   if (populated && kind === 'backlog') facts.push('backlog-populated');
   if (populated && kind === 'all') facts.push('all-populated');
-  if (populated && kind === 'repeating') facts.push('repeating-populated');
   if (kind === 'guide') facts.push('guide');
   if (kind === 'task') {
     if (p.used.includes('saved-full')) facts.push('later-editor');
@@ -195,7 +193,6 @@ export function nextLesson(
     more:
       core && listPage && p.startedVisit !== visit && signal.kind === 'page',
     all: listPage && page.olderCompleted === true && signal.kind === 'page',
-    repeating: page.kind === 'repeating' && signal.kind === 'page',
     reference: core && satisfied(p, 'tokens') && listPage && field,
   };
   return (

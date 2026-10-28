@@ -1,5 +1,5 @@
-import { formattingLocale } from '../shared/i18n.ts';
-import { t } from './about-messages.ts';
+import { formattingLocale, t as commonT } from '../shared/i18n.ts';
+import { t } from './messages-about.ts';
 import { FieldRow } from '../shared/FieldRow.tsx';
 import { PageShell } from '../shared/PageShell.tsx';
 import {
@@ -15,7 +15,6 @@ import {
   type BuildInfo,
 } from '../infra/build-info.ts';
 
-import { COPY } from './copy.ts';
 import { InlineMessage } from '../shared/InlineMessage.tsx';
 
 /** What the server answered about the deployed build. */
@@ -59,15 +58,18 @@ export function VersionScreen({
       </section>
       <dl className="focus-version m-0">
         {running.version === null ? null : (
-          <Fact label={COPY.versionApp} value={running.version} />
+          <Fact label={t('copy.versionApp')} value={running.version} />
         )}
         <Fact
-          label={COPY.versionReleased}
+          label={t('copy.versionReleased')}
           value={formatTime(running.committedAt)}
         />
-        <Fact label={COPY.versionBuilt} value={formatTime(running.builtAt)} />
         <Fact
-          label={COPY.versionRevision}
+          label={t('copy.versionBuilt')}
+          value={formatTime(running.builtAt)}
+        />
+        <Fact
+          label={t('copy.versionRevision')}
           value={shortRevision(running.revision)}
         />
       </dl>
@@ -79,7 +81,7 @@ export function VersionScreen({
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer text-action"
             onClick={onReload}
           >
-            {COPY.versionReload}
+            {t('copy.versionReload')}
           </button>
         )}
       </div>
@@ -111,19 +113,20 @@ function statusMessage(
   deployed: DeployedState,
   update: BuildInfo | null,
 ): string {
-  if (update !== null) return COPY.versionAvailable(buildLabel(update));
+  if (update !== null)
+    return t('copy.versionAvailable', { label: buildLabel(update) });
   switch (deployed.kind) {
     case 'checking':
-      return COPY.versionChecking;
+      return t('copy.versionChecking');
     case 'unknown':
-      return COPY.versionUnknown;
+      return t('copy.versionUnknown');
     case 'known':
-      return COPY.versionCurrent;
+      return t('copy.versionCurrent');
   }
 }
 
 function formatTime(iso: string | null): string {
-  if (iso === null) return COPY.noValue;
+  if (iso === null) return commonT('display.noValue');
   const time = new Date(iso);
   return Number.isNaN(time.getTime())
     ? iso

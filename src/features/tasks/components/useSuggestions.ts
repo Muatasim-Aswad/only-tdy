@@ -41,7 +41,6 @@ import {
 
 import { useDateTimezone } from '../date-timezone.ts';
 import { currentDate, displayDate, resolveDate } from '../domain/task-dates.ts';
-import { COPY, PRIORITY_NAME } from './copy.ts';
 import type { ChipSpan } from './TokenChips.tsx';
 
 const PRIORITY_NAMES: readonly string[] = Object.keys(PRIORITY_VALUES);
@@ -49,9 +48,10 @@ const PRIORITY_NAMES: readonly string[] = Object.keys(PRIORITY_VALUES);
 /** What each priority digit means, said beside it in the list. */
 function describe(kind: SuggestionKind, name: string): string | undefined {
   if (kind !== 'priority') return undefined;
-  const priority =
-    PRIORITY_VALUES[tokenDigits(name) as keyof typeof PRIORITY_VALUES];
-  return PRIORITY_NAME[priority];
+  const value = tokenDigits(name);
+  if (!Object.hasOwn(PRIORITY_VALUES, value)) return undefined;
+  const priority = PRIORITY_VALUES[value as keyof typeof PRIORITY_VALUES];
+  return t(`copy.${priority}`);
 }
 
 /**
@@ -454,7 +454,7 @@ function withNewProject(
       matchStart: 0,
       matchEnd: target.query.length,
       mark: tokenMark('project'),
-      detail: COPY.newProject,
+      detail: t('copy.newProjectText'),
     },
   ];
 }

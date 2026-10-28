@@ -11,7 +11,6 @@ export const GUIDANCE_LESSONS = [
   'tokens',
   'more',
   'all',
-  'repeating',
   'reference',
 ] as const;
 export const GUIDANCE_COMPLETE = JSON.stringify({

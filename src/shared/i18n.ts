@@ -1,29 +1,8 @@
 import { createInstance, type TOptions } from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { english, arabic } from './messages-common.ts';
 
 export type Locale = 'en' | 'ar';
-export const english = {
-  'feedbackToast.ToastContent.dismissNotificationLabel': 'Dismiss notification',
-  'feedbackToast.ToastContent.dismissLabel': 'Dismiss',
-  'language.question': 'Continue in this language?',
-  'language.suggestion':
-    'Choose the language for only-tdy. You can change it later in Settings.',
-  'language.label': 'Language',
-  'language.continue': 'Continue',
-  'language.english': 'English',
-  'language.arabic': 'العربية',
-} as const;
-export const arabic: Readonly<Record<keyof typeof english, string>> = {
-  'feedbackToast.ToastContent.dismissNotificationLabel': 'إغلاق الإشعار',
-  'feedbackToast.ToastContent.dismissLabel': 'إغلاق',
-  'language.question': 'هل تريد المتابعة بهذه اللغة؟',
-  'language.suggestion':
-    'اختر لغة only-tdy. يمكنك تغييرها لاحقًا من الإعدادات.',
-  'language.label': 'اللغة',
-  'language.continue': 'متابعة',
-  'language.english': 'English',
-  'language.arabic': 'العربية',
-};
 
 export const i18n = createInstance();
 void i18n.use(initReactI18next).init({

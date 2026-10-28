@@ -3,7 +3,6 @@ import { RailButton } from '../../../shared/RailButton.tsx';
 import { PageFooter } from '../../../shared/PageFooter.tsx';
 import type { FocusDestination } from '../contracts.ts';
 
-import { COPY } from './copy.ts';
 import { BacklogToggle } from './BacklogToggle.tsx';
 import { HomeToggle } from './HomeToggle.tsx';
 import { MoreMenu } from './MoreMenu.tsx';
@@ -41,8 +40,8 @@ export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
       <RailButton
         data-tour="nav-all"
         active={current === 'all'}
-        aria-label={COPY.allTasks}
-        title={COPY.allTasks}
+        aria-label={t('copy.allTasks')}
+        title={t('copy.allTasks')}
         aria-pressed={current === 'all'}
         onClick={() => {
           onNavigate('all');
@@ -92,6 +91,6 @@ const PAGE_LABEL = {
     return t('focusFooter.guide');
   },
   get version() {
-    return COPY.about;
+    return t('copy.about');
   },
 };

@@ -28,7 +28,6 @@ import {
   useTaskQuery,
 } from './data/queries.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
-import { COPY } from './components/copy.ts';
 import { TaskDetailScreen } from './components/TaskDetailScreen.tsx';
 
 const NO_PROJECTS: readonly Project[] = [];
@@ -98,7 +97,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     async (edit: TaskEdit): Promise<TaskDetail | undefined> => {
       if (disabled || edit.title === '') {
         if (!disabled)
-          setFeedback({ kind: 'error', message: COPY.titleRequired });
+          setFeedback({ kind: 'error', message: t('copy.titleRequired') });
         return undefined;
       }
 
@@ -120,7 +119,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
         }
         setFeedback({
           kind: 'error',
-          message: taskErrorMessage(error, COPY.saveFailed),
+          message: taskErrorMessage(error, t('copy.saveFailed')),
         });
         return undefined;
       }
@@ -143,7 +142,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
         }
         setFeedback({
           kind: 'error',
-          message: taskErrorMessage(error, COPY.deleteFailed),
+          message: taskErrorMessage(error, t('copy.deleteFailed')),
         });
       });
   }, [backHref, deleteTask, disabled, uid]);

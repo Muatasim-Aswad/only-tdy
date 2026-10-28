@@ -26,21 +26,21 @@ export const arabic: Readonly<Record<keyof typeof english, string>> = {
     'انتهت جلسة Tududi. سجّل الدخول مجددًا.',
   'tududiClient.responseError.thatTaskIsGone': 'لم تعد هذه المهمة موجودة.',
   'tududiClient.responseError.tududiCouldNotAcceptThisChange':
-    'تعذّر على Tududi قبول هذا التغيير. تحقّق من الحقول وحاول مجددًا.',
+    'تعذّر حفظ التغيير في Tududi. راجع البيانات التي أدخلتها وحاول مجددًا.',
   'tududiClient.responseError.yourSessionCouldNotVerifyThis':
-    'تعذّر التحقّق من هذا التغيير في جلستك. أعد التحميل وحاول مجددًا.',
+    'تعذّر التحقّق من صلاحية جلستك لإجراء التغيير. أعد تحميل الصفحة وحاول مجددًا.',
   'tududiClient.responseError.tududiCouldNotCompleteTheRequest':
     'تعذّر على Tududi إكمال الطلب. حاول مجددًا.',
   'tududiClient.createTududiClient.requestTimedOutRefreshBeforeRetrying':
-    'انتهت مهلة الطلب. حدّث الصفحة قبل إعادة محاولة التغيير.',
+    'استغرق الطلب وقتًا أطول من المتوقع. حدّث الصفحة قبل محاولة إجراء التغيير مجددًا.',
   'tududiClient.createTududiClient.yourTududiSessionExpired':
     'انتهت جلسة Tududi. سجّل الدخول مجددًا.',
   'tududiClient.createTududiClient.tududiReturnedAnUnreadableResponseRefresh':
-    'أرسل Tududi استجابة غير قابلة للقراءة. حدّث الصفحة قبل إعادة محاولة التغيير.',
+    'تعذّر فهم الردّ من Tududi. حدّث الصفحة قبل محاولة إجراء التغيير مجددًا.',
   'tududiClient.createTududiClient.couldNotReachTududiRefreshBefore':
-    'تعذّر الاتصال بـ Tududi. حدّث الصفحة قبل إعادة محاولة التغيير.',
+    'تعذّر الاتصال بـ Tududi. حدّث الصفحة قبل محاولة إجراء التغيير مجددًا.',
   'tududiClient.createTududiClient.yourSessionCouldNotVerifyThis':
-    'تعذّر التحقّق من هذا التغيير في جلستك. أعد التحميل وحاول مجددًا.',
+    'تعذّر التحقّق من صلاحية جلستك لإجراء التغيير. أعد تحميل الصفحة وحاول مجددًا.',
 };
 i18n.addResourceBundle('en', 'transport', english);
 i18n.addResourceBundle('ar', 'transport', arabic);

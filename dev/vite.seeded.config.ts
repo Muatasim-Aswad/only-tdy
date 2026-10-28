@@ -22,5 +22,8 @@ import { seededTududiApi } from './seeded-api.ts';
  */
 export default defineConfig({
   ...baseConfig,
-  plugins: [...(baseConfig.plugins ?? []), seededTududiApi()],
+  plugins: [
+    ...(baseConfig.plugins ?? []),
+    seededTududiApi({ freshAccount: process.env.ONLY_TDY_DEMO_FRESH === '1' }),
+  ],
 });

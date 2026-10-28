@@ -4,7 +4,7 @@ import { routePath } from '../../config/routes.ts';
 import { handleLinkNavigation, navigate } from '../../infra/navigation.ts';
 import type { TaskDetail, TaskEdit } from './contracts.ts';
 import { TaskDetailScreen } from './components/TaskDetailScreen.tsx';
-import { t } from './guidance/guidance-copy.ts';
+import { t } from './guidance/messages-guidance.ts';
 
 /** The ordinary editor with a temporary task; no task transport is involved. */
 export function TaskTourPage() {

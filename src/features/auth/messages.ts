@@ -27,14 +27,18 @@ export const english = {
 export const arabic: Readonly<Record<keyof typeof english, string>> = {
   'authBoundary.connecting': 'جارٍ الاتصال…',
   'authBoundary.couldNotConnectCheckYourConnection':
-    'تعذّر الاتصال. تحقّق من اتصالك وحاول مجددًا.',
-  'authBoundary.tryAgain': 'حاول مجددًا',
-  'loginScreen.credentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    'تعذّر الاتصال. تحقّق من اتصالك بالشبكة وحاول مجددًا.',
+  'authBoundary.tryAgain': 'إعادة المحاولة',
+  'loginScreen.credentials':
+    'بيانات الدخول غير صحيحة. تحقّق من البريد الإلكتروني وكلمة المرور.',
   'loginScreen.unverified':
-    'هذا الحساب يحتاج إلى تأكيد البريد الإلكتروني. اطلب المساعدة من مسؤول الخادم.',
-  'loginScreen.disabled': 'تسجيل الدخول بكلمة مرور غير متاح. تابع عبر Tududi.',
-  'loginScreen.limited': 'محاولات كثيرة. انتظر قليلًا قبل المحاولة مجددًا.',
-  'loginScreen.connection': 'تعذّر الاتصال. تحقّق من اتصالك وحاول مجددًا.',
+    'يجب تأكيد بريدك الإلكتروني أولًا. تواصل مع مسؤول الخادم للمساعدة.',
+  'loginScreen.disabled':
+    'تسجيل الدخول بكلمة المرور غير متاح. سجّل الدخول عبر Tududi.',
+  'loginScreen.limited':
+    'حاولت تسجيل الدخول مرات كثيرة. انتظر قليلًا ثم حاول مجددًا.',
+  'loginScreen.connection':
+    'تعذّر الاتصال. تحقّق من اتصالك بالشبكة وحاول مجددًا.',
   'loginScreen.signIn': 'تسجيل الدخول',
   'loginScreen.yourTududiSessionExpired':
     'انتهت جلسة Tududi. سجّل الدخول مجددًا.',
@@ -42,8 +46,8 @@ export const arabic: Readonly<Record<keyof typeof english, string>> = {
   'loginScreen.password': 'كلمة المرور',
   'loginScreen.signingIn': 'جارٍ تسجيل الدخول…',
   'loginScreen.passwordSignInIsUnavailableOn':
-    'تسجيل الدخول بكلمة مرور غير متاح على هذا الخادم.',
-  'loginScreen.continueThroughTududi': 'المتابعة عبر Tududi',
+    'تسجيل الدخول بكلمة المرور غير متاح على هذا الخادم.',
+  'loginScreen.continueThroughTududi': 'تسجيل الدخول عبر Tududi',
 };
 
 i18n.addResourceBundle('en', 'auth', english);

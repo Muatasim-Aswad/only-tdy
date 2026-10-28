@@ -13,7 +13,6 @@ import type {
 import { TUDUDI_LOGIN_PATH } from '../../../config/app.ts';
 
 import { BackLink } from './BackLink.tsx';
-import { COPY } from './copy.ts';
 import { DeleteTaskAction } from './DeleteTaskAction.tsx';
 import { TaskEditor } from './TaskEditor.tsx';
 
@@ -61,7 +60,7 @@ export function TaskDetailScreen({
   projects,
   tags,
   backHref,
-  backLabel = COPY.backToList,
+  backLabel = t('copy.backToList'),
   onBack,
   onSave,
   onDelete,
@@ -97,7 +96,7 @@ export function TaskDetailScreen({
                 className="focus-detail__save ms-auto"
                 disabled={disabled || saving || deleting || skipping}
               >
-                {COPY.save}
+                {t('copy.save')}
               </SubmitButton>
             ) : (
               <DeleteTaskAction
@@ -151,20 +150,20 @@ function renderState(
     case 'loading':
       return (
         <p className="focus-state ps-rail py-4 text-muted text-task">
-          {COPY.taskLoading}
+          {t('copy.taskLoading')}
         </p>
       );
 
     case 'not-found':
       return (
         <p className="focus-state ps-rail py-4 text-muted text-task">
-          {COPY.taskMissing}{' '}
+          {t('copy.taskMissing')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             href={backHref}
             onClick={onBack}
           >
-            {COPY.backToList}
+            {t('copy.backToList')}
           </a>
         </p>
       );
@@ -172,13 +171,13 @@ function renderState(
     case 'error':
       return (
         <p className="focus-state ps-rail py-4 text-muted text-task">
-          {COPY.taskLoadFailed}{' '}
+          {t('copy.taskLoadFailed')}{' '}
           <button
             type="button"
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             onClick={onRetry}
           >
-            {COPY.retry}
+            {t('copy.retry')}
           </button>
         </p>
       );
@@ -186,12 +185,12 @@ function renderState(
     case 'session-expired':
       return (
         <p className="focus-state ps-rail py-4 text-muted text-task">
-          {COPY.sessionExpired}{' '}
+          {t('copy.sessionExpired')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
             href={TUDUDI_LOGIN_PATH}
           >
-            {COPY.signIn}
+            {t('copy.signIn')}
           </a>
         </p>
       );

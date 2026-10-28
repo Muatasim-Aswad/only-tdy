@@ -4,7 +4,6 @@ import { t } from '../messages.ts';
 import { SubmitButton } from '../../../shared/SubmitButton.tsx';
 import type { Ref } from 'react';
 import { InputAction } from './InputAction.tsx';
-import { COPY } from './copy.ts';
 import { SuggestionList } from './SuggestionList.tsx';
 import { TokenChips } from './TokenChips.tsx';
 import { useSuggestions } from './useSuggestions.ts';
@@ -51,7 +50,7 @@ export function SearchField({
   formRef,
   onToggleMode,
   pageName = t('searchField.backlog'),
-  label = COPY.backlogSearchLabel,
+  label = t('copy.backlogSearchLabel'),
   onValueChange,
   onSubmit,
   projects,
@@ -103,7 +102,7 @@ export function SearchField({
             className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none focus-search__input"
             type="search"
             value={value}
-            placeholder={COPY.searchPlaceholder}
+            placeholder={t('input.promptPlaceholder')}
             onChange={(event) => {
               onValueChange(event.target.value);
               suggestions.noteCaret(event);

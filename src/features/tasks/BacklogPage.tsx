@@ -1,3 +1,4 @@
+import { t } from './messages.ts';
 import { guidanceFacts, useGuidancePage } from './guidance/events.ts';
 import { taskErrorMessage } from './data/errors.ts';
 import { useTaskSession } from './task-session.ts';
@@ -30,7 +31,6 @@ import {
 } from './data/queries.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
 import { BacklogScreen } from './components/BacklogScreen.tsx';
-import { COPY } from './components/copy.ts';
 import { usePreferences } from './preferences/usePreferences.ts';
 import { useDateTimezone } from './date-timezone.ts';
 
@@ -191,7 +191,10 @@ export function BacklogPage() {
            exactly that and nothing is moved to Today twice. */
         setChosen(new Set(failed.map((entry) => entry.task.uid)));
         setMoveFeedback({
-          message: moved.length === 0 ? COPY.moveFailed : COPY.movePartlyFailed,
+          message:
+            moved.length === 0
+              ? t('copy.moveFailed')
+              : t('copy.movePartlyFailed'),
           tone: 'error',
         });
       })
@@ -201,7 +204,7 @@ export function BacklogPage() {
           return;
         }
         setMoveFeedback({
-          message: taskErrorMessage(error, COPY.moveFailed),
+          message: taskErrorMessage(error, t('copy.moveFailed')),
           tone: 'error',
         });
       });
@@ -229,7 +232,7 @@ export function BacklogPage() {
   }, []);
 
   const message = !isOnline
-    ? COPY.moveOffline
+    ? t('copy.moveOffline')
     : request.kind === 'refused'
       ? request.message
       : moveFeedback?.message;

@@ -17,15 +17,15 @@ export const english = {
 export const arabic: Readonly<Record<keyof typeof english, string>> = {
   'versionScreen.aboutOnlyTdy': 'عن only-tdy',
   'versionScreen.captureTasksQuicklyChooseWhatMatters':
-    'دوّن مهامك بسرعة، واختر ما يهمك اليوم، واترك الباقي في قائمة الانتظار. مدير مهام يومي بسيط لمن ترهقهم تطبيقات الإنتاجية المعقّدة، دون عبء إدارة نظام إنتاجية كامل.',
+    'دوّن مهامك بسرعة، واختر ما تريد إنجازه اليوم، واترك الباقي في قائمة الانتظار. يساعدك only-tdy على تنظيم يومك ببساطة، دون أن تنشغل بتعقيدات تطبيقات الإنتاجية وكثرة أدواتها.',
   'copy.versionApp': 'إصدار التطبيق',
   'copy.versionReleased': 'تاريخ الإصدار',
   'copy.versionBuilt': 'تاريخ البناء',
-  'copy.versionRevision': 'المراجعة',
+  'copy.versionRevision': 'معرّف النسخة',
   'copy.versionChecking': 'جارٍ البحث عن تحديثات…',
   'copy.versionCurrent': 'لديك أحدث إصدار.',
   'copy.versionUnknown': 'تعذّر البحث عن تحديثات.',
-  'copy.versionReload': 'إعادة التحميل',
+  'copy.versionReload': 'إعادة تحميل الصفحة',
   'copy.versionAvailable': 'تحديث متاح: {{label}}.',
 };
 i18n.addResourceBundle('en', 'about', english);

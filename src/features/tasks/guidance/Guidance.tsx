@@ -8,16 +8,22 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   Joyride,
   EVENTS,
   type Step,
   type TooltipRenderProps,
 } from 'react-joyride';
-import { appLocale } from '../../../shared/i18n.ts';
+import { appLocale, i18n } from '../../../shared/i18n.ts';
 import { navigate } from '../../../infra/navigation.ts';
 import { routePath } from '../../../config/routes.ts';
+import {
+  GuideIcon,
+  HistoryIcon,
+  RepeatIcon,
+} from '../components/NavigationIcons.tsx';
+import { t as taskText } from '../messages.ts';
 import { usePreferences } from '../preferences/usePreferences.ts';
 import { preferencesStore } from '../preferences/store.ts';
 import { guidancePage, subscribeGuidance, subscribeTour } from './events.ts';
@@ -31,7 +37,7 @@ import {
   type Progress,
   type Signal,
 } from './model.ts';
-import { t } from './guidance-copy.ts';
+import { t } from './messages-guidance.ts';
 import './styles.css';
 
 interface Active {
@@ -58,7 +64,6 @@ const SELECTORS: Record<Lesson, string> = {
   tokens: '.focus-capture',
   more: '[data-tour="more"]',
   all: '[data-tour="nav-all"]',
-  repeating: '.focus-capture',
   reference: 'main',
 };
 const ROUTES = {
@@ -72,7 +77,6 @@ const ROUTES = {
   tokens: 'tasks',
   more: 'tasks',
   all: 'all',
-  repeating: 'repeating',
   reference: 'guide',
 } as const;
 const VISIBLE = (selector: string): HTMLElement | null =>
@@ -287,6 +291,9 @@ export function Guidance() {
             continuous
             steps={[step]}
             tooltipComponent={Tooltip}
+            styles={{
+              spotlight: { stroke: 'var(--accent)', strokeWidth: 1.5 },
+            }}
             options={{
               skipBeacon: true,
               blockTargetInteraction: true,
@@ -297,7 +304,7 @@ export function Guidance() {
               spotlightRadius: 6,
               zIndex: 10000,
               overlayColor: 'rgba(10, 20, 15, 0.32)',
-              arrowColor: 'var(--surface)',
+              arrowColor: 'var(--accent)',
               backgroundColor: 'var(--surface)',
             }}
             onEvent={(data) => {
@@ -391,6 +398,37 @@ function Tooltip({ tooltipProps, step }: TooltipRenderProps) {
     </div>
   );
 }
+const LESSON_MARKUP = {
+  token: (
+    <code
+      dir="auto"
+      className="rounded-[3px] bg-selection px-1 py-0.5 text-accent [font-family:inherit] [unicode-bidi:isolate]"
+    />
+  ),
+  keycap: (
+    <kbd
+      dir="ltr"
+      className="rounded-[3px] border border-line px-1 text-ink [font-family:inherit] [unicode-bidi:isolate]"
+    />
+  ),
+  name: <strong className="font-semibold text-ink" />,
+};
+
+function LessonText({
+  message,
+}: {
+  readonly message: Parameters<typeof t>[0];
+}) {
+  return (
+    <Trans
+      i18n={i18n}
+      ns="guidance"
+      i18nKey={message}
+      components={LESSON_MARKUP}
+    />
+  );
+}
+
 function LessonContent({
   active,
   progress,
@@ -407,26 +445,56 @@ function LessonContent({
     <>
       {!(id === 'backlog-tools' && !unused('selected')) && (
         <p>
-          {t(
-            full && id === 'backlog'
-              ? 'fullBacklog'
-              : id === 'tokens' && !unused('suggestion')
-                ? 'tokens.intro'
-                : `${id}.body`,
-          )}
+          <LessonText
+            message={
+              full && id === 'backlog'
+                ? 'fullBacklog'
+                : id === 'tokens' && !unused('suggestion')
+                  ? 'tokens.intro'
+                  : `${id}.body`
+            }
+          />
         </p>
       )}
       {id === 'backlog-tools' && (
         <ul className="mt-2 space-y-2 list-disc ps-5">
-          {unused('selected') && <li>{t('select')}</li>}
-          {unused('moved') && <li>{t('move')}</li>}
-          {unused('searched') && <li>{t('search')}</li>}
+          {unused('selected') && (
+            <li>
+              <LessonText message="select" />
+            </li>
+          )}
+          {unused('moved') && (
+            <li>
+              <LessonText message="move" />
+            </li>
+          )}
+          {unused('searched') && (
+            <li>
+              <LessonText message="search" />
+            </li>
+          )}
         </ul>
       )}
       {id === 'switch' && (
         <p className="text-meta text-muted mt-2" dir="auto">
-          {t('shortcut')}
+          <LessonText message="shortcut" />
         </p>
+      )}
+      {id === 'more' && (
+        <ul className="mt-3 space-y-2">
+          <li className="flex items-center gap-3">
+            <HistoryIcon />
+            {taskText('copy.history')}
+          </li>
+          <li className="flex items-center gap-3">
+            <RepeatIcon />
+            {taskText('morePanel.repeating')}
+          </li>
+          <li className="flex items-center gap-3">
+            <GuideIcon />
+            {taskText('copy.guide')}
+          </li>
+        </ul>
       )}
       {id === 'tokens' && (
         <>
@@ -436,7 +504,9 @@ function LessonContent({
                 <dt>
                   <bdi>{arabic ? '/اليوم' : '/today'}</bdi>
                 </dt>
-                <dd>{t('tokenToday')}</dd>
+                <dd>
+                  <LessonText message="tokenToday" />
+                </dd>
               </>
             )}
             {unused('token-tag') && (
@@ -444,7 +514,9 @@ function LessonContent({
                 <dt>
                   <bdi>{arabic ? '#وسم' : '#tag'}</bdi>
                 </dt>
-                <dd>{t('tokenTag')}</dd>
+                <dd>
+                  <LessonText message="tokenTag" />
+                </dd>
               </>
             )}
             {unused('token-priority') && (
@@ -452,7 +524,9 @@ function LessonContent({
                 <dt>
                   <bdi>!3</bdi>
                 </dt>
-                <dd>{t('tokenPriority')}</dd>
+                <dd>
+                  <LessonText message="tokenPriority" />
+                </dd>
               </>
             )}
             {unused('token-due') && (
@@ -460,14 +534,40 @@ function LessonContent({
                 <dt>
                   <bdi>{arabic ? '/استحقاق:غدا' : '/due:tomorrow'}</bdi>
                 </dt>
-                <dd>{t('tokenDue')}</dd>
+                <dd>
+                  <LessonText message="tokenDue" />
+                </dd>
+              </>
+            )}
+            {unused('token-repeating') && (
+              <>
+                <dt>
+                  <bdi>{arabic ? '/تكرار' : '/repeating'}</bdi>
+                </dt>
+                <dd>
+                  <LessonText message="tokenRepeating" />
+                </dd>
+              </>
+            )}
+            {unused('token-note') && (
+              <>
+                <dt>
+                  <bdi>{arabic ? '*(ملاحظة)' : '*(note)'}</bdi>
+                </dt>
+                <dd>
+                  <LessonText message="tokenNote" />
+                </dd>
               </>
             )}
           </dl>
           {unused('suggestion') && (
-            <p className="text-meta mt-3">{t('suggestion')}</p>
+            <p className="text-meta mt-3">
+              <LessonText message="suggestion" />
+            </p>
           )}
-          <p className="text-meta text-muted mt-2">{t('tokenReference')}</p>
+          <p className="text-meta text-muted mt-2">
+            <LessonText message="tokenReference" />
+          </p>
         </>
       )}
     </>

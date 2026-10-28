@@ -1,4 +1,3 @@
-import { guidanceFacts } from './guidance/events.ts';
 import { t } from './messages.ts';
 import { useMemo, useState } from 'react';
 import { routePath } from '../../config/routes.ts';
@@ -124,7 +123,6 @@ export function RepeatingCreatePage() {
             },
           });
           onCaptureChange('');
-          guidanceFacts('repeating-created');
           navigate(repeatingPath, { replace: true });
           return {
             ...task,

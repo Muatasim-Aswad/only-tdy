@@ -19,8 +19,8 @@ export const arabic: Readonly<Record<keyof typeof english, string>> = {
   'errorBoundary.onlyTdyCouldnTDisplayThisText':
     'تعذّر عرض هذه الصفحة في only-tdy.',
   'errorBoundary.reloadToTryAgainUnsavedDrafts':
-    'أعد التحميل للمحاولة مجددًا. ستفقد المسودات غير المحفوظة.',
-  'errorBoundary.reload': 'إعادة التحميل',
+    'أعد تحميل الصفحة للمحاولة مجددًا. ستُفقد المسودات التي لم تحفظها.',
+  'errorBoundary.reload': 'إعادة تحميل الصفحة',
   'updateToast.details': 'التفاصيل',
   'copy.updated': 'تم التحديث إلى {{label}}',
 };

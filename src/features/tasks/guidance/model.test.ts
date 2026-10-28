@@ -136,11 +136,6 @@ describe('guidance scheduling', () => {
     const seen = resolveLesson(base, 'capture', 'first', false);
     expect(nextLesson(seen, today, page(today), 'second')).toBeNull();
   });
-  it('treats creating a schedule as actual use of Repeating', () => {
-    expect(satisfied(addFacts(base, ['repeating-created']), 'repeating')).toBe(
-      true,
-    );
-  });
   it('bounds and validates persisted progress', () => {
     expect(readProgress('invalid')).toEqual(EMPTY_PROGRESS);
     expect(readProgress(JSON.stringify({ version: 99 }))).toEqual(

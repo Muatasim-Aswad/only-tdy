@@ -1,6 +1,6 @@
 {
   "name": "only-tdy",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "A minimalist daily task manager for people overwhelmed by productivity apps. Capture tasks quickly, choose what matters today, and leave the rest in Backlog.",

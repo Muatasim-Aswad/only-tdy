@@ -1,6 +1,6 @@
 import { guidanceFacts } from '../guidance/events.ts';
 import { tokenFacts } from '../guidance/token-facts.ts';
-import { appLocale } from '../../../shared/i18n.ts';
+import { appLocale, t as commonT } from '../../../shared/i18n.ts';
 import { textDirection } from '../../../shared/text-direction.ts';
 import { t } from '../messages.ts';
 import { RailButton } from '../../../shared/RailButton.tsx';
@@ -40,7 +40,6 @@ import {
 import { RecurrenceFields } from './RecurrenceFields.tsx';
 import { formatTagList, parseTagList } from '../domain/tag-list.ts';
 
-import { COPY, PRIORITY_NAME } from './copy.ts';
 import { classNames } from '../../../shared/classNames.ts';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
 import { SuggestionList } from './SuggestionList.tsx';
@@ -304,7 +303,7 @@ export function TaskEditor({
       if (!parsed.ok) {
         setLocalError(
           parsed.error.kind === 'empty-title'
-            ? COPY.titleRequired
+            ? t('copy.titleRequired')
             : parsed.error.message,
         );
         return;
@@ -340,7 +339,7 @@ export function TaskEditor({
       };
     }
     if (resolved.title === '') {
-      setLocalError(COPY.titleRequired);
+      setLocalError(t('copy.titleRequired'));
       return;
     }
     resolved = applyDateRules(
@@ -352,7 +351,7 @@ export function TaskEditor({
     try {
       validateHideDate(resolved.dueDate, resolved.deferUntil);
     } catch (error) {
-      setLocalError(taskErrorMessage(error, COPY.saveFailed));
+      setLocalError(taskErrorMessage(error, t('copy.saveFailed')));
       return;
     }
     const saved = await onSave(resolved);
@@ -469,7 +468,7 @@ export function TaskEditor({
                 }
                 htmlFor="task-title"
               >
-                {COPY.titleLabel}
+                {t('copy.titleLabel')}
               </label>
               <div className="focus-capture__field relative flex-auto min-w-0">
                 <div
@@ -524,10 +523,10 @@ export function TaskEditor({
                   {compact ? (
                     <>
                       <span aria-hidden="true">!</span>
-                      <span className="sr-only">{COPY.noteLabel}</span>
+                      <span className="sr-only">{t('copy.noteLabel')}</span>
                     </>
                   ) : (
-                    COPY.noteLabel
+                    t('copy.noteLabel')
                   )}
                 </label>
                 <div
@@ -545,7 +544,7 @@ export function TaskEditor({
                     onChange={(event) => {
                       update('note', event.target.value);
                     }}
-                    placeholder={COPY.placeholder}
+                    placeholder={t('taskEditor.emptyPlaceholder')}
                     rows={1}
                   />
                 </div>
@@ -599,7 +598,7 @@ export function TaskEditor({
                           event.preventDefault();
                           event.currentTarget.form?.requestSubmit();
                         }}
-                        placeholder={COPY.placeholder}
+                        placeholder={t('taskEditor.emptyPlaceholder')}
                         autoCorrect="off"
                         autoCapitalize="none"
                         spellCheck={false}
@@ -632,8 +631,8 @@ export function TaskEditor({
                       update('projectUid', value);
                     }}
                   >
-                    <option value="" aria-label={COPY.noValueName}>
-                      {COPY.noValue}
+                    <option value="" aria-label={t('copy.noValueName')}>
+                      {commonT('display.noValue')}
                     </option>
                     {options.map((project) => (
                       <option key={project.uid} value={project.uid}>
@@ -686,9 +685,8 @@ export function TaskEditor({
               >
                 {PRIORITY_ORDER.map((priority) => (
                   <option key={priority} value={priority}>
-                    {compact
-                      ? `!${PRIORITY_NAME[priority]}`
-                      : PRIORITY_NAME[priority]}
+                    {compact ? '!' : ''}
+                    {t(`copy.${priority}`)}
                   </option>
                 ))}
               </Select>
@@ -699,7 +697,7 @@ export function TaskEditor({
                 id="task-due"
                 type="date"
                 value={fields.dueDate}
-                placeholder={COPY.datePlaceholder}
+                placeholder={t('copy.datePlaceholder')}
                 onChange={(value) => {
                   update('dueDate', value);
                 }}
@@ -712,7 +710,7 @@ export function TaskEditor({
                   id="task-defer"
                   type="date"
                   value={fields.deferUntil}
-                  placeholder={COPY.datePlaceholder}
+                  placeholder={t('copy.datePlaceholder')}
                   onChange={(value) => {
                     update('deferUntil', value);
                   }}
@@ -813,7 +811,7 @@ function feedbackMessage(feedback: SaveFeedback): string | undefined {
     case 'none':
       return undefined;
     case 'offline':
-      return COPY.saveOffline;
+      return t('copy.saveOffline');
     case 'error':
       return feedback.message;
   }

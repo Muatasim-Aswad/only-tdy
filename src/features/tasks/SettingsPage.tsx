@@ -81,9 +81,12 @@ export function SettingsPage() {
       ) : null}
       <section
         className="focus-settings__section ms-rail mt-7"
-        aria-label={commonT('language.label')}
+        aria-labelledby="settings-general-heading"
       >
-        <div className="focus-settings__field py-3 flex flex-col gap-1">
+        <h2 id="settings-general-heading" className="text-section mb-2">
+          {t('settingsPage.generalLabel')}
+        </h2>
+        <div className="focus-settings__field py-3 flex items-center gap-3">
           <label
             htmlFor="settings-language"
             className="flex items-center min-h-11 text-muted text-meta"
@@ -91,6 +94,8 @@ export function SettingsPage() {
             {commonT('language.label')}
           </label>
           <Select
+            className="max-w-fit"
+            controlClassName="min-h-11"
             id="settings-language"
             value={settings.locale ?? appLocale()}
             disabled={disabled}
@@ -106,12 +111,7 @@ export function SettingsPage() {
             </option>
           </Select>
         </div>
-      </section>
-      <section
-        className="focus-settings__section ms-rail mt-7 [&+section]:mt-0"
-        aria-label={t('settingsPage.appearanceLabel')}
-      >
-        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 focus-settings__field--stack flex flex-col items-stretch gap-1">
+        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-t border-line flex items-center gap-3">
           <label
             htmlFor="settings-theme"
             className="flex items-center min-h-11 text-muted text-meta"
@@ -119,8 +119,8 @@ export function SettingsPage() {
             {t('settingsPage.theme')}
           </label>
           <Select
-            className="flex-auto"
-            controlClassName="flex-auto min-h-11"
+            className="max-w-fit"
+            controlClassName="min-h-11"
             id="settings-theme"
             value={settings.theme}
             disabled={disabled}
@@ -133,13 +133,58 @@ export function SettingsPage() {
             <option value="dark">{t('settingsPage.dark')}</option>
           </Select>
         </div>
+        <div className="focus-settings__field py-4 border-t border-line">
+          <div className="flex items-center justify-between gap-5">
+            <div>
+              <p id="settings-tips-label" className="text-action">
+                {t('settingsPage.tips')}
+              </p>
+              <p id="settings-tips-help" className="text-meta text-muted mt-1">
+                {t('settingsPage.tipsHelp')}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-meta text-muted" aria-hidden="true">
+                {t(
+                  settings.guidanceTips
+                    ? 'settingsPage.tipsOn'
+                    : 'settingsPage.tipsOff',
+                )}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={settings.guidanceTips}
+                aria-labelledby="settings-tips-label"
+                aria-describedby="settings-tips-help"
+                disabled={disabled}
+                className="inline-flex items-center justify-center min-h-11 min-w-11 cursor-pointer rounded-[6px] enabled:hover:opacity-85 focus-visible:[outline:2px_solid_var(--accent)] focus-visible:[outline-offset:3px] enabled:active:opacity-70 disabled:opacity-50 disabled:cursor-default"
+                onClick={() => {
+                  update({ guidanceTips: !settings.guidanceTips });
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`flex items-center w-11 h-6 p-[3px] border rounded-full ${settings.guidanceTips ? 'justify-end bg-accent border-accent' : 'justify-start bg-selection border-line'}`}
+                >
+                  <span
+                    className={`block size-4 rounded-full ${settings.guidanceTips ? 'bg-canvas' : 'bg-muted'}`}
+                  />
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
       <section
-        className="focus-settings__section ms-rail mt-7 [&+section]:mt-0"
-        aria-label={t('settingsPage.planningLabel')}
+        className="focus-settings__section ms-rail mt-7"
+        aria-labelledby="settings-planning-heading"
       >
-        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 border-t border-line">
-          <div className="focus-settings__field--stack flex flex-col items-stretch gap-1">
+        <h2 id="settings-planning-heading" className="text-section mb-2">
+          {t('settingsPage.planningLabel')}
+        </h2>
+        <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0">
+          <div className="focus-settings__field--stack flex flex-col items-stretch gap-1 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-x-6">
             <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-promotion" className="text-meta">
                 {t('settingsPage.moveDueTasksToToday')}
@@ -166,7 +211,7 @@ export function SettingsPage() {
           </div>
         </div>
         <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 border-t border-line">
-          <div className="focus-settings__field--stack flex flex-col items-stretch gap-1">
+          <div className="focus-settings__field--stack flex flex-col items-stretch gap-1 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-x-6">
             <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-dated" className="text-meta">
                 {t('settingsPage.showDatedTasksInBacklog')}
@@ -233,56 +278,11 @@ export function SettingsPage() {
             {settings.datedBacklog === 'before' && daysError ? (
               <p
                 id="settings-days-error"
-                className="focus-settings__days-error mt-1 me-0 mb-0 ms-0 text-priority-high text-meta"
+                className="focus-settings__days-error mt-1 me-0 mb-0 ms-0 text-priority-high text-meta sm:col-start-2"
               >
                 {t('settingsPage.enterAWholeNumberFrom1')}
               </p>
             ) : null}
-          </div>
-        </div>
-      </section>
-      <section
-        className="ms-rail mt-4 py-4 border-t border-line"
-        aria-labelledby="settings-tips-label"
-      >
-        <div className="flex items-center justify-between gap-5">
-          <div>
-            <p id="settings-tips-label" className="text-action">
-              {t('settingsPage.tips')}
-            </p>
-            <p id="settings-tips-help" className="text-meta text-muted mt-1">
-              {t('settingsPage.tipsHelp')}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-meta text-muted" aria-hidden="true">
-              {t(
-                settings.guidanceTips
-                  ? 'settingsPage.tipsOn'
-                  : 'settingsPage.tipsOff',
-              )}
-            </span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.guidanceTips}
-              aria-labelledby="settings-tips-label"
-              aria-describedby="settings-tips-help"
-              disabled={disabled}
-              className="inline-flex items-center justify-center min-h-11 min-w-11 cursor-pointer rounded-[6px] enabled:hover:opacity-85 focus-visible:[outline:2px_solid_var(--accent)] focus-visible:[outline-offset:3px] enabled:active:opacity-70 disabled:opacity-50 disabled:cursor-default"
-              onClick={() => {
-                update({ guidanceTips: !settings.guidanceTips });
-              }}
-            >
-              <span
-                aria-hidden="true"
-                className={`flex items-center w-11 h-6 p-[3px] border rounded-full ${settings.guidanceTips ? 'justify-end bg-accent border-accent' : 'justify-start bg-selection border-line'}`}
-              >
-                <span
-                  className={`block size-4 rounded-full ${settings.guidanceTips ? 'bg-canvas' : 'bg-muted'}`}
-                />
-              </span>
-            </button>
           </div>
         </div>
       </section>

@@ -96,10 +96,9 @@ src/app/UpdateToast.tsx
 src/app/VersionPage.tsx
 src/app/VersionScreen.test.tsx
 src/app/VersionScreen.tsx
-src/app/about-messages.ts
 src/app/architecture.test.ts
-src/app/copy.ts
 src/app/main.tsx
+src/app/messages-about.ts
 src/app/messages.ts
 src/app/styles.css
 src/app/styles.test.ts
@@ -175,8 +174,7 @@ src/features/tasks/components/TaskRow.test.tsx
 src/features/tasks/components/TaskRow.tsx
 src/features/tasks/components/TodayClear.tsx
 src/features/tasks/components/TokenChips.tsx
-src/features/tasks/components/copy.ts
-src/features/tasks/components/guide-copy.ts
+src/features/tasks/components/guide-reference.ts
 src/features/tasks/components/testing/fixtures.ts
 src/features/tasks/components/useSuggestions.ts
 src/features/tasks/contracts.ts
@@ -222,7 +220,7 @@ src/features/tasks/guidance/Guidance.tsx
 src/features/tasks/guidance/GuidanceControls.tsx
 src/features/tasks/guidance/events.test.ts
 src/features/tasks/guidance/events.ts
-src/features/tasks/guidance/guidance-copy.ts
+src/features/tasks/guidance/messages-guidance.ts
 src/features/tasks/guidance/model.test.ts
 src/features/tasks/guidance/model.ts
 src/features/tasks/guidance/styles.css
@@ -249,6 +247,7 @@ src/infra/deployed-build.test.ts
 src/infra/deployed-build.ts
 src/infra/locale.test.ts
 src/infra/locale.ts
+src/infra/messages-transport.ts
 src/infra/navigation.test.tsx
 src/infra/navigation.ts
 src/infra/session.ts
@@ -257,7 +256,6 @@ src/infra/theme.test.ts
 src/infra/theme.ts
 src/infra/tududi-client.test.ts
 src/infra/tududi-client.ts
-src/infra/tududi-copy.ts
 src/infra/tududi-profile.test.ts
 src/infra/tududi-profile.ts
 src/infra/useOnlineStatus.ts
@@ -276,6 +274,7 @@ src/shared/SubmitButton.tsx
 src/shared/classNames.ts
 src/shared/i18n.test.ts
 src/shared/i18n.ts
+src/shared/messages-common.ts
 src/shared/styles/base.css
 src/shared/styles/fonts.css
 src/shared/styles/select.css

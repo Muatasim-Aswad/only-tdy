@@ -99,6 +99,7 @@ export function useTaskCapture({
       return;
     }
     if (parsed.repeating) {
+      guidanceFacts('token-repeating');
       navigate(routePath({ kind: 'new-repeating' }));
       return;
     }

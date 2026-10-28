@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { installApi, installTaskApi, TODAY_TASKS } from './fixtures.ts';
 
 for (const [locale, heading] of [
-  ['ar-EG', 'هل تريد المتابعة بهذه اللغة؟'],
+  ['ar-EG', 'هل نتابع بالعربية؟'],
   ['fr-FR', 'Continue in this language?'],
 ] as const) {
   test(`confirms a supported language before sign-in for ${locale}`, async ({
@@ -61,7 +61,7 @@ test('honors a newly confirmed language over an older account preference', async
   });
   await page.goto(`${baseURL ?? ''}/only-tdy/`);
   await expect(
-    page.getByRole('heading', { name: 'هل تريد المتابعة بهذه اللغة؟' }),
+    page.getByRole('heading', { name: 'هل نتابع بالعربية؟' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'متابعة', exact: true }).click();
   await expect(
@@ -200,7 +200,13 @@ test('aligns mixed-direction token mirrors with native editable fields', async (
   await page.goto('/only-tdy/');
   const capture = page.getByRole('combobox', { name: 'ما الذي تريد إنجازه؟' });
   await expect(capture).toHaveCSS('direction', 'rtl');
+  await capture.focus();
+  await expect(capture).toHaveCSS('unicode-bidi', 'isolate');
   await expect(page.locator('.focus-chips')).toHaveCSS('direction', 'rtl');
+  await expect(page.locator('.focus-chips')).toHaveCSS(
+    'unicode-bidi',
+    'isolate',
+  );
   await capture.fill('123 /');
   await expect(capture).toHaveCSS('direction', 'rtl');
   for (const [name, value, direction] of [
@@ -238,7 +244,9 @@ test('starts empty Arabic search and editor fields on the right', async ({
   await installTaskApi(page);
   await page.goto('/only-tdy/backlog');
   const search = page.getByRole('combobox');
+  await search.focus();
   await expect(search).toHaveCSS('direction', 'rtl');
+  await expect(search).toHaveCSS('unicode-bidi', 'isolate');
   await search.fill('123');
   await expect(search).toHaveCSS('direction', 'rtl');
   await page.goto('/only-tdy/task/task-invoice');
@@ -246,6 +254,7 @@ test('starts empty Arabic search and editor fields on the right', async ({
     const field = page.locator(`#${id}`);
     await field.fill('');
     await expect(field).toHaveCSS('direction', 'rtl');
+    await expect(field).toHaveCSS('unicode-bidi', 'isolate');
     await field.fill('123');
     await expect(field).toHaveCSS('direction', 'rtl');
     await field.fill('Review');

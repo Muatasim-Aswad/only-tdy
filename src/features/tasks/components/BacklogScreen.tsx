@@ -1,3 +1,4 @@
+import { t } from '../messages.ts';
 import { PageShell } from '../../../shared/PageShell.tsx';
 import { TaskInput } from './TaskInput.tsx';
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
@@ -8,7 +9,6 @@ import type { FocusDestination, TaskListState } from '../contracts.ts';
 import { orderBySelection } from '../backlog-state.ts';
 
 import { BacklogActions } from './BacklogActions.tsx';
-import { COPY } from './copy.ts';
 import { FocusFooter } from './FocusFooter.tsx';
 import { TaskList } from './TaskList.tsx';
 
@@ -135,7 +135,9 @@ export function BacklogScreen({
         onToggle={onToggleSelection}
         onOpenTask={onOpenTask}
         onRetry={onRetry}
-        emptyMessage={searching ? COPY.backlogSearchEmpty : COPY.backlogEmpty}
+        emptyMessage={
+          searching ? t('copy.backlogSearchEmpty') : t('copy.backlogEmpty')
+        }
         ruled
         disabled={disabled}
       />

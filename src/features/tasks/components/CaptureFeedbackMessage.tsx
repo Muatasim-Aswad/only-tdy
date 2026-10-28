@@ -4,7 +4,6 @@ import type { MouseEvent } from 'react';
 import type { CaptureFeedback } from '../contracts.ts';
 import { taskPath } from '../../../config/routes.ts';
 
-import { COPY } from './copy.ts';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
 
 export interface CaptureFeedbackMessageProps {
@@ -34,7 +33,7 @@ export function CaptureFeedbackMessage({
       return (
         <FeedbackToast
           key={feedback.uid}
-          message={COPY.addedToBacklog}
+          message={t('copy.addedToBacklog')}
           duration={8000}
           onDismiss={onDismiss}
           action={
@@ -64,6 +63,6 @@ export function CaptureFeedbackMessage({
         />
       );
     case 'offline':
-      return <FeedbackToast message={COPY.offline} />;
+      return <FeedbackToast message={t('copy.offline')} />;
   }
 }

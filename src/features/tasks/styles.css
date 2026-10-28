@@ -168,6 +168,12 @@
     overflow: hidden;
     overflow-wrap: anywhere;
   }
+  /* Empty paragraphs have no text direction to infer; keep the UI-language fallback. */
+  :is(.focus-tokens, .focus-grow)[data-value='']
+    > :is(textarea, input, .focus-chips),
+  :is(.focus-tokens, .focus-grow)[data-value='']::after {
+    unicode-bidi: isolate;
+  }
   .focus-detail__title > .focus-chips {
     padding: 0;
   }

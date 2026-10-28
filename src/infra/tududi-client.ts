@@ -1,4 +1,4 @@
-import { t } from './tududi-copy.ts';
+import { t } from './messages-transport.ts';
 import { PublicError } from '../shared/PublicError.ts';
 import { expireSession, sessionGeneration } from './session.ts';
 

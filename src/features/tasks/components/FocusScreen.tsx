@@ -11,7 +11,6 @@ import type {
 
 import { TaskInput } from './TaskInput.tsx';
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
-import { COPY } from './copy.ts';
 import { FocusFooter } from './FocusFooter.tsx';
 import { FeedbackToast } from '../../../shared/FeedbackToast.tsx';
 import { TaskList } from './TaskList.tsx';
@@ -125,9 +124,9 @@ export function FocusScreen({
           repeating
             ? t('focusScreen.searchRepeatingTasks')
             : all
-              ? COPY.allSearchLabel
+              ? t('copy.allSearchLabel')
               : history
-                ? COPY.historySearchLabel
+                ? t('copy.historySearchLabel')
                 : t('focusScreen.searchToday')
         }
         projects={projectNames}
@@ -161,11 +160,11 @@ export function FocusScreen({
             : history
               ? all
                 ? searching
-                  ? COPY.allSearchEmpty
-                  : COPY.allEmpty
+                  ? t('copy.allSearchEmpty')
+                  : t('copy.allEmpty')
                 : searching
-                  ? COPY.historySearchEmpty
-                  : COPY.historyEmpty
+                  ? t('copy.historySearchEmpty')
+                  : t('copy.historyEmpty')
               : t('focusScreen.nothingOnTodayMatchesThat')
         }
         ruled={history}

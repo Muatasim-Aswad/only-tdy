@@ -1,8 +1,6 @@
-import { ActionButton } from '../../../shared/ActionButton.tsx';
 import { t } from '../messages.ts';
 import { handleLinkNavigation } from '../../../infra/navigation.ts';
 import { routePath } from '../../../config/routes.ts';
-import { COPY } from './copy.ts';
 import { useState } from 'react';
 import { useAuthSession } from '../../auth/session.ts';
 import {
@@ -11,6 +9,7 @@ import {
   HistoryIcon,
   SettingsIcon,
   RepeatIcon,
+  SignOutIcon,
 } from './NavigationIcons.tsx';
 
 const ABOUT_PATH = routePath({ kind: 'version' });
@@ -26,6 +25,13 @@ const MENU_LINKS = [
     Icon: RepeatIcon,
   },
   {
+    href: GUIDE_PATH,
+    get label() {
+      return t('copy.guide');
+    },
+    Icon: GuideIcon,
+  },
+  {
     href: SETTINGS_PATH,
     get label() {
       return t('morePanel.settings');
@@ -33,16 +39,9 @@ const MENU_LINKS = [
     Icon: SettingsIcon,
   },
   {
-    href: GUIDE_PATH,
-    get label() {
-      return COPY.guide;
-    },
-    Icon: GuideIcon,
-  },
-  {
     href: ABOUT_PATH,
     get label() {
-      return COPY.about;
+      return t('copy.about');
     },
     Icon: AboutIcon,
   },
@@ -79,7 +78,7 @@ export function MorePanel({
         }}
       >
         <HistoryIcon />
-        {COPY.history}
+        {t('copy.history')}
       </button>
       {MENU_LINKS.map(({ href, label, Icon }) => (
         <a
@@ -96,10 +95,11 @@ export function MorePanel({
         </a>
       ))}
       {session !== null && (
-        <ActionButton
+        <button
+          type="button"
           disabled={signingOut}
           aria-busy={signingOut}
-          className="mx-3 my-2"
+          className="focus-more__item [--menu-icon-color:var(--muted)] flex items-center gap-3 min-h-11 px-4 py-2 text-ink text-start whitespace-nowrap cursor-pointer focus-visible:bg-selection focus-visible:outline-none enabled:hover:bg-selection disabled:cursor-default disabled:opacity-50 aria-busy:cursor-wait text-action"
           onClick={() => {
             setSigningOut(true);
             setSignOutError(false);
@@ -109,8 +109,9 @@ export function MorePanel({
             });
           }}
         >
+          <SignOutIcon />
           {signingOut ? t('morePanel.signingOut') : t('morePanel.signOut')}
-        </ActionButton>
+        </button>
       )}
       {signOutError && (
         <p

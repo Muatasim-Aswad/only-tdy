@@ -16,7 +16,6 @@ import { useFocusWithin } from '../../../shared/useFocusWithin.ts';
  * no word. The accessible name still asks the question in words, because
  * neither the marker nor a run of periods reaches a screen reader.
  */
-const CAPTURE_PLACEHOLDER = '.....';
 
 export interface CaptureFieldProps {
   readonly formRef?: Ref<HTMLFormElement>;
@@ -131,7 +130,7 @@ export function CaptureField({
             className="focus-capture__input placeholder:text-muted placeholder:opacity-55 placeholder:font-placeholder bg-transparent text-ink resize-none"
             value={value}
             rows={1}
-            placeholder={CAPTURE_PLACEHOLDER}
+            placeholder={t('input.promptPlaceholder')}
             onChange={(event) => {
               onValueChange(event.target.value);
               suggestions.noteCaret(event);
