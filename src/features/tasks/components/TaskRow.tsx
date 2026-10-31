@@ -110,6 +110,7 @@ export const TaskRow = memo(function TaskRow({
 
   return (
     <li
+      data-task-uid={task.uid}
       className={classNames(
         'focus-row [.focus-list--ruled_.focus-row_+_&]:border-t [.focus-list--ruled_.focus-row_+_&]:border-t-line flex items-start cursor-default bg-transparent hover:bg-surface transition-colors duration-120 ease-focus',
         hasMetadata ? 'focus-row--metadata min-h-16' : 'min-h-14',

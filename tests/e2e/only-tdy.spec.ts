@@ -1362,6 +1362,103 @@ function manyTasks(count: number) {
   }));
 }
 
+test('keeps the backlog reading position when choosing tasks', async ({
+  page,
+}) => {
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 700 });
+    await installApi(page, {
+      backlog: manyTasks(40).map((task, index) => ({
+        ...task,
+        status: 0,
+        tags: index % 2 === 0 ? [{ name: 'home' }] : [],
+      })),
+    });
+    await page.goto('/only-tdy/backlog');
+    const anchor = page.getByRole('link', {
+      name: 'Task number 18',
+      exact: true,
+    });
+    await expect(anchor).toBeVisible();
+    await page.evaluate(() => {
+      window.scrollTo(0, 950);
+    });
+    const before = await anchor.boundingBox();
+    if (before === null) throw new Error('Missing anchor row.');
+
+    await page
+      .getByRole('button', {
+        name: 'Add “Task number 20” to Today',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByText('1 selected')).toBeInViewport();
+    const after = await anchor.boundingBox();
+    if (after === null) throw new Error('Missing anchor row.');
+    expect(Math.abs(after.y - before.y)).toBeLessThan(2);
+    await expect(
+      page.getByRole('link', { name: 'Task number 20', exact: true }),
+    ).not.toBeInViewport();
+
+    await page
+      .getByRole('button', {
+        name: 'Add “Task number 21” to Today',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByText('2 selected')).toBeInViewport();
+    const again = await anchor.boundingBox();
+    if (again === null) throw new Error('Missing anchor row.');
+    expect(Math.abs(again.y - before.y)).toBeLessThan(2);
+    await expect(
+      page.getByRole('button', { name: 'Move to Today', exact: true }),
+    ).toBeInViewport();
+    await page.screenshot({
+      path: test.info().outputPath(`backlog-sticky-${String(width)}.png`),
+    });
+
+    const keyboardChoice = page.getByRole('button', {
+      name: 'Add “Task number 22” to Today',
+      exact: true,
+    });
+    await keyboardChoice.focus();
+    await keyboardChoice.press('Space');
+    await expect(page.getByText('3 selected')).toBeInViewport();
+    await expect(
+      page.getByRole('button', {
+        name: 'Add “Task number 23” to Today',
+        exact: true,
+      }),
+    ).toBeFocused();
+    expect(await page.locator('.focus-row__title').allTextContents()).toEqual([
+      'Task number 20',
+      'Task number 21',
+      'Task number 22',
+      ...manyTasks(40)
+        .filter((task) => !['task-20', 'task-21', 'task-22'].includes(task.uid))
+        .map((task) => task.name),
+    ]);
+
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    for (const number of [20, 21, 22]) {
+      await page
+        .getByRole('button', {
+          name: `Leave “Task number ${String(number)}” in Backlog`,
+          exact: true,
+        })
+        .click();
+    }
+    await expect(
+      page.getByRole('button', { name: 'Move to Today', exact: true }),
+    ).toHaveCount(0);
+    expect(await page.locator('.focus-row__title').allTextContents()).toEqual(
+      manyTasks(40).map((task) => task.name),
+    );
+  }
+});
+
 /** Where the foot of the page is, relative to what is on screen. */
 async function footerBox(page: import('@playwright/test').Page) {
   return page.evaluate(() => {

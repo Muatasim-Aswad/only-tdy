@@ -39,6 +39,7 @@ HTTP calls use same-origin `/api/`, session cookies and CSRF tokens for writes. 
 - The date-only editor omits unchanged due dates from PATCH. Changed nonempty dates carry the server's current due time; clearing a date clears its time. Reminders stay unchanged.
 - Unfinished tasks sort by priority, then `#urgent`, then oldest creation; completed rows sink. Completed history uses newest completion first.
 - Search submits one phrase, exact tag, resolved project or priority; unknown/ambiguous projects are refused. Typing narrows loaded rows; Today search stays local.
+- Backlog selection lifts chosen rows while preserving the reading position of nearby unselected rows. The selection count and move action stay sticky while scrolling.
 
 ## Runtime and recovery
 

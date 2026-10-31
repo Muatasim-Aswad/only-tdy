@@ -195,6 +195,7 @@ test('keeps Arabic pages accessible and within narrow and desktop viewports', as
 test('aligns mixed-direction token mirrors with native editable fields', async ({
   page,
 }) => {
+  await page.clock.setFixedTime(new Date('2026-10-28T12:00:00Z'));
   await arabicAccount(page);
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto('/only-tdy/');

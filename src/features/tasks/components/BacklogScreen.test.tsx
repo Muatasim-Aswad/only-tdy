@@ -41,8 +41,11 @@ describe('BacklogScreen', () => {
   it('reads in the order it is used: field, what is chosen, list, way out', () => {
     renderScreen();
 
-    const shell = document.querySelector('.focus-shell');
-    const order = [...(shell?.children ?? [])].map(
+    const order = [
+      ...document.querySelectorAll(
+        '.focus-capture, .focus-backlog__actions, .focus-listing, .focus-footer',
+      ),
+    ].map(
       (child) => `${child.tagName.toLowerCase()}.${child.classList[0] ?? ''}`,
     );
     expect(order).toEqual([
