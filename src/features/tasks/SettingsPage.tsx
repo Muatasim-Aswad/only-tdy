@@ -64,7 +64,7 @@ export function SettingsPage() {
         </span>
       </header>
       {status === 'local' || status === 'unavailable' || !cached ? (
-        <div className="focus-settings__sync-error [&_p]:m-0 [&_button]:min-h-11 [&_button]:text-accent [&_button]:cursor-pointer [&_button:focus-visible]:text-accent hover:[&_button]:text-accent ms-rail text-muted text-meta">
+        <div className="focus-settings__sync-error [&_p]:m-0 [&_button]:min-h-11 [&_button]:text-accent [&_button]:cursor-pointer [&_button:focus-visible]:text-accent hover:[&_button]:text-accent text-muted text-meta">
           <p>{syncMessage(status, cached)}</p>
           {status === 'local' || status === 'unavailable' ? (
             <button
@@ -80,7 +80,7 @@ export function SettingsPage() {
         </div>
       ) : null}
       <section
-        className="focus-settings__section ms-rail mt-7"
+        className="focus-settings__section mt-7"
         aria-labelledby="settings-general-heading"
       >
         <h2 id="settings-general-heading" className="text-section mb-2">
@@ -177,7 +177,7 @@ export function SettingsPage() {
         </div>
       </section>
       <section
-        className="focus-settings__section ms-rail mt-7"
+        className="focus-settings__section mt-7"
         aria-labelledby="settings-planning-heading"
       >
         <h2 id="settings-planning-heading" className="text-section mb-2">
@@ -185,7 +185,7 @@ export function SettingsPage() {
         </h2>
         <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0">
           <div className="focus-settings__field--stack flex flex-col items-stretch gap-1 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-x-6">
-            <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
+            <div className="focus-settings__label relative flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-promotion" className="text-meta">
                 {t('settingsPage.moveDueTasksToToday')}
               </label>
@@ -212,7 +212,7 @@ export function SettingsPage() {
         </div>
         <div className="focus-settings__field min-w-0 m-0 py-3 px-0 border-0 border-t border-line">
           <div className="focus-settings__field--stack flex flex-col items-stretch gap-1 sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-center sm:gap-x-6">
-            <div className="focus-settings__label flex items-center gap-1 min-h-11 text-muted">
+            <div className="focus-settings__label relative flex items-center gap-1 min-h-11 text-muted">
               <label htmlFor="settings-dated" className="text-meta">
                 {t('settingsPage.showDatedTasksInBacklog')}
               </label>
@@ -286,7 +286,7 @@ export function SettingsPage() {
           </div>
         </div>
       </section>
-      <div className="focus-settings__reset [&_button]:min-h-11 [&_button]:text-priority-high [&_button]:cursor-pointer [&_button]:transition-[color] [&_button]:duration-120 [&_button]:ease-focus [&_button:focus-visible]:underline [&_button:focus-visible]:underline-offset-[3px] hover:[&_button]:underline hover:[&_button]:underline-offset-[3px] [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 ms-rail mt-7">
+      <div className="focus-settings__reset [&_button]:min-h-11 [&_button]:text-priority-high [&_button]:cursor-pointer [&_button]:transition-[color] [&_button]:duration-120 [&_button]:ease-focus [&_button:focus-visible]:underline [&_button:focus-visible]:underline-offset-[3px] hover:[&_button]:underline hover:[&_button]:underline-offset-[3px] [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 mt-7">
         <button
           type="button"
           className="text-action"

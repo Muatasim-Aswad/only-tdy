@@ -21,10 +21,12 @@ export interface FocusFooterProps {
   readonly onNavigate: (destination: FocusDestination) => void;
 }
 
-/** Home, Backlog and All stay on the rail; a selected menu page adds its mark. */
+/** The selected menu page adds its mark after Today, Backlog and All. */
 export function FocusFooter({ current, onNavigate }: FocusFooterProps) {
   return (
-    <PageFooter>
+    <PageFooter
+      align={current === 'guide' || current === 'version' ? 'content' : 'rail'}
+    >
       <HomeToggle
         active={current === 'tasks'}
         onToggle={() => {

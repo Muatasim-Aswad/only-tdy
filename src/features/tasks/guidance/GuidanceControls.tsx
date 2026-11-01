@@ -12,7 +12,7 @@ export function GuidanceControls() {
     requestTour();
   };
   return (
-    <section className="ps-rail mb-8" aria-labelledby="guidance-controls">
+    <section className="mb-8" aria-labelledby="guidance-controls">
       <h2 id="guidance-controls" className="text-section">
         {t('options')}
       </h2>

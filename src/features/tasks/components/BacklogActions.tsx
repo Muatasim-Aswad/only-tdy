@@ -14,7 +14,7 @@ export interface BacklogActionsProps {
   readonly disabled?: boolean;
 }
 
-/** Selection controls stay in the page; transient feedback floats. */
+/** Selection controls follow the list while scrolling; feedback floats. */
 export function BacklogActions({
   selectedCount,
   onMove,
@@ -37,7 +37,7 @@ export function BacklogActions({
       />
       <div
         className={classNames(
-          'focus-backlog__actions flex items-center gap-4 ps-rail',
+          'focus-backlog__actions sticky top-0 z-10 flex items-center gap-4 ps-rail bg-canvas forced-colors:bg-[Canvas]',
           chosen ? 'min-h-11' : 'focus-backlog__actions--empty min-h-0',
         )}
       >

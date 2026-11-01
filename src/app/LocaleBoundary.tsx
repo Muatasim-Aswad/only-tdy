@@ -20,7 +20,7 @@ export function LocaleBoundary({ children }: { readonly children: ReactNode }) {
   return (
     <PageShell>
       <form
-        className="ps-rail flex flex-col items-start gap-5"
+        className="flex flex-col items-start gap-5"
         onSubmit={(event) => {
           event.preventDefault();
           confirmLocale(appLocale());

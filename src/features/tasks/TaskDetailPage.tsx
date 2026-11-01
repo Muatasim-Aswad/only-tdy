@@ -21,6 +21,7 @@ import {
   useDeleteTaskMutation,
   useUpdateTaskMutation,
   useSkipOccurrenceMutation,
+  useSetTaskStatusMutation,
 } from './data/mutations.ts';
 import {
   useProjectListQuery,
@@ -29,6 +30,7 @@ import {
 } from './data/queries.ts';
 import { isUnauthorized } from '../../infra/tududi-client.ts';
 import { TaskDetailScreen } from './components/TaskDetailScreen.tsx';
+import { isTodayStatus } from './domain/task-dates.ts';
 
 const NO_PROJECTS: readonly Project[] = [];
 const NO_TAG_NAMES: readonly string[] = [];
@@ -65,6 +67,8 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     useDeleteTaskMutation();
   const { mutateAsync: skipOccurrence, isPending: skipping } =
     useSkipOccurrenceMutation();
+  const { mutateAsync: setTaskStatus, isPending: completing } =
+    useSetTaskStatusMutation();
 
   const state = deriveTaskDetailState(sessionExpired, taskQuery);
   useGuidancePage(
@@ -152,6 +156,42 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
     void taskQuery.refetch();
   }, [taskQuery]);
 
+  const handleComplete = useCallback(async () => {
+    if (
+      disabled ||
+      saving ||
+      deleting ||
+      skipping ||
+      completing ||
+      state.kind !== 'ready' ||
+      !state.task.recurrence ||
+      !isTodayStatus(state.task.status)
+    )
+      return;
+
+    setFeedback({ kind: 'none' });
+    try {
+      await setTaskStatus({ task: state.task, status: 'done' });
+      navigate(backHref, { replace: true });
+    } catch (error) {
+      if (isUnauthorized(error)) setSessionExpired(true);
+      else
+        setFeedback({
+          kind: 'error',
+          message: taskErrorMessage(error, t('copy.completionFailed')),
+        });
+    }
+  }, [
+    disabled,
+    saving,
+    deleting,
+    skipping,
+    completing,
+    state,
+    setTaskStatus,
+    backHref,
+  ]);
+
   return (
     <TaskDetailScreen
       state={state}
@@ -161,6 +201,9 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
       onBack={handleBack}
       onSave={handleSave}
       onDelete={handleDelete}
+      onComplete={() => {
+        void handleComplete();
+      }}
       onSkip={() => {
         void skipOccurrence(uid)
           .then(() => {
@@ -183,6 +226,7 @@ export function TaskDetailPage({ uid }: TaskDetailPageProps) {
       onDismissFeedback={isOnline ? dismissFeedback : undefined}
       saving={saving}
       skipping={skipping}
+      completing={completing}
       deleting={deleting}
       disabled={disabled}
     />

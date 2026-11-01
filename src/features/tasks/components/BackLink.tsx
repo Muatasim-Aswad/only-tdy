@@ -18,12 +18,12 @@ export function BackLink({
 }: BackLinkProps) {
   return (
     <a
-      className="focus-back inline-flex items-center text-muted cursor-pointer transition-[color] duration-120 ease-focus focus-visible:text-accent hover:text-accent"
+      className="focus-back inline-flex min-h-11 items-center gap-2 text-muted cursor-pointer transition-[color] duration-120 ease-focus focus-visible:text-accent hover:text-accent"
       href={href}
       onClick={onNavigate}
     >
       <span
-        className="focus-back__mark flex items-center justify-center w-rail"
+        className="focus-back__mark flex w-5 flex-none items-center"
         aria-hidden="true"
       >
         <svg

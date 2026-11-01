@@ -3,7 +3,13 @@ import { PageShell } from '../../../shared/PageShell.tsx';
 import { TaskInput } from './TaskInput.tsx';
 import { CaptureFeedbackMessage } from './CaptureFeedbackMessage.tsx';
 import type { CaptureFeedback } from '../contracts.ts';
-import { useMemo, type MouseEvent } from 'react';
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type MouseEvent,
+} from 'react';
 
 import type { FocusDestination, TaskListState } from '../contracts.ts';
 import { orderBySelection } from '../backlog-state.ts';
@@ -86,6 +92,12 @@ export function BacklogScreen({
   projects,
   tags,
 }: BacklogScreenProps) {
+  const { ledgerRef, toggleSelection } = useBacklogSelection(
+    selectedUids,
+    disabled,
+    onToggleSelection,
+  );
+
   /* Only the order shown changes; what is chosen and what is moved are still
      the page's own set, so lifting a row is a matter of drawing, not state. */
   const shown = useMemo<TaskListState>(
@@ -120,28 +132,111 @@ export function BacklogScreen({
           onOpenTask={onOpenTask}
         />
       ) : null}
-      <BacklogActions
-        selectedCount={selectedUids.size}
-        onMove={onMove}
-        message={message}
-        tone={messageTone}
-        moving={moving}
-        disabled={disabled}
-      />
-      <TaskList
-        state={shown}
-        mode="select"
-        selectedUids={selectedUids}
-        onToggle={onToggleSelection}
-        onOpenTask={onOpenTask}
-        onRetry={onRetry}
-        emptyMessage={
-          searching ? t('copy.backlogSearchEmpty') : t('copy.backlogEmpty')
-        }
-        ruled
-        disabled={disabled}
-      />
+      <div
+        ref={ledgerRef}
+        className="focus-backlog__ledger [overflow-anchor:none]"
+      >
+        <BacklogActions
+          selectedCount={selectedUids.size}
+          onMove={onMove}
+          message={message}
+          tone={messageTone}
+          moving={moving}
+          disabled={disabled}
+        />
+        <TaskList
+          state={shown}
+          mode="select"
+          selectedUids={selectedUids}
+          onToggle={toggleSelection}
+          onOpenTask={onOpenTask}
+          onRetry={onRetry}
+          emptyMessage={
+            searching ? t('copy.backlogSearchEmpty') : t('copy.backlogEmpty')
+          }
+          ruled
+          disabled={disabled}
+        />
+      </div>
       <FocusFooter current="backlog" onNavigate={onNavigate} />
     </PageShell>
   );
+}
+
+function useBacklogSelection(
+  selectedUids: ReadonlySet<string>,
+  disabled: boolean,
+  onToggleSelection: (uid: string) => void,
+) {
+  const ledgerRef = useRef<HTMLDivElement>(null);
+  const readingPosition = useRef<{
+    row: HTMLElement;
+    top: number;
+    keyboardTarget: HTMLButtonElement | null;
+  } | null>(null);
+
+  const toggleSelection = useCallback(
+    (uid: string) => {
+      readingPosition.current = null;
+      const ledger = ledgerRef.current;
+      if (ledger !== null && window.scrollY > 0 && !disabled) {
+        const actionsBottom =
+          ledger
+            .querySelector('.focus-backlog__actions')
+            ?.getBoundingClientRect().bottom ?? 0;
+        const row = Array.from(
+          ledger.querySelectorAll<HTMLElement>(
+            '[data-task-uid]:not(.focus-row--selected)',
+          ),
+        ).find((row) => {
+          const bounds = row.getBoundingClientRect();
+          return (
+            row.dataset.taskUid !== uid &&
+            bounds.top >= Math.max(0, actionsBottom) &&
+            bounds.top < window.innerHeight
+          );
+        });
+        if (row !== undefined) {
+          const focused = document.activeElement;
+          const focusedRow = focused?.closest<HTMLElement>('[data-task-uid]');
+          const keyboardTarget =
+            focused?.matches(':focus-visible') &&
+            focusedRow?.dataset.taskUid === uid
+              ? ((
+                  focusedRow.nextElementSibling ??
+                  focusedRow.previousElementSibling
+                )?.querySelector<HTMLButtonElement>(
+                  'button[aria-pressed="false"]',
+                ) ?? null)
+              : null;
+          readingPosition.current = {
+            row,
+            top: row.getBoundingClientRect().top,
+            keyboardTarget,
+          };
+        }
+      }
+      onToggleSelection(uid);
+    },
+    [disabled, onToggleSelection],
+  );
+
+  useLayoutEffect(() => {
+    const position = readingPosition.current;
+    readingPosition.current = null;
+    if (!position?.row.isConnected) return;
+    window.scrollBy({
+      top: position.row.getBoundingClientRect().top - position.top,
+      behavior: 'instant',
+    });
+    const focusedBounds = document.activeElement?.getBoundingClientRect();
+    if (
+      focusedBounds !== undefined &&
+      (focusedBounds.bottom < 0 || focusedBounds.top > window.innerHeight)
+    ) {
+      position.keyboardTarget?.focus({ preventScroll: true });
+    }
+  }, [selectedUids]);
+
+  return { ledgerRef, toggleSelection };
 }

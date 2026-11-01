@@ -94,7 +94,7 @@ export function App({ updateNotice = null }: AppProps) {
       <Suspense
         fallback={
           <PageShell>
-            <p className="ps-rail text-muted" role="status">
+            <p className="text-muted" role="status">
               {t('app.Page.loading')}
             </p>
           </PageShell>

@@ -84,7 +84,7 @@ test('allows an explicit move from Backlog to Today with a changed future deadli
   });
   await page.goto('/only-tdy/task/task-invoice');
   await expect(page.getByLabel('Hide until')).toBeVisible();
-  await page.getByLabel('Status').selectOption('planned');
+  await page.getByRole('radio', { name: 'Today', exact: true }).check();
   await page.getByLabel('Due date').fill('2026-10-20');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect
@@ -188,9 +188,9 @@ test('Hide until is date-only and its draft survives unsaved status changes', as
   const hide = page.getByLabel('Hide until');
   await expect(hide).toHaveAttribute('type', 'date');
   await expect(hide).toHaveValue('2026-10-15');
-  await page.getByLabel('Status').selectOption('planned');
+  await page.getByRole('radio', { name: 'Today', exact: true }).check();
   await expect(hide).toHaveCount(0);
-  await page.getByLabel('Status').selectOption('not_started');
+  await page.getByRole('radio', { name: 'Backlog', exact: true }).check();
   await expect(hide).toHaveValue('2026-10-15');
   await page.screenshot({
     path: '/tmp/only-tdy-date-form.png',

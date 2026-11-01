@@ -609,10 +609,7 @@ it('returns a saved edit to All, even when its status changes', async () => {
   await user.click(
     await screen.findByRole('link', { name: 'Send the invoice' }),
   );
-  await user.selectOptions(
-    await screen.findByRole('combobox', { name: 'Status' }),
-    'not_started',
-  );
+  await user.click(await screen.findByRole('radio', { name: 'Backlog' }));
   await user.click(screen.getByRole('button', { name: 'Save' }));
   await waitFor(() => {
     expect(window.location.pathname).toBe('/only-tdy/all');

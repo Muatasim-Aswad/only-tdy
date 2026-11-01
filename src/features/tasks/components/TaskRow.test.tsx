@@ -124,18 +124,27 @@ describe('TaskRow', () => {
     expect(document.querySelector('.focus-row--metadata')).toBeNull();
   });
 
-  it('opens the task from its title and offers nothing else in the body', () => {
+  it('keeps one native task link and a separate completion control', () => {
     renderRow(PROJECT_TASK);
 
-    // Two targets: the box that ticks it, and the title that opens it.
     expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getAllByRole('link')).toHaveLength(1);
     expect(
       screen.getByRole('link', { name: 'Send the invoice' }),
     ).toHaveAttribute('href', '/only-tdy/task/task-project');
-    // The metadata and the empty space around it stay inert.
-    expect(screen.getByText('Work').closest('a')).toBeNull();
-    expect(screen.getByText('#finance').closest('a')).toBeNull();
   });
+
+  it.each(['complete', 'select'] as const)(
+    'keeps the %s control independent of opening the task',
+    async (mode) => {
+      const user = userEvent.setup();
+      const onOpen = vi.fn();
+      const { onToggle } = renderRow(PROJECT_TASK, { mode, onOpen });
+      await user.click(screen.getByRole('button'));
+      expect(onToggle).toHaveBeenCalledExactlyOnceWith(PROJECT_TASK.uid);
+      expect(onOpen).not.toHaveBeenCalled();
+    },
+  );
 
   it('reports the opened task by uid without leaving the app', async () => {
     const user = userEvent.setup();

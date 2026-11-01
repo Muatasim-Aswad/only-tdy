@@ -59,7 +59,7 @@ export function LoginScreen({
   }
   return (
     <PageShell>
-      <div className="ps-rail mb-8">
+      <div className="mb-8">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex items-center gap-3">
             <img
@@ -83,7 +83,7 @@ export function LoginScreen({
       </div>
       {enabled && error !== 'disabled' ? (
         <form
-          className="ps-rail flex flex-col gap-5"
+          className="flex flex-col gap-5"
           onSubmit={(event) => {
             void submit(event);
           }}
@@ -91,7 +91,7 @@ export function LoginScreen({
           <label className="flex flex-col gap-2 text-meta text-muted">
             {t('loginScreen.email')}
             <input
-              className="min-h-11 w-full border-b border-line bg-transparent text-ink text-task outline-none focus:border-accent"
+              className="min-h-11 w-full px-3 border-b border-line bg-transparent text-ink text-task outline-none focus:border-accent"
               name="email"
               type="email"
               autoComplete="username"
@@ -104,7 +104,7 @@ export function LoginScreen({
           <label className="flex flex-col gap-2 text-meta text-muted">
             {t('loginScreen.password')}
             <input
-              className="min-h-11 w-full border-b border-line bg-transparent text-ink text-task outline-none focus:border-accent"
+              className="min-h-11 w-full px-3 border-b border-line bg-transparent text-ink text-task outline-none focus:border-accent"
               name="password"
               type="password"
               autoComplete="current-password"
@@ -129,7 +129,7 @@ export function LoginScreen({
           </div>
         </form>
       ) : (
-        <div className="ps-rail">
+        <div>
           <p className="text-action text-muted mb-3">
             {t('loginScreen.passwordSignInIsUnavailableOn')}
           </p>

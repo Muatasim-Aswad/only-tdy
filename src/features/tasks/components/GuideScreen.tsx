@@ -72,15 +72,15 @@ function GuideSection({
       className="focus-guide [.focus-guide_+_&]:mt-7"
       aria-labelledby={id}
     >
-      <h2 id={id} className="focus-guide__heading m-0 ps-rail text-section">
+      <h2 id={id} className="focus-guide__heading m-0 text-section">
         {heading}
       </h2>
-      <p className="focus-guide__intro mt-1 me-0 mb-0 ms-0 ps-rail text-muted text-meta">
+      <p className="focus-guide__intro mt-1 me-0 mb-0 ms-0 text-muted text-meta">
         {intro}
       </p>
       {example === undefined ? null : (
         <Typed
-          className="focus-guide__example mt-3 ps-rail"
+          className="focus-guide__example mt-3"
           value={example}
           spans={captureChips(example)}
         />

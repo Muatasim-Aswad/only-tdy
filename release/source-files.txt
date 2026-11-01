@@ -224,8 +224,10 @@ src/features/tasks/guidance/events.ts
 src/features/tasks/guidance/messages-guidance.ts
 src/features/tasks/guidance/model.test.ts
 src/features/tasks/guidance/model.ts
+src/features/tasks/guidance/placement.ts
 src/features/tasks/guidance/styles.css
 src/features/tasks/guidance/token-facts.ts
+src/features/tasks/guidance/usePopupSafety.ts
 src/features/tasks/messages.test.ts
 src/features/tasks/messages.ts
 src/features/tasks/navigation-ui.ts

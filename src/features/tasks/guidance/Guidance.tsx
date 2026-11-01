@@ -38,6 +38,8 @@ import {
   type Signal,
 } from './model.ts';
 import { t } from './messages-guidance.ts';
+import { lessonPlacement, reachablePopup, visibleTarget } from './placement.ts';
+import { usePopupSafety } from './usePopupSafety.ts';
 import './styles.css';
 
 interface Active {
@@ -51,12 +53,14 @@ interface Actions {
   readonly dismiss: (later?: boolean) => void;
   readonly next: () => void;
   readonly back: () => void;
+  readonly presented: () => void;
+  readonly unavailable: () => void;
 }
 const TourContext = createContext<Actions | null>(null);
 const SELECTORS: Record<Lesson, string> = {
   capture: '.focus-capture',
   backlog: '[data-tour="nav-backlog"]',
-  'backlog-tools': '.focus-listing',
+  'backlog-tools': '.focus-complete',
   today: '.focus-complete',
   editor: '[data-tour-editor] textarea',
   compact: '[data-tour="compact"]',
@@ -64,7 +68,7 @@ const SELECTORS: Record<Lesson, string> = {
   tokens: '.focus-capture',
   more: '[data-tour="more"]',
   all: '[data-tour="nav-all"]',
-  reference: 'main',
+  reference: '#guidance-controls, [data-tour="more"]',
 };
 const ROUTES = {
   capture: 'tasks',
@@ -79,10 +83,6 @@ const ROUTES = {
   all: 'all',
   reference: 'guide',
 } as const;
-const VISIBLE = (selector: string): HTMLElement | null =>
-  [...document.querySelectorAll<HTMLElement>(selector)].find(
-    (el) => el.getClientRects().length > 0,
-  ) ?? null;
 function target(active: Active): HTMLElement | null {
   // Full tours open the ordinary editor with a temporary task.
   const selector =
@@ -90,11 +90,23 @@ function target(active: Active): HTMLElement | null {
       ? '.focus-row__title'
       : SELECTORS[active.lesson];
   return (
-    VISIBLE(selector) ??
+    visibleTarget(selector) ??
     (active.type === 'full'
-      ? (VISIBLE('.focus-capture') ?? VISIBLE('main'))
+      ? (visibleTarget('.focus-capture') ?? visibleTarget('main'))
       : null)
   );
+}
+function createTarget(active: Active) {
+  let element: HTMLElement | null = null;
+  return {
+    resolve: () => {
+      element ??= target(active);
+      return element;
+    },
+    reset: () => {
+      element = null;
+    },
+  };
 }
 function busy(): boolean {
   return (
@@ -117,6 +129,10 @@ export function Guidance() {
   );
   const progress = useRef(parsed);
   const [active, setActive] = useState<Active | null>(null);
+  const activeTarget = useMemo(
+    () => (active === null ? null : createTarget(active)),
+    [active],
+  );
   const [notice, setNotice] = useState('');
   const [visit] = useState(() =>
     Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
@@ -186,11 +202,28 @@ export function Guidance() {
       stopCommands();
     };
   }, []);
+  const presented = () => {
+    if (
+      active?.type === 'full' &&
+      !progress.current.done.includes(active.lesson)
+    )
+      save(resolveLesson(progress.current, active.lesson, visit, false));
+  };
+  const acknowledgePresentation = () => {
+    const dialog = document.querySelector<HTMLElement>('[data-guidance]');
+    if (
+      dialog &&
+      getComputedStyle(dialog.parentElement ?? dialog).opacity !== '0' &&
+      reachablePopup(dialog)
+    )
+      presented();
+  };
   const dismiss = (later = false) => {
     if (!active) return;
     suppressed.current = true;
     clearTimeout(timer.current);
     if (active.type === 'full') {
+      if (!later) acknowledgePresentation();
       setNotice(t('ended'));
     } else {
       save(resolveLesson(progress.current, active.lesson, visit, later));
@@ -204,6 +237,7 @@ export function Guidance() {
       dismiss();
       return;
     }
+    acknowledgePresentation();
     if (index >= LESSONS.length) {
       suppressed.current = true;
       setActive(null);
@@ -215,11 +249,11 @@ export function Guidance() {
   const locale = appLocale();
   const step = useMemo<Step | null>(
     () =>
-      active === null
+      active === null || activeTarget === null
         ? null
         : {
             id: active.lesson,
-            target: () => target(active),
+            target: activeTarget.resolve,
             title: t(`${active.lesson}.title`),
             ...(active.lesson === 'compact'
               ? { blockTargetInteraction: false }
@@ -227,11 +261,8 @@ export function Guidance() {
             content: (
               <LessonContent key={locale} active={active} progress={parsed} />
             ),
-            placement:
-              active.type === 'full' &&
-              (['reference'] as readonly Lesson[]).includes(active.lesson)
-                ? 'center'
-                : 'auto',
+            placement: 'auto',
+            floatingOptions: lessonPlacement(active.lesson === 'reference'),
             before: async () => {
               if (active.type !== 'full') return;
               navigate(routePath({ kind: ROUTES[active.lesson] }));
@@ -247,13 +278,14 @@ export function Guidance() {
                     ? '[data-tour-editor]'
                     : '.focus-capture';
               const end = Date.now() + 5000;
-              while (!VISIBLE(selector) && Date.now() < end)
+              while (!visibleTarget(selector) && Date.now() < end)
                 await new Promise<void>((resolve) => {
                   setTimeout(resolve, 30);
                 });
+              activeTarget.reset();
             },
           },
-    [active, parsed, locale],
+    [active, activeTarget, parsed, locale],
   );
   useEffect(() => {
     if (!notice) return;
@@ -283,6 +315,10 @@ export function Guidance() {
             back: () => {
               go(Math.max(0, active.index - 1));
             },
+            presented,
+            unavailable: () => {
+              dismiss(true);
+            },
           }}
         >
           <Joyride
@@ -309,14 +345,6 @@ export function Guidance() {
             }}
             onEvent={(data) => {
               if (
-                active.type === 'full' &&
-                data.type === EVENTS.TOOLTIP &&
-                !progress.current.done.includes(active.lesson)
-              )
-                save(
-                  resolveLesson(progress.current, active.lesson, visit, false),
-                );
-              if (
                 data.type === EVENTS.ERROR ||
                 data.type === EVENTS.TARGET_NOT_FOUND
               )
@@ -332,12 +360,18 @@ export function Guidance() {
 }
 function Tooltip({ tooltipProps, step }: TooltipRenderProps) {
   const context = useContext(TourContext);
+  const root = usePopupSafety(
+    step.target,
+    () => context?.presented(),
+    () => context?.unavailable(),
+  );
   if (!context) return null;
   const { active, dismiss, next, back } = context;
   const full = active.type === 'full';
   return (
     <div
       {...tooltipProps}
+      ref={root}
       data-guidance
       className="guidance-tooltip"
       dir={appLocale() === 'ar' ? 'rtl' : 'ltr'}
@@ -346,13 +380,19 @@ function Tooltip({ tooltipProps, step }: TooltipRenderProps) {
       <h2 id={`guidance-${active.lesson}`} className="text-section mb-2">
         {step.title}
       </h2>
-      <div className="text-action leading-relaxed">{step.content}</div>
+      <div
+        className="guidance-body text-action leading-relaxed focus-visible:[outline:2px_solid_var(--accent)] focus-visible:[outline-offset:-2px]"
+        tabIndex={0}
+        role="region"
+        aria-labelledby={`guidance-${active.lesson}`}
+      >
+        {step.content}
+      </div>
       <div className="guidance-actions mt-4">
         {full ? (
           <>
             <ActionButton
               type="button"
-
               onClick={() => {
                 dismiss();
               }}
@@ -377,7 +417,6 @@ function Tooltip({ tooltipProps, step }: TooltipRenderProps) {
           <>
             <ActionButton
               type="button"
-
               onClick={() => {
                 dismiss(true);
               }}

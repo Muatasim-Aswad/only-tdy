@@ -30,10 +30,7 @@ export function HelpTip({
     };
   }, [open]);
   return (
-    <span
-      className="help-tip relative inline-flex flex-none items-center"
-      ref={root}
-    >
+    <span className="help-tip inline-flex flex-none items-center" ref={root}>
       <button
         type="button"
         ref={trigger}
@@ -61,7 +58,7 @@ export function HelpTip({
       </button>
       {open ? (
         <span
-          className="help-tip__content absolute z-30 end-0 bottom-[calc(100%_+_4px)] w-[min(19rem,_calc(100vw_-_72px))] px-3 py-2.5 border border-line rounded-[6px] bg-surface text-ink text-meta"
+          className="help-tip__content absolute z-30 end-0 bottom-[calc(100%_+_4px)] w-[min(19rem,_calc(100vw_-_32px))] max-w-full px-3 py-2.5 border border-line rounded-[6px] bg-surface text-ink text-meta"
           id={id}
           role="tooltip"
         >

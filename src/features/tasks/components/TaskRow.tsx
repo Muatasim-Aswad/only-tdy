@@ -63,18 +63,8 @@ export interface TaskRowProps {
 }
 
 /**
- * One task, identical in Today, in Backlog, and in history. There are two
- * targets: the box, which ticks it, and the title, which opens it.
- *
- * The title is a real link to the task's own address, so it can be opened in
- * a new tab, copied, and shared like any other. At rest it is drawn exactly
- * as the plain title always was — no colour of its own, no underline, no
- * hover rule on the row body — and the affordance arrives only under the
- * pointer and under focus. A list of twenty tasks is a list, not twenty
- * links shouting at once.
- *
- * A done row is the same row: ticked, struck through, and still readable —
- * and still pressable, because the tick can be taken back.
+ * The title's native link covers the card body, excluding the control rail
+ * so completion and selection stay independent of navigation.
  */
 export const TaskRow = memo(function TaskRow({
   task,
@@ -110,8 +100,9 @@ export const TaskRow = memo(function TaskRow({
 
   return (
     <li
+      data-task-uid={task.uid}
       className={classNames(
-        'focus-row [.focus-list--ruled_.focus-row_+_&]:border-t [.focus-list--ruled_.focus-row_+_&]:border-t-line flex items-start cursor-default bg-transparent hover:bg-surface transition-colors duration-120 ease-focus',
+        'focus-row relative [.focus-list--ruled_.focus-row_+_&]:border-t [.focus-list--ruled_.focus-row_+_&]:border-t-line flex items-start cursor-default bg-transparent hover:bg-surface transition-colors duration-120 ease-focus',
         hasMetadata ? 'focus-row--metadata min-h-16' : 'min-h-14',
         done && 'focus-row--done',
         choosing && selected && 'focus-row--selected forced-colors:bg-[Canvas]',
@@ -153,7 +144,7 @@ export const TaskRow = memo(function TaskRow({
       )}
       <div className="focus-row__body flex-auto min-w-0 py-4">
         <a
-          className="focus-row__title [:where(.focus-row--done)_&]:text-muted [:where(.focus-row--done)_&]:line-through [:where(.focus-row--done)_&]:decoration-muted [:where(.focus-row--done)_&]:decoration-[1px] block text-ink no-underline wrap-anywhere transition-[opacity,color] duration-120 ease-focus focus-visible:text-accent hover:text-accent text-task"
+          className="focus-row__title after:absolute after:inset-y-0 after:start-rail after:end-0 after:content-[''] [:where(.focus-row--done)_&]:text-muted [:where(.focus-row--done)_&]:line-through [:where(.focus-row--done)_&]:decoration-muted [:where(.focus-row--done)_&]:decoration-[1px] block text-ink no-underline wrap-anywhere transition-[opacity,color] duration-120 ease-focus focus-visible:text-accent hover:text-accent text-task"
           href={taskPath(task.sourceTaskUid ?? task.uid)}
           onClick={handleOpen}
         >

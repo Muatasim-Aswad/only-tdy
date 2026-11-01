@@ -14,6 +14,7 @@ import { preferencesStore } from '../preferences/store.ts';
 import {
   useCallback,
   useEffect,
+  useId,
   useState,
   useMemo,
   type KeyboardEvent,
@@ -36,6 +37,7 @@ import {
   applyDateRules,
   validateHideDate,
   currentDate,
+  displayDate,
 } from '../domain/task-dates.ts';
 import { RecurrenceFields } from './RecurrenceFields.tsx';
 import { formatTagList, parseTagList } from '../domain/tag-list.ts';
@@ -46,44 +48,19 @@ import { SuggestionList } from './SuggestionList.tsx';
 import { TokenChips } from './TokenChips.tsx';
 import { useSuggestions } from './useSuggestions.ts';
 
-/**
- * Status, in only-tdy's words rather than Tududi's. The two open statuses only-tdy
- * writes are the two lists it shows, so they are named after those lists: a
- * planned task is on Today and a not-started one is in Backlog. Naming them
- * anything else would mean the page that sets the field and the screen that
- * obeys it disagree about what was set.
- *
- * Tududi also has archived and cancelled. only-tdy has no name for either and
- * shows neither, so neither is offered here.
- */
-const STATUS_NAME: Readonly<Record<TaskStatus, string>> = {
+const STATUS_ORDER = ['not_started', 'planned', 'done'] as const;
+
+const STATUS_NAME = {
   get planned() {
     return t('taskEditor.planned');
   },
   get not_started() {
     return t('taskEditor.not_started');
   },
-  get in_progress() {
-    return t('taskEditor.in_progress');
-  },
-  get waiting() {
-    return t('taskEditor.waiting');
-  },
   get done() {
     return t('taskEditor.done');
   },
 };
-
-/**
- * The statuses the form offers, in order: the list the task is on, then
- * whether it is finished.
- *
- * Tududi's `in_progress` and `waiting` are read and named — a task already in
- * one keeps it, and its page still says so — but neither is offered here.
- * only-tdy has two lists and a done pile, and a status that puts a task on Today
- * without saying Today is a third vocabulary for the same fact.
- */
-const STATUS_ORDER: readonly TaskStatus[] = ['planned', 'not_started', 'done'];
 
 const PRIORITY_ORDER: readonly TaskPriority[] = ['low', 'medium', 'high'];
 
@@ -166,6 +143,8 @@ export interface TaskEditorProps {
   readonly deleting?: boolean;
   readonly onSkip?: (() => void) | undefined;
   readonly skipping?: boolean;
+  readonly onComplete?: (() => void) | undefined;
+  readonly completing?: boolean;
   readonly creating?: boolean;
   /** Offline or expired: the fields stay editable, the writes do not. */
   readonly disabled?: boolean;
@@ -204,11 +183,14 @@ export function TaskEditor({
   deleting = false,
   onSkip,
   skipping = false,
+  onComplete,
+  completing = false,
   creating = false,
   disabled = false,
   formId,
   onDirtyChange,
 }: TaskEditorProps) {
+  const statusName = useId();
   /*
    * The form owns what is typed, and the loaded task is only its starting
    * point. A refetch behind the page must never overwrite a half-finished
@@ -245,7 +227,7 @@ export function TaskEditor({
     [fields, baseline.recurrence],
   );
   const dirty = !sameEdit(edit, toEdit(toFields(baseline)));
-  const busy = saving || deleting || skipping;
+  const busy = saving || deleting || skipping || completing;
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -408,20 +390,11 @@ export function TaskEditor({
           { uid: task.projectUid, name: task.projectName ?? task.projectUid },
         ];
 
-  /*
-   * The same bargain for status. only-tdy offers Today, Backlog and Done, but a
-   * task can arrive already in progress or waiting, set in Tududi itself.
-   * Dropping that status from the list would leave the control showing the
-   * first option instead, and the next save would silently write it — so the
-   * status the task is actually in is always among the choices, and stops
-   * being offered the moment it is changed away from.
-   */
-  const statusChoices = fields.recurrence
-    ? STATUS_ORDER.filter((status) => status !== 'done')
-    : STATUS_ORDER;
-  const statuses = statusChoices.includes(fields.status)
-    ? statusChoices
-    : [fields.status, ...statusChoices];
+  // Show active Tududi statuses as Today without rewriting them on unrelated saves.
+  const selectedStatus =
+    fields.status === 'in_progress' || fields.status === 'waiting'
+      ? 'planned'
+      : fields.status;
   const showNote = !creating || task.note !== '';
   const showTags = !creating || task.tags.length > 0;
   const showProject = !creating || task.projectUid !== '';
@@ -509,6 +482,110 @@ export function TaskEditor({
                 ) : null}
               </div>
             </FieldRow>
+
+            {!creating ? (
+              <fieldset className="m-0 min-w-0 border-0 py-1">
+                <legend className="sr-only">
+                  {t('taskEditor.statusLabel')}
+                </legend>
+                <div
+                  className={classNames(
+                    'flex min-h-11 min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5',
+                    !compact && 'min-[360px]:ms-28',
+                  )}
+                >
+                  {fields.recurrence ? (
+                    <>
+                      <span className="inline-flex max-w-full items-center rounded-fill bg-selection px-1.5 py-1 text-accent text-action font-semibold">
+                        {selectedStatus === 'planned'
+                          ? t('taskEditor.planned')
+                          : selectedStatus === 'done'
+                            ? t('taskEditor.done')
+                            : t('taskEditor.scheduledFor', {
+                                date: fields.dueDate
+                                  ? displayDate(fields.dueDate)
+                                  : commonT('display.noValue'),
+                              })}
+                      </span>
+                      {onComplete && selectedStatus === 'planned' ? (
+                        <button
+                          type="button"
+                          className="ms-3 min-h-11 px-1 text-accent text-action cursor-pointer hover:underline hover:underline-offset-[3px] focus-visible:underline focus-visible:underline-offset-[3px] disabled:cursor-default disabled:opacity-50"
+                          onClick={onComplete}
+                          disabled={disabled || busy || dirty}
+                          aria-busy={completing}
+                          title={
+                            dirty ? t('taskEditor.saveChangesFirst') : undefined
+                          }
+                        >
+                          {completing
+                            ? t('taskEditor.markingDone')
+                            : t('taskEditor.markDone')}
+                        </button>
+                      ) : null}
+                      {onSkip ? (
+                        <button
+                          type="button"
+                          className="focus-repeat-skip ms-3 min-h-11 px-1 text-muted text-action cursor-pointer hover:underline hover:underline-offset-[3px] focus-visible:underline focus-visible:underline-offset-[3px] disabled:cursor-default disabled:opacity-50"
+                          onClick={onSkip}
+                          disabled={disabled || busy || dirty}
+                          aria-busy={skipping}
+                          title={
+                            dirty ? t('taskEditor.saveChangesFirst') : undefined
+                          }
+                        >
+                          {skipping
+                            ? t('taskEditor.skipping')
+                            : t('taskEditor.skip')}
+                        </button>
+                      ) : null}
+                    </>
+                  ) : (
+                    STATUS_ORDER.map((status) => (
+                      <span
+                        key={status}
+                        className="flex min-w-0 items-center gap-1.5"
+                      >
+                        <label className="relative min-w-0">
+                          <input
+                            className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
+                            type="radio"
+                            name={statusName}
+                            value={status}
+                            checked={selectedStatus === status}
+                            disabled={busy}
+                            onChange={() => {
+                              update('status', status);
+                            }}
+                          />
+                          <span className="flex min-h-11 items-center text-action text-muted cursor-pointer hover:text-ink peer-checked:text-accent peer-checked:font-semibold peer-checked:[&>span]:bg-selection peer-focus-visible:[&>span]:ring-2 peer-focus-visible:[&>span]:ring-accent peer-disabled:cursor-default peer-disabled:opacity-50 forced-colors:peer-checked:[&>span]:outline forced-colors:peer-focus-visible:[&>span]:outline-2">
+                            <span className="-mx-1.5 rounded-fill px-1.5 py-1">
+                              {STATUS_NAME[status]}
+                            </span>
+                          </span>
+                        </label>
+                        {status !== STATUS_ORDER.at(-1) ? (
+                          <svg
+                            className="flex-none text-muted opacity-55 rtl:rotate-180"
+                            viewBox="0 0 16 16"
+                            width="12"
+                            height="12"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.25"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M2.5 8h11m-4-4 4 4-4 4" />
+                          </svg>
+                        ) : null}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </fieldset>
+            ) : null}
 
             {showNote ? (
               <FieldRow block>
@@ -647,30 +724,6 @@ export function TaskEditor({
 
           {/* What it asks of the day. */}
           <div className="focus-group [.focus-group_+_&]:mt-7">
-            {!creating ? (
-              <Field
-                id="task-status"
-                label={t('taskEditor.statusLabel')}
-                compact={compact}
-              >
-                <Select
-                  id="task-status"
-                  value={fields.status}
-                  onChange={(value) => {
-                    update('status', value as TaskStatus);
-                  }}
-                >
-                  {statuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status === 'not_started' && fields.recurrence
-                        ? t('taskEditor.scheduled')
-                        : STATUS_NAME[status]}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            ) : null}
-
             <Field
               id="task-priority"
               label={t('taskEditor.priorityLabel')}
@@ -748,7 +801,7 @@ export function TaskEditor({
           }
         />
       </form>
-      <PageFooter>
+      <PageFooter align="content">
         <RailButton
           data-tour="compact"
           active={compact}
@@ -788,19 +841,6 @@ export function TaskEditor({
             <path d="M12 9v11M3.5 9h17M3.5 14.5h17" />
           </svg>
         </RailButton>
-        {onSkip ? (
-          <button
-            type="button"
-            className="focus-repeat-skip focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] disabled:cursor-default disabled:opacity-50 min-h-11 ms-auto px-2.5 text-muted cursor-pointer text-action"
-            onClick={onSkip}
-            disabled={disabled || busy}
-            aria-busy={skipping}
-          >
-            {skipping
-              ? t('taskEditor.skipping')
-              : t('taskEditor.skipThisOccurrence')}
-          </button>
-        ) : null}
       </PageFooter>
     </>
   );
