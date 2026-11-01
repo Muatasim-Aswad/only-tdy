@@ -85,7 +85,7 @@ export function TaskDetailScreen({
   return (
     <PageShell>
       {preview && (
-        <p className="ps-rail mb-3 text-meta text-muted">
+        <p className="mb-3 text-meta text-muted">
           {t('taskDetailScreen.tourExample')}
         </p>
       )}
@@ -162,14 +162,14 @@ function renderState(
   switch (state.kind) {
     case 'loading':
       return (
-        <p className="focus-state ps-rail py-4 text-muted text-task">
+        <p className="focus-state py-4 text-muted text-task">
           {t('copy.taskLoading')}
         </p>
       );
 
     case 'not-found':
       return (
-        <p className="focus-state ps-rail py-4 text-muted text-task">
+        <p className="focus-state py-4 text-muted text-task">
           {t('copy.taskMissing')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"
@@ -183,7 +183,7 @@ function renderState(
 
     case 'error':
       return (
-        <p className="focus-state ps-rail py-4 text-muted text-task">
+        <p className="focus-state py-4 text-muted text-task">
           {t('copy.taskLoadFailed')}{' '}
           <button
             type="button"
@@ -197,7 +197,7 @@ function renderState(
 
     case 'session-expired':
       return (
-        <p className="focus-state ps-rail py-4 text-muted text-task">
+        <p className="focus-state py-4 text-muted text-task">
           {t('copy.sessionExpired')}{' '}
           <a
             className="focus-state__action inline-block py-3 -my-3 focus-visible:underline focus-visible:underline-offset-[3px] text-accent no-underline cursor-pointer"

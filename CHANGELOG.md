@@ -13,6 +13,7 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
+- Forms and information pages use the full content width without the task-list control indent.
 - Repeating-task editors show a Scheduled for or Today badge with Skip beside it; Today occurrences can be marked done directly from the editor.
 - Task editing shows Backlog → Today → Done below the title, with a selected-state chip and keyboard navigation aligned to the form values.
 - Task cards open from their body while the completion and selection column stays separate.
@@ -22,6 +23,8 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Fixed
 
+- Sign-in fields have internal text padding, and form/information-page navigation icons align with their content while retaining full touch targets.
+- Lessons stay within the visible viewport, with scrollable content and reachable dismissal controls; unavailable lessons release the overlay without being learned.
 - Empty Arabic capture, search, and editor fields place the cursor on the right.
 
 ## [0.1.4] - 2026-10-21

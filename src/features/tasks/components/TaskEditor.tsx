@@ -484,7 +484,7 @@ export function TaskEditor({
             </FieldRow>
 
             {!creating ? (
-              <fieldset className="m-0 min-w-0 border-0 ps-rail py-1">
+              <fieldset className="m-0 min-w-0 border-0 py-1">
                 <legend className="sr-only">
                   {t('taskEditor.statusLabel')}
                 </legend>
@@ -801,7 +801,7 @@ export function TaskEditor({
           }
         />
       </form>
-      <PageFooter>
+      <PageFooter align="content">
         <RailButton
           data-tour="compact"
           active={compact}

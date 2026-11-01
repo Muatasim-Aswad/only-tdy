@@ -181,3 +181,57 @@ test('offers the existing Tududi flow when password authentication is disabled',
   ).toHaveAttribute('href', '/login');
   await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0);
 });
+
+for (const locale of ['en', 'ar']) {
+  test(`pads the filled ${locale} sign-in fields inside their edges`, async ({
+    page,
+  }, testInfo) => {
+    await installApi(page);
+    await page.route('**/api/current_user', (route) =>
+      route.fulfill({ json: { user: null } }),
+    );
+    await page.addInitScript((language) => {
+      localStorage.setItem('only-tdy:language:v1', language);
+    }, locale);
+    for (const width of [320, 390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/only-tdy/');
+      const email = page.locator('input[name=email]');
+      const password = page.locator('input[name=password]');
+      await email.fill('sample@example.com');
+      await password.fill('synthetic-password');
+      await email.focus();
+      for (const field of [email, password]) {
+        const metrics = await field.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            start: parseFloat(style.paddingInlineStart),
+            end: parseFloat(style.paddingInlineEnd),
+            height: element.getBoundingClientRect().height,
+          };
+        });
+        expect(metrics.start).toBeGreaterThanOrEqual(8);
+        expect(metrics.end).toBeGreaterThanOrEqual(8);
+        expect(metrics.height).toBeGreaterThanOrEqual(44);
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.evaluate(async () => document.fonts.ready);
+      await page.screenshot({
+        path: testInfo.outputPath(`filled-login-${String(width)}.png`),
+      });
+      await email.press('Tab');
+      await expect(password).toBeFocused();
+      await password.press('Tab');
+      await expect(
+        page.getByRole('button', {
+          name: locale === 'ar' ? 'تسجيل الدخول' : 'Sign in',
+          exact: true,
+        }),
+      ).toBeFocused();
+    }
+  });
+}

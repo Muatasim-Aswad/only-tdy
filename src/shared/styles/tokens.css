@@ -147,7 +147,6 @@
   /* The content column. */
   --container-column: 42rem;
 
-  /* The focus rail: one width shared by the capture marker, every
-     completion target, and the left edge of all content. */
+  /* Shared control column for capture fields and task rows. */
   --spacing-rail: 44px;
 }

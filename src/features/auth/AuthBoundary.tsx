@@ -137,14 +137,14 @@ export function AuthBoundary({ children }: { readonly children: ReactNode }) {
       )}
       {status === 'checking' && (
         <PageShell>
-          <p className="ps-rail text-muted" role="status">
+          <p className="text-muted" role="status">
             {t('authBoundary.connecting')}
           </p>
         </PageShell>
       )}
       {status === 'failed' && (
         <PageShell>
-          <div className="ps-rail">
+          <div>
             <p role="alert">
               {t('authBoundary.couldNotConnectCheckYourConnection')}
             </p>

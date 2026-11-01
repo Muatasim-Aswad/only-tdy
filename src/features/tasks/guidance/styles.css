@@ -1,13 +1,27 @@
 .guidance-tooltip {
-  inline-size: min(23rem, calc(100vw - 2rem));
-  max-block-size: calc(100dvh - 2rem);
-  overflow: auto;
+  inline-size: min(23rem, var(--guidance-width, calc(100vw - 2rem)));
+  max-block-size: var(--guidance-height, calc(100dvh - 2rem));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface);
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 1.2rem;
   box-shadow: 0 8px 32px rgb(0 0 0 / 12%);
+}
+.guidance-tooltip > h2,
+.guidance-actions {
+  flex: none;
+}
+.guidance-body {
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+[data-guidance-centered='true'] > .react-joyride__arrow {
+  visibility: hidden;
 }
 .guidance-actions {
   display: flex;

@@ -42,10 +42,7 @@ export function VersionScreen({
 
   return (
     <PageShell>
-      <section
-        className="focus-about mb-7 ps-rail"
-        aria-labelledby="about-heading"
-      >
+      <section className="focus-about mb-7" aria-labelledby="about-heading">
         <h1
           id="about-heading"
           className="focus-about__heading m-0 text-section"

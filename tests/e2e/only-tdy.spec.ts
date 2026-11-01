@@ -2635,6 +2635,17 @@ test('keeps compact form geometry and its page footer consistent with the normal
           return { display: style.display, marginTop: style.marginTop };
         }),
       }));
+    const body = await page.locator('.focus-detail').boundingBox();
+    if (body === null) throw new Error('Editor body is missing.');
+    for (const control of [page.locator('.focus-back'), toggle]) {
+      const icon = await control.locator('svg').boundingBox();
+      const target = await control.boundingBox();
+      if (icon === null || target === null)
+        throw new Error('Editor control is missing.');
+      expect(Math.abs(icon.x - body.x)).toBeLessThan(1);
+      expect(target.width).toBeGreaterThanOrEqual(44);
+      expect(target.height).toBeGreaterThanOrEqual(44);
+    }
     const normal = await geometry();
     await toggle.click();
     expect(await geometry()).toEqual(normal);

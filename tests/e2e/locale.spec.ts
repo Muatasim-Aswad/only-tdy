@@ -178,6 +178,24 @@ test('keeps Arabic pages accessible and within narrow and desktop viewports', as
           ),
         )
         .toBe(true);
+      const alignment = await page.locator('main').evaluate((main) => {
+        const style = getComputedStyle(main);
+        const edge =
+          main.getBoundingClientRect().right - parseFloat(style.paddingRight);
+        const icons = [
+          ...main.querySelectorAll(
+            '.focus-back svg, [data-tour="compact"] svg',
+          ),
+        ];
+        if (main.querySelector('.focus-guide')) {
+          const firstIcon = main.querySelector('.focus-footer button svg');
+          if (firstIcon) icons.push(firstIcon);
+        }
+        return icons.map((icon) =>
+          Math.abs(icon.getBoundingClientRect().right - edge),
+        );
+      });
+      for (const offset of alignment) expect(offset).toBeLessThan(1);
       const axe = await new AxeBuilder({ page }).analyze();
       expect(
         axe.violations.filter((violation) =>
