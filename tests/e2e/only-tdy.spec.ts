@@ -12,6 +12,7 @@ import {
   BACKLOG_TASKS,
   DONE_TODAY,
   FIXTURE_NOW,
+  GUIDANCE_COMPLETE,
   HISTORY_TASKS,
   installApi,
   installProfileApi,
@@ -739,12 +740,90 @@ test('opens a task on a page of its own, never over the list', async ({
   await expect(page.getByRole('textbox', { name: 'Notes' })).toHaveValue(
     'Attach the signed timesheet.',
   );
-  await expect(page.getByLabel('Status')).toHaveValue('in_progress');
+  await expect(
+    page.getByRole('radio', { name: 'Today', exact: true }),
+  ).toBeChecked();
   await expect(page.getByLabel('Priority')).toHaveValue('high');
   await expect(page.getByLabel('Project')).toHaveValue('project-work');
   await expect(page.getByLabel('Due date')).toHaveValue('2026-10-01');
   await expect(page.getByLabel('Tags')).toHaveValue('finance');
   await expectNoSeriousAxeViolations(page);
+});
+
+test('keeps the status path aligned and selectable by keyboard in both editor layouts', async ({
+  page,
+}, testInfo) => {
+  await installApi(page);
+  await installTaskApi(page, {
+    ...INVOICE_DETAIL,
+    status: 0,
+    due_date: null,
+    defer_until: null,
+  });
+  await page.goto('/only-tdy/task/task-invoice');
+  const group = page.getByRole('group', { name: 'Status' });
+  const backlog = group.getByRole('radio', { name: 'Backlog' });
+  const today = group.getByRole('radio', { name: 'Today', exact: true });
+  const done = group.getByRole('radio', { name: 'Done' });
+  await expect(backlog).toBeChecked();
+  await backlog.focus();
+  await backlog.press('ArrowRight');
+  await expect(today).toBeChecked();
+  await expect(today).toBeFocused();
+  await today.press('ArrowRight');
+  await expect(done).toBeChecked();
+  await done.press('ArrowLeft');
+  await expect(today).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
+
+  for (const width of [320, 360, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const toggle = page.getByRole('button', { name: 'Compact form' });
+    for (const compact of [false, true]) {
+      if ((await toggle.getAttribute('aria-pressed')) !== String(compact))
+        await toggle.click();
+      const title = await page
+        .getByRole('combobox', { name: 'Title' })
+        .boundingBox();
+      const choices = await Promise.all(
+        [backlog, today, done].map((radio) => radio.boundingBox()),
+      );
+      const first = choices[0];
+      if (!title || !first || choices.some((box) => box === null))
+        throw new Error('Title or status choice is missing.');
+      expect(first.x).toBeCloseTo(title.x, 0);
+      expect(first.y).toBeGreaterThanOrEqual(title.y + title.height);
+      for (const choice of choices) {
+        expect(choice?.y).toBeCloseTo(first.y, 0);
+        expect(choice?.height).toBeGreaterThanOrEqual(44);
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+  }
+
+  const chip = today.locator('..').locator('span > span');
+  for (const theme of ['light', 'dark']) {
+    await page.evaluate((value) => {
+      document.documentElement.dataset.theme = value;
+    }, theme);
+    expect(
+      await chip.evaluate((node) => getComputedStyle(node).backgroundColor),
+    ).not.toBe('rgba(0, 0, 0, 0)');
+    await group.screenshot({
+      path: testInfo.outputPath(`status-path-${theme}.png`),
+    });
+    await expectNoSeriousAxeViolations(page);
+  }
+  await page.emulateMedia({ forcedColors: 'active' });
+  await today.press('ArrowRight');
+  await done.press('ArrowLeft');
+  await expect(today).toBeFocused();
+  await expect(chip).toHaveCSS('outline-style', 'solid');
+  await expect(chip).toHaveCSS('outline-width', '2px');
 });
 
 test('survives a direct link, a refresh, and the back button', async ({
@@ -804,7 +883,8 @@ test('round-trips every editable field through the real data layer', async ({
     .getByRole('combobox', { name: 'Title' })
     .fill('Send the final invoice');
   await page.getByRole('textbox', { name: 'Notes' }).fill('');
-  await page.getByLabel('Status').selectOption('planned');
+  await page.getByRole('radio', { name: 'Backlog', exact: true }).check();
+  await page.getByRole('radio', { name: 'Today', exact: true }).check();
   await page.getByLabel('Priority').selectOption('low');
   await page.getByLabel('Project').selectOption('');
   await page.getByLabel('Due date').fill('');
@@ -1020,7 +1100,79 @@ test('corrects an address only-tdy cannot read, leaving nothing behind it', asyn
   await expect(page.getByText('Send the invoice')).toBeVisible();
 });
 
-test('opens a task in its own tab when the click asks for one', async ({
+for (const direction of ['ltr', 'rtl'] as const) {
+  for (const path of ['', 'backlog', 'all']) {
+    test(`opens the ${path || 'Today'} card body outside the control column in ${direction}`, async ({
+      page,
+    }) => {
+      const task = path === 'backlog' ? BACKLOG_TASKS[0] : INVOICE_DETAIL;
+      if (!task) throw new Error('Missing task fixture.');
+      await installApi(page, { all: [INVOICE_DETAIL] });
+      await page.route('**/api/profile', (route) =>
+        route.fulfill({
+          json: {
+            uid: 'user-e2e',
+            timezone: 'Europe/Amsterdam',
+            ui_settings: {
+              onlyTdy: {
+                locale: direction === 'rtl' ? 'ar' : 'en',
+                guidance: GUIDANCE_COMPLETE,
+              },
+            },
+          },
+        }),
+      );
+      await installTaskApi(page, { ...INVOICE_DETAIL, ...task });
+      await page.setViewportSize({
+        width: direction === 'rtl' ? 320 : 390,
+        height: 900,
+      });
+      const url = `/only-tdy/${path}`;
+      await page.goto(url);
+      const row = page.locator(`.focus-row[data-task-uid="${task.uid}"]`);
+      await expect(row).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('dir', direction);
+      const box = await row.boundingBox();
+      if (!box) throw new Error('Task card is missing.');
+      const railX = direction === 'rtl' ? box.x + box.width - 22 : box.x + 22;
+      await page.mouse.click(railX, box.y + box.height - 2);
+      await expect(page).toHaveURL(url);
+
+      const control = row.getByRole('button');
+      if (path !== 'all') {
+        await expect(control).toHaveAttribute('aria-pressed', 'false');
+        await control.click();
+        await expect(control).toHaveAttribute('aria-pressed', 'true');
+        await expect(page).toHaveURL(url);
+      }
+
+      const metadata = await row
+        .locator('.focus-row__meta')
+        .first()
+        .boundingBox();
+      if (!metadata) throw new Error('Task metadata is missing.');
+      await page.mouse.click(
+        metadata.x + metadata.width / 2,
+        metadata.y + metadata.height / 2,
+      );
+      await expect(page).toHaveURL(`/only-tdy/task/${task.uid}`);
+      await page
+        .getByRole('link', {
+          name: direction === 'rtl' ? 'العودة إلى القائمة' : 'Back to the list',
+        })
+        .click();
+      await expect(page).toHaveURL(url);
+      const returned = await row.boundingBox();
+      if (!returned) throw new Error('Task card is missing after returning.');
+      const bodyX =
+        direction === 'rtl' ? returned.x + 8 : returned.x + returned.width - 8;
+      await page.mouse.click(bodyX, returned.y + returned.height - 2);
+      await expect(page).toHaveURL(`/only-tdy/task/${task.uid}`);
+    });
+  }
+}
+
+test('opens a task card body in its own tab when the click asks for one', async ({
   page,
   context,
 }) => {
@@ -1032,7 +1184,13 @@ test('opens a task in its own tab when the click asks for one', async ({
   await expect(link).toHaveAttribute('href', '/only-tdy/task/task-invoice');
 
   const opened = context.waitForEvent('page');
-  await link.click({ modifiers: ['ControlOrMeta'] });
+  const row = page.locator('.focus-row').filter({ has: link });
+  const box = await row.boundingBox();
+  if (!box) throw new Error('Task card is missing.');
+  await row.click({
+    position: { x: box.width - 8, y: box.height - 2 },
+    modifiers: ['ControlOrMeta'],
+  });
   const tab = await opened;
 
   await expect(tab).toHaveURL(/\/only-tdy\/task\/task-invoice$/);
@@ -1871,18 +2029,18 @@ test('opens the choices as a list inside the page, inset from its own edge', asy
   await installTaskApi(page);
   await page.goto('/only-tdy/task/task-invoice');
 
-  const status = page.getByLabel('Status');
-  await expect(status).toHaveValue('in_progress');
+  const priority = page.getByLabel('Priority');
+  await expect(priority).toHaveValue('high');
   expect(
-    await status.evaluate((node) => getComputedStyle(node).appearance),
+    await priority.evaluate((node) => getComputedStyle(node).appearance),
   ).toBe('base-select');
 
-  await status.click();
+  await priority.click();
 
-  const chosen = page.getByRole('option', { name: 'In progress' });
+  const chosen = page.getByRole('option', { name: 'High' });
   await expect(chosen).toBeVisible();
 
-  const measured = await status.evaluate((node) => {
+  const measured = await priority.evaluate((node) => {
     const select = node as HTMLSelectElement;
     const option = select.querySelector('option');
     if (option === null) throw new Error('The select has no options.');
@@ -1912,8 +2070,8 @@ test('opens the choices as a list inside the page, inset from its own edge', asy
   expect(measured.left).toBeGreaterThan(measured.edge);
 
   // Choosing from it still writes through the select, as a select must.
-  await page.getByRole('option', { name: 'Backlog' }).click();
-  await expect(status).toHaveValue('not_started');
+  await page.getByRole('option', { name: 'Low' }).click();
+  await expect(priority).toHaveValue('low');
   await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
 });
 

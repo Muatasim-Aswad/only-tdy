@@ -96,6 +96,7 @@ for (const locale of ['en', 'ar']) {
         'aria-labelledby',
         `guidance-${GUIDANCE_LESSONS[index] ?? ''}`,
       );
+      await expect.poll(() => saved().done).toContain(GUIDANCE_LESSONS[index]);
       if (index === 4) {
         await expect(page).toHaveURL(/\/only-tdy\/tour\/task$/);
         await expect(

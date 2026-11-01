@@ -69,7 +69,7 @@ describe('TaskDetailScreen', () => {
     expect(screen.queryByRole('textbox', { name: 'Notes' })).toBeNull();
     expect(screen.queryByRole('combobox', { name: 'Tags' })).toBeNull();
     expect(screen.queryByRole('combobox', { name: 'Project' })).toBeNull();
-    expect(screen.queryByRole('combobox', { name: 'Status' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Status' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -119,10 +119,8 @@ describe('TaskDetailScreen', () => {
     expect(screen.getByRole('textbox', { name: 'Notes' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Tags' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Project' })).toBeVisible();
-    expect(screen.getByRole('combobox', { name: 'Status' })).toHaveDisplayValue(
-      'Scheduled',
-    );
-    expect(screen.queryByRole('option', { name: 'Done' })).toBeNull();
+    expect(screen.getByRole('radio', { name: 'Scheduled' })).toBeChecked();
+    expect(screen.queryByRole('radio', { name: 'Done' })).toBeNull();
   });
 
   it('is a page, with no overlay anywhere in it', () => {

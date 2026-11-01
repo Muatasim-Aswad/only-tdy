@@ -168,11 +168,11 @@ describe('TaskEditor', () => {
       },
     });
     expect(screen.getByLabelText('Hide until')).toHaveAttribute('type', 'date');
-    await user.selectOptions(screen.getByLabelText('Status'), 'planned');
+    await user.click(screen.getByRole('radio', { name: 'Today' }));
     expect(screen.queryByLabelText('Hide until')).not.toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText('Status'), 'not_started');
+    await user.click(screen.getByRole('radio', { name: 'Backlog' }));
     expect(screen.getByLabelText('Hide until')).toHaveValue('9999-12-01');
-    await user.selectOptions(screen.getByLabelText('Status'), 'planned');
+    await user.click(screen.getByRole('radio', { name: 'Today' }));
     await user.click(clickSave());
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'planned', deferUntil: '' }),
@@ -238,7 +238,7 @@ describe('TaskEditor', () => {
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'not_started' }),
     );
-    await user.selectOptions(screen.getByLabelText('Status'), 'done');
+    await user.click(screen.getByRole('radio', { name: 'Done' }));
     await user.click(clickSave());
     expect(onSave).toHaveBeenLastCalledWith(
       expect.objectContaining({ status: 'done' }),
@@ -252,7 +252,7 @@ describe('TaskEditor', () => {
     expect(screen.getByRole('textbox', { name: 'Notes' })).toHaveValue(
       'Attach the timesheet.',
     );
-    expect(screen.getByLabelText('Status')).toHaveValue('planned');
+    expect(screen.getByRole('radio', { name: 'Today' })).toBeChecked();
     expect(screen.getByLabelText('Priority')).toHaveValue('high');
     expect(screen.getByLabelText('Project')).toHaveValue('project-work');
     expect(screen.getByLabelText('Due date')).toHaveValue('2026-10-01');
@@ -260,58 +260,88 @@ describe('TaskEditor', () => {
     expect(screen.getByLabelText('Tags')).toHaveValue('finance, q4');
   });
 
-  it('offers the two lists and Done, and nothing else', () => {
+  it('offers Backlog, Today and Done in progression order', () => {
     renderEditor();
 
-    const options = [
-      ...screen.getByLabelText<HTMLSelectElement>('Status').options,
-    ].map((option) => [option.value, option.text]);
+    const choices = within(screen.getByRole('group', { name: 'Status' }))
+      .getAllByRole<HTMLInputElement>('radio')
+      .map((radio) => [radio.value, radio.labels?.[0]?.textContent]);
 
-    expect(options).toEqual([
-      ['planned', 'Today'],
+    expect(choices).toEqual([
       ['not_started', 'Backlog'],
+      ['planned', 'Today'],
       ['done', 'Done'],
     ]);
   });
 
-  it('offers no status only-tdy has no name for', () => {
-    renderEditor();
+  it.each(['in_progress', 'waiting'] as const)(
+    'shows imported %s as Today and preserves it until an explicit status change',
+    async (status) => {
+      const user = userEvent.setup();
+      const { onSave } = renderEditor({ task: { ...TASK, status } });
+      const name = status === 'waiting' ? 'Waiting' : 'In progress';
+      expect(screen.queryByRole('radio', { name })).toBeNull();
+      expect(screen.getByRole('radio', { name: 'Today' })).toBeChecked();
+      await user.click(screen.getByRole('radio', { name: 'Today' }));
+      expect(save()).toBeNull();
+      await user.type(
+        screen.getByRole('textbox', { name: 'Notes' }),
+        ' Updated',
+      );
+      await user.click(clickSave());
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ status }));
 
-    const values = [
-      ...screen.getByLabelText<HTMLSelectElement>('Status').options,
-    ].map((option) => option.value);
+      await user.click(screen.getByRole('radio', { name: 'Backlog' }));
+      await user.click(screen.getByRole('radio', { name: 'Today' }));
+      expect(screen.queryByRole('radio', { name })).toBeNull();
+      expect(screen.getByRole('radio', { name: 'Today' })).toBeChecked();
+      await user.click(clickSave());
+      expect(onSave).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: 'planned' }),
+      );
+    },
+  );
 
-    expect(values).not.toContain('archived');
-    expect(values).not.toContain('cancelled');
-  });
-
-  it('keeps a status set in Tududi rather than showing one that is not set', () => {
-    renderEditor({ task: { ...TASK, status: 'waiting' } });
-
-    const status = screen.getByLabelText<HTMLSelectElement>('Status');
-
-    expect(status).toHaveValue('waiting');
-    expect([...status.options].map((option) => option.text)).toEqual([
-      'Waiting',
-      'Today',
-      'Backlog',
-      'Done',
-    ]);
-  });
-
-  it('stops offering that status once it has been changed away from', async () => {
+  it('stages status changes with the other edits and restores the clean state when reverted', async () => {
     const user = userEvent.setup();
-    renderEditor({ task: { ...TASK, status: 'waiting' } });
-
-    const status = screen.getByLabelText<HTMLSelectElement>('Status');
-    await user.selectOptions(status, 'planned');
-
-    expect([...status.options].map((option) => option.value)).toEqual([
-      'planned',
-      'not_started',
-      'done',
-    ]);
+    const { onSave } = renderEditor();
+    await user.click(screen.getByRole('radio', { name: 'Backlog' }));
+    expect(save()).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('radio', { name: 'Today' }));
+    expect(save()).toBeNull();
+    await user.type(screen.getByRole('textbox', { name: 'Notes' }), ' Updated');
+    await user.click(screen.getByRole('radio', { name: 'Done' }));
+    await user.click(clickSave());
+    expect(onSave).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        status: 'done',
+        note: 'Attach the timesheet. Updated',
+      }),
+    );
   });
+
+  it('keeps the selected status and other drafts when a save fails', async () => {
+    const user = userEvent.setup();
+    renderEditor({ onSave: vi.fn().mockResolvedValue(undefined) });
+    await user.type(screen.getByRole('textbox', { name: 'Notes' }), ' Updated');
+    await user.click(screen.getByRole('radio', { name: 'Done' }));
+    await user.click(clickSave());
+    expect(screen.getByRole('radio', { name: 'Done' })).toBeChecked();
+    expect(screen.getByRole('textbox', { name: 'Notes' })).toHaveValue(
+      'Attach the timesheet. Updated',
+    );
+    expect(save()).toBeInTheDocument();
+  });
+
+  it.each(['saving', 'deleting', 'skipping'] as const)(
+    'holds status changes while %s',
+    (pending) => {
+      renderEditor({ [pending]: true });
+      for (const radio of screen.getAllByRole('radio'))
+        expect(radio).toBeDisabled();
+    },
+  );
 
   it('keeps Save off the page until something has actually changed', async () => {
     const user = userEvent.setup();
@@ -341,7 +371,7 @@ describe('TaskEditor', () => {
 
     await user.clear(screen.getByLabelText('Tags'));
     await user.type(screen.getByLabelText('Tags'), '#finance, next quarter');
-    await user.selectOptions(screen.getByLabelText('Status'), 'planned');
+    await user.click(screen.getByRole('radio', { name: 'Today' }));
     await user.click(clickSave());
 
     expect(onSave).toHaveBeenCalledExactlyOnceWith({

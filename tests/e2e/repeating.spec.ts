@@ -266,11 +266,12 @@ test('uses the standard footer and add/search flow without saving an unfinished 
   await expect(
     page.getByRole('textbox', { name: 'Notes', exact: true }),
   ).toHaveCount(0);
-  for (const name of ['Tags', 'Project', 'Status']) {
+  for (const name of ['Tags', 'Project']) {
     await expect(page.getByRole('combobox', { name, exact: true })).toHaveCount(
       0,
     );
   }
+  await expect(page.getByRole('group', { name: 'Status' })).toHaveCount(0);
   await page
     .getByRole('combobox', { name: 'Repeat', exact: true })
     .selectOption('monthly');

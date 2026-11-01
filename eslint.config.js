@@ -14,6 +14,7 @@ export default defineConfig([
     'playwright-report',
     'test-results',
     'docs/plans',
+    'local',
     'release/out',
   ]),
   js.configs.recommended,
