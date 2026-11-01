@@ -37,6 +37,7 @@ import {
   applyDateRules,
   validateHideDate,
   currentDate,
+  displayDate,
 } from '../domain/task-dates.ts';
 import { RecurrenceFields } from './RecurrenceFields.tsx';
 import { formatTagList, parseTagList } from '../domain/tag-list.ts';
@@ -142,6 +143,8 @@ export interface TaskEditorProps {
   readonly deleting?: boolean;
   readonly onSkip?: (() => void) | undefined;
   readonly skipping?: boolean;
+  readonly onComplete?: (() => void) | undefined;
+  readonly completing?: boolean;
   readonly creating?: boolean;
   /** Offline or expired: the fields stay editable, the writes do not. */
   readonly disabled?: boolean;
@@ -180,6 +183,8 @@ export function TaskEditor({
   deleting = false,
   onSkip,
   skipping = false,
+  onComplete,
+  completing = false,
   creating = false,
   disabled = false,
   formId,
@@ -222,7 +227,7 @@ export function TaskEditor({
     [fields, baseline.recurrence],
   );
   const dirty = !sameEdit(edit, toEdit(toFields(baseline)));
-  const busy = saving || deleting || skipping;
+  const busy = saving || deleting || skipping || completing;
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -385,10 +390,6 @@ export function TaskEditor({
           { uid: task.projectUid, name: task.projectName ?? task.projectUid },
         ];
 
-  const statuses =
-    fields.recurrence && fields.status !== 'done'
-      ? STATUS_ORDER.filter((status) => status !== 'done')
-      : STATUS_ORDER;
   // Show active Tududi statuses as Today without rewriting them on unrelated saves.
   const selectedStatus =
     fields.status === 'in_progress' || fields.status === 'waiting'
@@ -489,53 +490,99 @@ export function TaskEditor({
                 </legend>
                 <div
                   className={classNames(
-                    'flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5',
+                    'flex min-h-11 min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5',
                     !compact && 'min-[360px]:ms-28',
                   )}
                 >
-                  {statuses.map((status) => (
-                    <span
-                      key={status}
-                      className="flex min-w-0 items-center gap-1.5"
-                    >
-                      <label className="relative min-w-0">
-                        <input
-                          className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
-                          type="radio"
-                          name={statusName}
-                          value={status}
-                          checked={selectedStatus === status}
-                          disabled={busy}
-                          onChange={() => {
-                            update('status', status);
-                          }}
-                        />
-                        <span className="flex min-h-11 items-center text-action text-muted cursor-pointer hover:text-ink peer-checked:text-accent peer-checked:font-semibold peer-checked:[&>span]:bg-selection peer-focus-visible:[&>span]:ring-2 peer-focus-visible:[&>span]:ring-accent peer-disabled:cursor-default peer-disabled:opacity-50 forced-colors:peer-checked:[&>span]:outline forced-colors:peer-focus-visible:[&>span]:outline-2">
-                          <span className="-mx-1.5 rounded-fill px-1.5 py-1">
-                            {status === 'not_started' && fields.recurrence
-                              ? t('taskEditor.scheduled')
-                              : STATUS_NAME[status]}
-                          </span>
-                        </span>
-                      </label>
-                      {status !== statuses.at(-1) ? (
-                        <svg
-                          className="flex-none text-muted opacity-55 rtl:rotate-180"
-                          viewBox="0 0 16 16"
-                          width="12"
-                          height="12"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.25"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
+                  {fields.recurrence ? (
+                    <>
+                      <span className="inline-flex max-w-full items-center rounded-fill bg-selection px-1.5 py-1 text-accent text-action font-semibold">
+                        {selectedStatus === 'planned'
+                          ? t('taskEditor.planned')
+                          : selectedStatus === 'done'
+                            ? t('taskEditor.done')
+                            : t('taskEditor.scheduledFor', {
+                                date: fields.dueDate
+                                  ? displayDate(fields.dueDate)
+                                  : commonT('display.noValue'),
+                              })}
+                      </span>
+                      {onComplete && selectedStatus === 'planned' ? (
+                        <button
+                          type="button"
+                          className="ms-3 min-h-11 px-1 text-accent text-action cursor-pointer hover:underline hover:underline-offset-[3px] focus-visible:underline focus-visible:underline-offset-[3px] disabled:cursor-default disabled:opacity-50"
+                          onClick={onComplete}
+                          disabled={disabled || busy || dirty}
+                          aria-busy={completing}
+                          title={
+                            dirty ? t('taskEditor.saveChangesFirst') : undefined
+                          }
                         >
-                          <path d="M2.5 8h11m-4-4 4 4-4 4" />
-                        </svg>
+                          {completing
+                            ? t('taskEditor.markingDone')
+                            : t('taskEditor.markDone')}
+                        </button>
                       ) : null}
-                    </span>
-                  ))}
+                      {onSkip ? (
+                        <button
+                          type="button"
+                          className="focus-repeat-skip ms-3 min-h-11 px-1 text-muted text-action cursor-pointer hover:underline hover:underline-offset-[3px] focus-visible:underline focus-visible:underline-offset-[3px] disabled:cursor-default disabled:opacity-50"
+                          onClick={onSkip}
+                          disabled={disabled || busy || dirty}
+                          aria-busy={skipping}
+                          title={
+                            dirty ? t('taskEditor.saveChangesFirst') : undefined
+                          }
+                        >
+                          {skipping
+                            ? t('taskEditor.skipping')
+                            : t('taskEditor.skip')}
+                        </button>
+                      ) : null}
+                    </>
+                  ) : (
+                    STATUS_ORDER.map((status) => (
+                      <span
+                        key={status}
+                        className="flex min-w-0 items-center gap-1.5"
+                      >
+                        <label className="relative min-w-0">
+                          <input
+                            className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
+                            type="radio"
+                            name={statusName}
+                            value={status}
+                            checked={selectedStatus === status}
+                            disabled={busy}
+                            onChange={() => {
+                              update('status', status);
+                            }}
+                          />
+                          <span className="flex min-h-11 items-center text-action text-muted cursor-pointer hover:text-ink peer-checked:text-accent peer-checked:font-semibold peer-checked:[&>span]:bg-selection peer-focus-visible:[&>span]:ring-2 peer-focus-visible:[&>span]:ring-accent peer-disabled:cursor-default peer-disabled:opacity-50 forced-colors:peer-checked:[&>span]:outline forced-colors:peer-focus-visible:[&>span]:outline-2">
+                            <span className="-mx-1.5 rounded-fill px-1.5 py-1">
+                              {STATUS_NAME[status]}
+                            </span>
+                          </span>
+                        </label>
+                        {status !== STATUS_ORDER.at(-1) ? (
+                          <svg
+                            className="flex-none text-muted opacity-55 rtl:rotate-180"
+                            viewBox="0 0 16 16"
+                            width="12"
+                            height="12"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.25"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M2.5 8h11m-4-4 4 4-4 4" />
+                          </svg>
+                        ) : null}
+                      </span>
+                    ))
+                  )}
                 </div>
               </fieldset>
             ) : null}
@@ -794,19 +841,6 @@ export function TaskEditor({
             <path d="M12 9v11M3.5 9h17M3.5 14.5h17" />
           </svg>
         </RailButton>
-        {onSkip ? (
-          <button
-            type="button"
-            className="focus-repeat-skip focus-visible:underline focus-visible:underline-offset-[3px] hover:underline hover:underline-offset-[3px] disabled:cursor-default disabled:opacity-50 min-h-11 ms-auto px-2.5 text-muted cursor-pointer text-action"
-            onClick={onSkip}
-            disabled={disabled || busy}
-            aria-busy={skipping}
-          >
-            {skipping
-              ? t('taskEditor.skipping')
-              : t('taskEditor.skipThisOccurrence')}
-          </button>
-        ) : null}
       </PageFooter>
     </>
   );

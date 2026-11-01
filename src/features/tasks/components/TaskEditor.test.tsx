@@ -334,7 +334,7 @@ describe('TaskEditor', () => {
     expect(save()).toBeInTheDocument();
   });
 
-  it.each(['saving', 'deleting', 'skipping'] as const)(
+  it.each(['saving', 'deleting', 'skipping', 'completing'] as const)(
     'holds status changes while %s',
     (pending) => {
       renderEditor({ [pending]: true });

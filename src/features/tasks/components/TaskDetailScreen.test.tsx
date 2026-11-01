@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -20,6 +20,13 @@ const TASK: TaskDetail = {
   dueDate: '',
   deferUntil: '',
   projectUid: '',
+};
+
+const REPEATING_TASK: TaskDetail = {
+  ...TASK,
+  status: 'not_started',
+  dueDate: '2099-10-23',
+  recurrence: defaultRecurrence('daily', '2099-10-23'),
 };
 
 function renderScreen(props: Partial<TaskDetailScreenProps> = {}) {
@@ -105,22 +112,93 @@ describe('TaskDetailScreen', () => {
     ).toHaveDisplayValue('Home');
   });
 
-  it('keeps empty fields in the recurring editor and completes occurrences outside its status picker', () => {
+  it('shows a scheduled date badge and Skip without a recurring status picker', () => {
     renderScreen({
+      onSkip: vi.fn(),
+      onComplete: vi.fn(),
       state: {
         kind: 'ready',
-        task: {
-          ...TASK,
-          status: 'not_started',
-          recurrence: defaultRecurrence('daily', '2099-10-23'),
-        },
+        task: REPEATING_TASK,
       },
     });
     expect(screen.getByRole('textbox', { name: 'Notes' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Tags' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Project' })).toBeVisible();
-    expect(screen.getByRole('radio', { name: 'Scheduled' })).toBeChecked();
-    expect(screen.queryByRole('radio', { name: 'Done' })).toBeNull();
+    const status = within(screen.getByRole('group', { name: 'Status' }));
+    expect(status.getByText('Scheduled for: 23-10-2099')).toBeVisible();
+    expect(status.getByRole('button', { name: 'Skip' })).toBeEnabled();
+    expect(status.queryAllByRole('radio')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Mark done' })).toBeNull();
+  });
+
+  it.each(['planned', 'in_progress', 'waiting'] as const)(
+    'shows Today with completion and Skip for a repeating %s task',
+    async (status) => {
+      const user = userEvent.setup();
+      const onComplete = vi.fn();
+      const onSkip = vi.fn();
+      const { onSave } = renderScreen({
+        state: { kind: 'ready', task: { ...REPEATING_TASK, status } },
+        onComplete,
+        onSkip,
+      });
+      const group = within(screen.getByRole('group', { name: 'Status' }));
+      expect(group.getByText('Today')).toBeVisible();
+      expect(group.getByRole('button', { name: 'Skip' })).toBeEnabled();
+      await user.click(group.getByRole('button', { name: 'Mark done' }));
+      expect(onComplete).toHaveBeenCalledOnce();
+      expect(onSkip).not.toHaveBeenCalled();
+      expect(onSave).not.toHaveBeenCalled();
+    },
+  );
+
+  it('keeps occurrence actions visible but disabled until a draft is saved or reverted', async () => {
+    const user = userEvent.setup();
+    const onSkip = vi.fn();
+    const onComplete = vi.fn();
+    const { onSave } = renderScreen({
+      state: { kind: 'ready', task: { ...REPEATING_TASK, status: 'planned' } },
+      onSkip,
+      onComplete,
+    });
+    const note = screen.getByRole('textbox', { name: 'Notes' });
+    await user.type(note, 'Keep this draft');
+    const skip = screen.getByRole('button', { name: 'Skip' });
+    const complete = screen.getByRole('button', { name: 'Mark done' });
+    expect(skip).toBeVisible();
+    expect(skip).toBeDisabled();
+    expect(complete).toBeVisible();
+    expect(complete).toBeDisabled();
+    await user.click(skip);
+    await user.click(complete);
+    expect(onSkip).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(note).toHaveValue('Keep this draft');
+    expect(onSave).not.toHaveBeenCalled();
+    await user.clear(note);
+    expect(complete).toBeEnabled();
+    await user.click(skip);
+    expect(onSkip).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    'saving',
+    'deleting',
+    'skipping',
+    'completing',
+    'disabled',
+  ] as const)('blocks competing occurrence actions while %s', (pending) => {
+    renderScreen({
+      state: { kind: 'ready', task: { ...REPEATING_TASK, status: 'planned' } },
+      onSkip: vi.fn(),
+      onComplete: vi.fn(),
+      [pending]: true,
+    });
+    expect(
+      screen.getByRole('button', { name: /Mark done|Marking done/ }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Skip/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
   });
 
   it('is a page, with no overlay anywhere in it', () => {

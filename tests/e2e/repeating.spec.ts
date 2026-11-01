@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { FIXTURE_NOW, installApi } from './fixtures.ts';
+import { FIXTURE_NOW, GUIDANCE_COMPLETE, installApi } from './fixtures.ts';
 
 async function installRepeatingApi(page: Page) {
   await page.clock.setFixedTime(new Date(FIXTURE_NOW));
@@ -190,7 +190,7 @@ test('separates schedules from Backlog, advances completion, and keeps a durable
   await page
     .getByRole('link', { name: 'Review the week Repeating', exact: true })
     .click();
-  await page.getByRole('button', { name: 'Skip this occurrence' }).click();
+  await page.getByRole('button', { name: 'Skip' }).click();
   await expect(
     page.getByRole('button', { name: 'Repeating', exact: true }),
   ).toBeVisible();
@@ -470,7 +470,7 @@ test('aligns every conditional recurrence field with the form columns', async ({
   }
 });
 
-test('keeps Skip in the editor footer with focus and pending feedback', async ({
+test('keeps Skip beside the recurring badge with focus and pending feedback', async ({
   page,
 }) => {
   await installRepeatingApi(page);
@@ -496,9 +496,13 @@ test('keeps Skip in the editor footer with focus and pending feedback', async ({
     });
   });
   await page.goto('/only-tdy/task/weekly');
+  const status = page.getByRole('group', { name: 'Status' });
+  await expect(status.getByText('Scheduled for: 23-10-2026')).toBeVisible();
+  await expect(status.getByRole('radio')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Mark done' })).toHaveCount(0);
   const skip = page
-    .locator('footer')
-    .getByRole('button', { name: 'Skip this occurrence', exact: true });
+    .getByRole('group', { name: 'Status' })
+    .getByRole('button', { name: 'Skip', exact: true });
   await expect(skip).toBeVisible();
   const resting = await skip.evaluate(
     (node) => getComputedStyle(node).backgroundColor,
@@ -514,7 +518,7 @@ test('keeps Skip in the editor footer with focus and pending feedback', async ({
   await skip.click();
   await expect(
     page
-      .locator('footer')
+      .getByRole('group', { name: 'Status' })
       .getByRole('button', { name: 'Skipping…', exact: true }),
   ).toBeDisabled();
   await expect(
@@ -524,9 +528,162 @@ test('keeps Skip in the editor footer with focus and pending feedback', async ({
   await expect(page).toHaveURL(/repeating$/);
 });
 
-test('keeps Repeating and its editor accessible in both themes and narrow layouts', async ({
+test('completes a Today occurrence from its editor and retains the next schedule and history', async ({
   page,
 }) => {
+  const api = await installRepeatingApi(page);
+  await page.goto('/only-tdy/task/plants');
+  const status = page.getByRole('group', { name: 'Status' });
+  await expect(status.getByText('Today', { exact: true })).toBeVisible();
+  const complete = status.getByRole('button', { name: 'Mark done' });
+  const skip = status.getByRole('button', { name: 'Skip', exact: true });
+  await expect(complete).toBeEnabled();
+  await expect(skip).toBeEnabled();
+  const note = page.getByRole('textbox', { name: 'Notes' });
+  await note.fill('Keep this draft');
+  await expect(complete).toBeVisible();
+  await expect(complete).toBeDisabled();
+  await expect(skip).toBeVisible();
+  await expect(skip).toBeDisabled();
+  expect(api.patches).toHaveLength(0);
+  await note.fill('');
+  await complete.click();
+  await expect(page).toHaveURL(/repeating$/);
+  expect(api.patches.at(-1)).toMatchObject({ status: 'done' });
+  expect(api.completed).toHaveLength(1);
+  await page
+    .getByRole('link', { name: 'Water the plants Repeating', exact: true })
+    .click();
+  await expect(status.getByText('Scheduled for: 23-10-2026')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mark done' })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Skip', exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('combobox', { name: 'Repeat', exact: true }),
+  ).toHaveValue('daily');
+  await expect(
+    page.getByRole('spinbutton', { name: 'Every', exact: true }),
+  ).toHaveValue('3');
+  await page.goto('/only-tdy/history');
+  await expect(
+    page.getByLabel('Completed “Water the plants”', { exact: true }),
+  ).toBeVisible();
+});
+
+test('keeps the Today occurrence editable after completion fails and allows retry', async ({
+  page,
+}) => {
+  const api = await installRepeatingApi(page);
+  let attempts = 0;
+  await page.route('**/api/task/plants', async (route) => {
+    if (route.request().method() === 'PATCH' && ++attempts === 1) {
+      await route.fulfill({
+        status: 500,
+        json: { error: 'Synthetic failure' },
+      });
+      return;
+    }
+    await route.fallback();
+  });
+  await page.goto('/only-tdy/task/plants');
+  const complete = page.getByRole('button', { name: 'Mark done' });
+  await complete.click();
+  await expect(
+    page.locator('.focus-detail__feedback .focus-toast__message'),
+  ).not.toBeEmpty();
+  await expect(page).toHaveURL(/task\/plants$/);
+  await expect(complete).toBeEnabled();
+  await expect(
+    page
+      .getByRole('group', { name: 'Status' })
+      .getByText('Today', { exact: true }),
+  ).toBeVisible();
+  expect(api.completed).toHaveLength(0);
+  await complete.click();
+  await expect(page).toHaveURL(/repeating$/);
+  expect(api.completed).toHaveLength(1);
+});
+
+test('holds other task actions while Mark done is pending', async ({
+  page,
+}) => {
+  const api = await installRepeatingApi(page);
+  let finish!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  await page.route('**/api/task/plants', async (route) => {
+    if (route.request().method() === 'PATCH') await pending;
+    await route.fallback();
+  });
+  await page.goto('/only-tdy/task/plants');
+  await page.getByRole('button', { name: 'Mark done' }).click();
+  const completing = page.getByRole('button', { name: 'Marking done…' });
+  await expect(completing).toBeDisabled();
+  await expect(completing).toHaveAttribute('aria-busy', 'true');
+  await expect(
+    page.getByRole('button', { name: 'Skip', exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Delete', exact: true }),
+  ).toBeDisabled();
+  expect(api.completed).toHaveLength(0);
+  finish();
+  await expect(page).toHaveURL(/repeating$/);
+  expect(api.completed).toHaveLength(1);
+});
+
+test('keeps Arabic recurring badges and occurrence actions within the editor columns', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(60_000);
+  await installRepeatingApi(page);
+  await page.route('**/api/profile', (route) =>
+    route.fulfill({
+      json: {
+        uid: 'user-e2e',
+        timezone: 'UTC',
+        ui_settings: { onlyTdy: { locale: 'ar', guidance: GUIDANCE_COMPLETE } },
+      },
+    }),
+  );
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const uid of ['weekly', 'plants']) {
+      await page.goto(`/only-tdy/task/${uid}`);
+      await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+      const status = page.getByRole('group', { name: 'الحالة' });
+      await expect(
+        status.getByRole('button', { name: 'تخطّي', exact: true }),
+      ).toBeVisible();
+      await expect(status.getByRole('radio')).toHaveCount(0);
+      await expect(
+        page.getByRole('button', { name: 'إتمام المهمة', exact: true }),
+      ).toHaveCount(uid === 'plants' ? 1 : 0);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      const axe = await new AxeBuilder({ page }).analyze();
+      expect(
+        axe.violations.filter((violation) =>
+          ['serious', 'critical'].includes(violation.impact ?? ''),
+        ),
+      ).toEqual([]);
+      await page.screenshot({
+        path: testInfo.outputPath(`${uid}-ar-${String(width)}.png`),
+        fullPage: true,
+      });
+    }
+  }
+});
+
+test('keeps Repeating and its editor accessible in both themes and narrow layouts', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(60_000);
   await installRepeatingApi(page);
   for (const scheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: scheme });
@@ -560,6 +717,26 @@ test('keeps Repeating and its editor accessible in both themes and narrow layout
           () => document.documentElement.scrollWidth <= window.innerWidth,
         ),
       ).toBe(true);
+      await page.goto('/only-tdy/task/plants');
+      const status = page.getByRole('group', { name: 'Status' });
+      await expect(status.getByText('Today', { exact: true })).toBeVisible();
+      await expect(
+        status.getByRole('button', { name: 'Mark done' }),
+      ).toBeVisible();
+      await expect(
+        status.getByRole('button', { name: 'Skip', exact: true }),
+      ).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: testInfo.outputPath(
+          `today-editor-${String(width)}-${scheme}.png`,
+        ),
+        fullPage: true,
+      });
     }
   }
   const result = await new AxeBuilder({ page }).analyze();

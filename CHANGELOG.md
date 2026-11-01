@@ -13,6 +13,7 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
+- Repeating-task editors show a Scheduled for or Today badge with Skip beside it; Today occurrences can be marked done directly from the editor.
 - Task editing shows Backlog → Today → Done below the title, with a selected-state chip and keyboard navigation aligned to the form values.
 - Task cards open from their body while the completion and selection column stays separate.
 - Arabic copy uses natural phrasing, and translated messages live in focused catalogs with direct typed access.

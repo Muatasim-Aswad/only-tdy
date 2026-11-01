@@ -15,6 +15,7 @@ import { TUDUDI_LOGIN_PATH } from '../../../config/app.ts';
 import { BackLink } from './BackLink.tsx';
 import { DeleteTaskAction } from './DeleteTaskAction.tsx';
 import { TaskEditor } from './TaskEditor.tsx';
+import { isTodayStatus } from '../domain/task-dates.ts';
 
 export interface TaskDetailScreenProps {
   readonly preview?: boolean;
@@ -30,8 +31,10 @@ export interface TaskDetailScreenProps {
   readonly onSave: (edit: TaskEdit) => Promise<TaskDetail | undefined>;
   readonly onDelete: () => void;
   readonly onSkip?: () => void;
+  readonly onComplete?: () => void;
   readonly creating?: boolean;
   readonly skipping?: boolean;
+  readonly completing?: boolean;
   readonly onRetry: () => void;
   readonly feedback: SaveFeedback;
   readonly onDismissFeedback?: (() => void) | undefined;
@@ -65,8 +68,10 @@ export function TaskDetailScreen({
   onSave,
   onDelete,
   onSkip,
+  onComplete,
   creating = false,
   skipping = false,
+  completing = false,
   onRetry,
   feedback,
   onDismissFeedback,
@@ -94,7 +99,9 @@ export function TaskDetailScreen({
                 aria-keyshortcuts="Control+Enter Meta+Enter"
                 form={formId}
                 className="focus-detail__save ms-auto"
-                disabled={disabled || saving || deleting || skipping}
+                disabled={
+                  disabled || saving || deleting || skipping || completing
+                }
               >
                 {t('copy.save')}
               </SubmitButton>
@@ -102,7 +109,7 @@ export function TaskDetailScreen({
               <DeleteTaskAction
                 onDelete={onDelete}
                 pending={deleting}
-                disabled={disabled || saving || skipping}
+                disabled={disabled || saving || skipping || completing}
               />
             )}
           </div>
@@ -121,9 +128,15 @@ export function TaskDetailScreen({
           saving={saving}
           creating={creating}
           skipping={skipping}
+          completing={completing}
           onSkip={
-            state.task.recurrence && state.task.status !== 'done' && !dirty
+            state.task.recurrence && state.task.status !== 'done'
               ? onSkip
+              : undefined
+          }
+          onComplete={
+            state.task.recurrence && isTodayStatus(state.task.status)
+              ? onComplete
               : undefined
           }
           deleting={deleting}
