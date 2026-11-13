@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { preload } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -16,13 +15,6 @@ preload(fontUrl, {
   as: 'font',
   type: 'font/woff2',
   crossOrigin: 'anonymous',
-});
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { refetchOnWindowFocus: true },
-    mutations: { retry: false },
-  },
 });
 
 registerSW({ immediate: true });
@@ -59,9 +51,7 @@ if (!canonicalizeAppPath(window.location)) {
   createRoot(container, { onCaughtError: () => undefined }).render(
     <StrictMode>
       <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <App updateNotice={updateNotice} />
-        </QueryClientProvider>
+        <App updateNotice={updateNotice} />
       </ErrorBoundary>
     </StrictMode>,
   );

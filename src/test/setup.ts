@@ -31,9 +31,12 @@ function createMediaQueryList(query: string): MediaQueryList {
     removeEventListener: (_type: string, listener: EventListener) => {
       listeners.delete(listener);
     },
+    // The mock must implement the deprecated MediaQueryList methods too.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     addListener: (listener: EventListener) => {
       listeners.add(listener);
     },
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     removeListener: (listener: EventListener) => {
       listeners.delete(listener);
     },

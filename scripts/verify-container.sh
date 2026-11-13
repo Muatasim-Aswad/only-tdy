@@ -150,10 +150,12 @@ pass "host port ${PORT} is free"
 section "Build and Compose definitions"
 
 dockerfile="$(cat "$REPO_ROOT/Dockerfile")"
-check_contains "builder pinned to node 24.20.0-alpine by digest" \
-  'node:24.20.0-alpine@sha256:' "$dockerfile"
-check_contains "runtime pinned to nginx-unprivileged:1.31.6-alpine by digest" \
-  'nginxinc/nginx-unprivileged:1.31.6-alpine@sha256:' "$dockerfile"
+builder="$(jq -er '.builder | select(test("@sha256:[a-f0-9]{64}$"))' release/toolchain.json)"
+runtime="$(jq -er '.runtime | select(test("@sha256:[a-f0-9]{64}$"))' release/toolchain.json)"
+check_contains "builder matches the reviewed digest-pinned toolchain" \
+  "FROM $builder AS build" "$dockerfile"
+check_contains "runtime matches the reviewed digest-pinned toolchain" \
+  "FROM $runtime AS runtime" "$dockerfile"
 check_contains "install uses the committed lockfile" \
   'pnpm install --frozen-lockfile' "$dockerfile"
 check_absent "no /only-tdy redirect in the server config" \

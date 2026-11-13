@@ -9,6 +9,12 @@ import { UpdateToast } from './UpdateToast.tsx';
 
 import { buildLabel, type BuildInfo } from '../infra/build-info.ts';
 import { handleLinkNavigation, useRoute } from '../infra/navigation.ts';
+const AppProviders = lazy(() =>
+  import('./AppProviders.tsx').then((module) => ({
+    default: module.AppProviders,
+  })),
+);
+
 const AuthBoundary = lazy(() =>
   import('../features/auth/AuthBoundary.tsx').then((module) => ({
     default: module.AuthBoundary,
@@ -100,19 +106,21 @@ export function App({ updateNotice = null }: AppProps) {
           </PageShell>
         }
       >
-        <AuthBoundary>
-          <Suspense fallback={null}>
-            <TaskProvider>
-              <Page />
-              <UpdateToast
-                label={notice === null ? undefined : buildLabel(notice)}
-                href={VERSION_PATH}
-                onOpen={openVersion}
-                onDismiss={dismissNotice}
-              />
-            </TaskProvider>
-          </Suspense>
-        </AuthBoundary>
+        <AppProviders>
+          <AuthBoundary>
+            <Suspense fallback={null}>
+              <TaskProvider>
+                <Page />
+                <UpdateToast
+                  label={notice === null ? undefined : buildLabel(notice)}
+                  href={VERSION_PATH}
+                  onOpen={openVersion}
+                  onDismiss={dismissNotice}
+                />
+              </TaskProvider>
+            </Suspense>
+          </AuthBoundary>
+        </AppProviders>
       </Suspense>
     </LocaleBoundary>
   );

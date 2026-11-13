@@ -89,6 +89,7 @@ scripts/verify-assets.mjs
 scripts/verify-container.sh
 src/app/App.test.tsx
 src/app/App.tsx
+src/app/AppProviders.tsx
 src/app/ErrorBoundary.test.tsx
 src/app/ErrorBoundary.tsx
 src/app/LocaleBoundary.tsx

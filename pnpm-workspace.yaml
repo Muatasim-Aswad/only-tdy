@@ -4,6 +4,9 @@
 allowBuilds:
   msw: false
 
+minimumReleaseAgeExclude:
+  - glob@14.0.6
+
 # The app compiles and builds with TypeScript 7 (the "typescript-7" alias, used by
 # the typecheck and build scripts). typescript-eslint 8.x refuses to load against
 # the TS 7 API (typescript-eslint#10940), and Microsoft's side-by-side guidance is
@@ -13,4 +16,7 @@ allowBuilds:
 
 # GHSA-gfhx-hw2g-v5hg: the Workbox build toolchain still resolves 7.1.1.
 overrides:
-  serialize-javascript: 7.1.2
+  fast-uri: 3.1.9
+  'glob@>=9.0.0 <=14.0.1': 14.0.6
+  'minimatch@>=7.0.0 <11.0.1': 11.0.8
+  serialize-javascript: 7.1.3

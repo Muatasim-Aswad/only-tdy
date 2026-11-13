@@ -1,5 +1,5 @@
 [tools]
-node = "24.20.0"
+node = "26.12.1"
 pnpm = "11.24.0"
 gitleaks = "8.30.1"
 

@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw/http';
 import { setupServer } from 'msw/node';
 import {
   afterAll,
@@ -38,7 +38,7 @@ const resolvedFetch: typeof fetch = (input, init) => {
 };
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledFrame: 'error' });
 });
 afterEach(() => {
   server.resetHandlers();
@@ -265,10 +265,9 @@ describe('Tududi API', () => {
     ).toEqual([rawTodayTask.uid]);
   });
   it('uses same-origin credentials and preserves Today semantics and order', async () => {
-    let credentials: RequestCredentials | undefined;
+    const fetch = vi.fn(resolvedFetch);
     server.use(
       http.get('/api/tasks', ({ request }) => {
-        credentials = request.credentials;
         const todayUrl = new URL(request.url);
         expect(todayUrl.searchParams.get('type')).toBe('today');
         expect(todayUrl.searchParams.get('limit')).toBe('50');
@@ -288,9 +287,12 @@ describe('Tududi API', () => {
       }),
     );
 
-    const tasks = await createTududiApi(resolvedFetch).fetchTodayTasks();
+    const tasks = await createTududiApi(fetch).fetchTodayTasks();
 
-    expect(credentials).toBe('include');
+    expect(fetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ credentials: 'include' }),
+    );
     expect(tasks.map((task) => task.uid)).toEqual([
       'task-today',
       'progress',
@@ -328,22 +330,21 @@ describe('Tududi API', () => {
   });
 
   it('deduplicates concurrent CSRF requests and sends the exact create body', async () => {
+    const fetch = vi.fn(resolvedFetch);
     let csrfRequests = 0;
     const postedBodies: unknown[] = [];
     server.use(
-      http.get('/api/csrf-token', ({ request }) => {
+      http.get('/api/csrf-token', () => {
         csrfRequests += 1;
-        expect(request.credentials).toBe('include');
         return HttpResponse.json({ csrfToken: 'shared-token' });
       }),
       http.post('/api/task', async ({ request }) => {
-        expect(request.credentials).toBe('include');
         expect(request.headers.get('x-csrf-token')).toBe('shared-token');
         postedBodies.push(await request.json());
         return HttpResponse.json(rawBacklogTask, { status: 201 });
       }),
     );
-    const api = createTududiApi(resolvedFetch);
+    const api = createTududiApi(fetch);
 
     await Promise.all([
       api.createTask(backlogDraft),
@@ -351,6 +352,8 @@ describe('Tududi API', () => {
     ]);
 
     expect(csrfRequests).toBe(1);
+    for (const [, init] of fetch.mock.calls)
+      expect(init).toEqual(expect.objectContaining({ credentials: 'include' }));
     expect(postedBodies).toEqual([
       {
         name: 'Book dentist',
