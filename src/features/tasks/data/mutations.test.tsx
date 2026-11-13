@@ -4,7 +4,7 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw/http';
 import { setupServer } from 'msw/node';
 import type { PropsWithChildren } from 'react';
 import {
@@ -53,7 +53,7 @@ const resolvedFetch: typeof fetch = (input, init) =>
   globalThis.fetch(absoluteInput(input), init);
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledFrame: 'error' });
 });
 beforeEach(() => {
   setDuePromotion(false);

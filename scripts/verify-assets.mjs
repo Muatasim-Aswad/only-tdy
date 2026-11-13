@@ -49,7 +49,7 @@ if (
 )
   throw new Error('Unexpected release tag');
 const publicNames = lines(join(root, 'release/release-files.txt')).map((p) =>
-  p.replace('{tag}', provenance.tag),
+  p.replace('{tag}', expectedTag),
 );
 const hasContainerExport = existsSync(join(assets, CONTAINER_EXPORT));
 same(
@@ -109,7 +109,7 @@ try {
   for (const kind of ['source', 'static']) {
     const dest = join(temp, kind);
     mkdirSync(dest);
-    const archive = join(assets, `only-tdy-${provenance.tag}-${kind}.tar.gz`);
+    const archive = join(assets, `only-tdy-${expectedTag}-${kind}.tar.gz`);
     const members = output('tar', ['-tzf', archive]).split('\n');
     if (members.some((p) => p.startsWith('/') || p.split('/').includes('..')))
       throw new Error('Unsafe archive member');

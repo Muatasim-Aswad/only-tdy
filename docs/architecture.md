@@ -45,6 +45,8 @@ HTTP calls use same-origin `/api/`, session cookies and CSRF tokens for writes. 
 
 Preferences load from the server, merge only pending local fields, and refresh the browser copy. A successfully read profile without `onlyTdy` is seeded from its scoped cache or defaults. Failed reads never trigger initialization writes. Saves serialize fresh-profile read/merge/PATCH operations, preserving unrelated JSON and unknown preference fields; Tududi offers no concurrency precondition. Retry on reconnect, window focus or explicit action. Reset saves explicit defaults. Browser copies and pending changes are scoped to origin and user UID; legacy browser preferences migrate to the first verified account only. Theme and editor-layout mirrors support first paint and existing controls.
 
+The query provider loads after language confirmation, with one cache per mounted application.
+
 The PWA precaches the shell and bundled assets, including lazy screens and fonts; `/api/` stays network-only. The static server and worker resolve `/only-tdy/` navigation to the shell. No external font service is used.
 
 Failed optimistic updates restore the prior view and retain editable drafts. Reloading loses drafts; server write outcomes may remain ambiguous. About compares the running identity with uncached `version.json`, offers Reload for a different build, shows check failures and records a one-time update notice. See [recovery](limitations.md#recovery) before reloading.

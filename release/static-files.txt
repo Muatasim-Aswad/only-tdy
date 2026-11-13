@@ -2,6 +2,7 @@ DEPENDENCY_LICENSES.txt
 FONT_LICENSE.txt
 LICENSE
 THIRD_PARTY_NOTICES.md
+assets/AppProviders-{hash}.js
 assets/AtkinsonHyperlegibleNext-Variable-{hash}.woff2
 assets/AuthBoundary-{hash}.js
 assets/BackLink-{hash}.js
@@ -37,9 +38,11 @@ assets/index-{hash}.js
 assets/jsx-runtime-{hash}.js
 assets/messages-guidance-{hash}.js
 assets/messages-{hash}.js
+assets/mutation-{hash}.js
 assets/mutations-{hash}.js
 assets/queries-{hash}.js
 assets/query-{hash}.js
+assets/queryClient-{hash}.js
 assets/session-{hash}.js
 assets/store-{hash}.js
 assets/task-session-{hash}.js

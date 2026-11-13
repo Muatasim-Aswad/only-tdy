@@ -13,6 +13,7 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
+- The query provider loads after language confirmation to retain the 100 KiB initial JavaScript budget with updated dependencies.
 - Forms and information pages use the full content width without the task-list control indent.
 - Repeating-task editors show a Scheduled for or Today badge with Skip beside it; Today occurrences can be marked done directly from the editor.
 - Task editing shows Backlog → Today → Done below the title, with a selected-state chip and keyboard navigation aligned to the form values.
@@ -20,6 +21,10 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 - Arabic copy uses natural phrasing, and translated messages live in focused catalogs with direct typed access.
 - Settings group general and planning preferences; navigation and task actions provide clearer labels and feedback.
 - Guided lessons distinguish commands, keyboard keys, and interface names, with visible spotlight outlines and arrows in both themes.
+
+### Security
+
+- Updated vulnerable development dependencies and container inputs; release asset paths derive from the reviewed checkout version.
 
 ### Fixed
 
