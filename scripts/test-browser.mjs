@@ -4,7 +4,7 @@ if (process.platform !== 'linux' || process.arch !== 'x64')
   throw new Error('The full browser gate requires a Linux amd64 host.');
 
 const image =
-  'mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f';
+  'mcr.microsoft.com/playwright:v1.65.0-noble@sha256:9beb546099e11f52d62e505537914870e01a67e0e6b00ae41da4775324e73dbe';
 if (process.argv[2] === '--install') {
   const result = spawnSync('docker', ['pull', image], { stdio: 'inherit' });
   if (result.error) throw result.error;

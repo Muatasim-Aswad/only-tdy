@@ -13,6 +13,7 @@ Notable changes follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
+- Updated compatible application and build dependencies and aligned the pinned browser runtime with Playwright 1.65; retained TypeScript 6 for ESLint compatibility.
 - The query provider loads after language confirmation to retain the 100 KiB initial JavaScript budget with updated dependencies.
 - Forms and information pages use the full content width without the task-list control indent.
 - Repeating-task editors show a Scheduled for or Today badge with Skip beside it; Today occurrences can be marked done directly from the editor.
