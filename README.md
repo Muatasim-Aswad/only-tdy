@@ -60,14 +60,13 @@ Install as a PWA where supported. After an online visit, the shell can reopen of
 
 ## Documentation
 
-| I want to… | Read |
-| --- | --- |
-| Deploy, update or remove only-tdy | [Deployment](docs/deployment.md) |
-| Develop or contribute | [Development](docs/development.md) · [Contributing](CONTRIBUTING.md) |
-| Understand code ownership and task rules | [Architecture](docs/architecture.md) |
-| Check support, data handling or recovery | [Limitations](docs/limitations.md) · [Security](SECURITY.md) |
-| Prepare a release or read changes | [Releases](docs/releases.md) · [Changelog](CHANGELOG.md) |
+- [Deployment](docs/deployment.md) — Install, update or remove only-tdy alongside Tududi.
+- [Limitations](docs/limitations.md) — Check Tududi compatibility, offline behavior and recovery limits.
+- [Security](SECURITY.md) — Understand the trust boundary and report vulnerabilities privately.
+- [Development](docs/development.md) — Set up a checkout, run checks and find contribution instructions.
+- [Architecture](docs/architecture.md) — Find where the code lives and understand the task rules.
+- [Changelog](CHANGELOG.md) — See what changed in each release.
 
-Ask questions in [Discussions](https://github.com/Muatasim-Aswad/only-tdy/discussions); report vulnerabilities through [Security](SECURITY.md).
+Ask questions in [Discussions](https://github.com/Muatasim-Aswad/only-tdy/discussions).
 
 Licensed under [MIT](LICENSE). Bundled asset attribution is in [third-party notices](THIRD_PARTY_NOTICES.md).

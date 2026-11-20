@@ -10,4 +10,6 @@ Fork and clone, then follow [development setup](docs/development.md#setup-and-ch
 
 Send a focused pull request from your fork. Describe behavior changes, tests, privacy implications, and compatibility/migration effects; mark inapplicable items. Add meaningful regression coverage, use synthetic fixtures/screenshots, and review baseline changes. Remove real task data, cookies, tokens and private host details from examples and logs.
 
-Follow [architecture](docs/architecture.md): keep domain logic with its feature and use focused public APIs. Add dependencies or scope only for a concrete need. Commit messages should explain the change; Conventional Commits are optional. Contributions use the repository's [MIT license](LICENSE).
+Write short, specific commit subjects and pull request titles that start with an action verb and omit type prefixes. Review the pull request title before squash merging because it can become the commit subject.
+
+Follow [architecture](docs/architecture.md): keep domain logic with its feature and use focused public APIs. Add dependencies or scope only for a concrete need. Contributions use the repository's [MIT license](LICENSE).
