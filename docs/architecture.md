@@ -1,19 +1,26 @@
 # Architecture
 
-[README](../README.md) · [Development](development.md)
-
 only-tdy is a static React frontend. Tududi owns tasks, projects, tags, account timezone, authorization and persistence. only-tdy has no backend, database, migrations or telemetry. Task data is cached in memory; UI state holds drafts and selections. Preferences live in Tududi's `ui_settings.onlyTdy` with an account-scoped browser copy.
 
-## Ownership and dependency direction
+## Repository layout
 
-| Area | Owns |
-| --- | --- |
-| `src/app/` | Shell, routing, providers, composition and reload recovery boundary. |
-| `src/features/` | Task contracts, domain rules, components, state, queries, mutations and Tududi payload adapters. |
-| `src/infra/` | Generic same-origin HTTP/session/CSRF transport and safe browser storage. |
-| `src/shared/` | Reusable primitives with no feature owner. |
-| `src/config/` | Base path, app identity and configuration. |
-| `src/assets/` | Bundled fonts and other static assets. |
+```text
+only-tdy/
+├── src/            React and TypeScript frontend styled with Tailwind CSS
+│   ├── app/        Shell, routing, providers, composition and reload recovery
+│   ├── features/   Task contracts, rules, UI, state, queries, mutations and Tududi adapters
+│   ├── infra/      Same-origin HTTP/session/CSRF transport and browser storage
+│   ├── shared/     Reusable primitives
+│   ├── config/     Base path, app identity and configuration
+│   └── assets/     Bundled fonts and other static assets
+├── deploy/         nginx configuration for the static app
+├── tests/          Playwright browser tests
+└── docs/           Project guides
+```
+
+[README](../README.md) · [Development](development.md)
+
+## Ownership and dependency direction
 
 Dependencies flow from app to features, infrastructure, configuration and shared code. Features may use infrastructure, configuration and shared code; infrastructure may use configuration and shared code; configuration may use shared code. Shared code imports none of these areas; nothing imports app internals.
 
